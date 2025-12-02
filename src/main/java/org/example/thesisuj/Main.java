@@ -11,10 +11,7 @@ import org.example.thesisuj.router.cli.RouterCLIParser;
 import java.io.IOException;
 import java.util.Scanner;
 
-/**
- * Main application class that provides both JavaFX GUI and CLI interface for router configuration.
- * The CLI provides a VyOS-style command-line interface for managing router configuration.
- */
+
 public class Main extends Application {
 	@Override
 	public void start(Stage stage) throws IOException {
@@ -25,12 +22,6 @@ public class Main extends Application {
 		stage.show();
 	}
 
-	/**
-	 * Main entry point for the application.
-	 * Launches the JavaFX GUI and then starts the router CLI in interactive mode.
-	 *
-	 * @param args Command-line arguments (not used)
-	 */
 	public static void main(String[] args) {
 		launch();
 		RouterCLIParser parser = new RouterCLIParser();
