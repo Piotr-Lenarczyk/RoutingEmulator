@@ -22,6 +22,11 @@ public class RouterCLIParser {
 		commands.add(new ExitCommand());
 		commands.add(new ForceExitCommand());
 		// Register route commands - order matters: more specific patterns first
+		// Delete commands (with distance first, then without)
+		commands.add(new DeleteRouteNextHopDistanceCommand());
+		commands.add(new DeleteRouteInterfaceDistanceCommand());
+		commands.add(new DeleteRouteNextHopCommand());
+		commands.add(new DeleteRouteInterfaceCommand());
 		// Disable commands (with distance first, then without)
 		commands.add(new DisableRouteNextHopDistanceCommand());
 		commands.add(new DisableRouteInterfaceDistanceCommand());

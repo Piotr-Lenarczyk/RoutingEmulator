@@ -28,6 +28,10 @@ public class CLIErrorHandler {
 			return new RuntimeException("\tConfiguration path: [%s] is already disabled\n\n[edit]".formatted(configPath));
 		}
 
+		if ("Nothing to delete".equals(message)) {
+			return new RuntimeException("\tNothing to delete (the specified node does not exist)\n\n[edit]");
+		}
+
 		// For unknown exceptions, rethrow the original
 		return e;
 	}

@@ -99,7 +99,7 @@ public class Router {
 			throw new RuntimeException("Invalid command: delete [protocols]");
 		}
 		if (!stagedRoutingTable.getRoutingEntries().contains(entry)) {
-			throw new RuntimeException("Route not found");
+			throw new RuntimeException("Nothing to delete");
 		}
 		this.stagedRoutingTable.getRoutingEntries().remove(entry);
 		hasUncommittedChanges = true;
