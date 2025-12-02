@@ -22,6 +22,12 @@ public class RouterCLIParser {
 		commands.add(new ExitCommand());
 		commands.add(new ForceExitCommand());
 		// Register route commands - order matters: more specific patterns first
+		// Disable commands (with distance first, then without)
+		commands.add(new DisableRouteNextHopDistanceCommand());
+		commands.add(new DisableRouteInterfaceDistanceCommand());
+		commands.add(new DisableRouteNextHopCommand());
+		commands.add(new DisableRouteInterfaceCommand());
+		// Set commands (with distance first, then without)
 		commands.add(new SetRouteNextHopDistanceCommand());
 		commands.add(new SetRouteInterfaceDistanceCommand());
 		commands.add(new SetRouteNextHopCommand());
@@ -40,6 +46,7 @@ public class RouterCLIParser {
 				return;
 			}
 		}
+		System.out.println("Command not recognized or not supported");
 	}
 
 	/**

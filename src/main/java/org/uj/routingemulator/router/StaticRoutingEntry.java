@@ -6,7 +6,7 @@ import org.uj.routingemulator.common.IPAddress;
 import org.uj.routingemulator.common.Subnet;
 
 @Getter
-@EqualsAndHashCode
+@EqualsAndHashCode(exclude = "isDisabled")
 public class StaticRoutingEntry {
 	private final Subnet subnet;
 	private final RouterInterface routerInterface;

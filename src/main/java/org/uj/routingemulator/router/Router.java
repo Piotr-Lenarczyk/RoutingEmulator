@@ -107,6 +107,33 @@ public class Router {
 	}
 
 	/**
+	 * Disables an existing static route in the staged configuration.
+	 * If the route does not exist -> throws "Route not found".
+	 * If the route is already disabled -> throws "Route already exists" (duplicate configuration).
+	 *
+	 * @param entry routing entry to disable (matches by subnet/nextHop/interface/distance)
+	 */
+	public void disableRoute(StaticRoutingEntry entry) {
+		if (mode != RouterMode.CONFIGURATION) {
+			throw new RuntimeException("Invalid command: set [protocols]");
+		}
+		// Find existing entry by equality (equals ignores isDisabled)
+		List<StaticRoutingEntry> entries = stagedRoutingTable.getRoutingEntries();
+		int idx = entries.indexOf(entry);
+		if (idx == -1) {
+			throw new RuntimeException("Route not found");
+		}
+		StaticRoutingEntry existing = entries.get(idx);
+		if (existing.isDisabled()) {
+			// disabling an already-disabled route is a duplicate configuration
+			throw new RuntimeException("Route already exists");
+		}
+		existing.disable();
+		hasUncommittedChanges = true;
+		System.out.println("[edit]");
+	}
+
+	/**
 	 * Configures a router interface in the staged configuration.
 	 * @param routerInterfaceName Name of the router interface to be configured
 	 * @param subnet Subnet to be assigned to the interface

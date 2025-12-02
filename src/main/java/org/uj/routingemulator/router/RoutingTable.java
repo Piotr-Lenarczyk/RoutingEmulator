@@ -36,6 +36,13 @@ public class RoutingTable {
 		this.routingEntries.remove(entry);
 	}
 
+	public void disableRoute(StaticRoutingEntry entry) {
+		if (this.routingEntries.contains(entry)) {
+			StaticRoutingEntry route = this.routingEntries.get(this.routingEntries.indexOf(entry));
+			route.disable();
+		}
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder stringBuilder = new StringBuilder();

@@ -24,6 +24,10 @@ public class CLIErrorHandler {
 			return new RuntimeException("\tConfiguration path: [%s] does not exist\n\n[edit]".formatted(configPath));
 		}
 
+		if ("Route is already disabled".equals(message)) {
+			return new RuntimeException("\tConfiguration path: [%s] is already disabled\n\n[edit]".formatted(configPath));
+		}
+
 		// For unknown exceptions, rethrow the original
 		return e;
 	}
@@ -59,6 +63,102 @@ public class CLIErrorHandler {
 	 */
 	public static String formatRouteInterfaceDistance(String destination, String interfaceName, int distance) {
 		return "protocols static route %s interface %s distance %d".formatted(destination, interfaceName, distance);
+	}
+
+	// Delete command formatters
+
+	/**
+	 * Formats a configuration path for deleting static route with next-hop.
+	 *
+	 * @param destination Destination subnet in CIDR notation
+	 * @param nextHop Next-hop IP address
+	 * @return Formatted configuration path string
+	 */
+	public static String formatDeleteRouteNextHop(String destination, String nextHop) {
+		return "protocols static route %s next-hop %s".formatted(destination, nextHop);
+	}
+
+	/**
+	 * Formats a configuration path for deleting static route with next-hop and distance.
+	 *
+	 * @param destination Destination subnet in CIDR notation
+	 * @param nextHop Next-hop IP address
+	 * @param distance Administrative distance
+	 * @return Formatted configuration path string
+	 */
+	public static String formatDeleteRouteNextHopDistance(String destination, String nextHop, int distance) {
+		return "protocols static route %s next-hop %s distance %d".formatted(destination, nextHop, distance);
+	}
+
+	/**
+	 * Formats a configuration path for deleting static route with interface.
+	 *
+	 * @param destination Destination subnet in CIDR notation
+	 * @param interfaceName Name of the outgoing interface
+	 * @return Formatted configuration path string
+	 */
+	public static String formatDeleteRouteInterface(String destination, String interfaceName) {
+		return "protocols static route %s interface %s".formatted(destination, interfaceName);
+	}
+
+	/**
+	 * Formats a configuration path for deleting static route with interface and distance.
+	 *
+	 * @param destination Destination subnet in CIDR notation
+	 * @param interfaceName Name of the outgoing interface
+	 * @param distance Administrative distance
+	 * @return Formatted configuration path string
+	 */
+	public static String formatDeleteRouteInterfaceDistance(String destination, String interfaceName, int distance) {
+		return "protocols static route %s interface %s distance %d".formatted(destination, interfaceName, distance);
+	}
+
+	// Disable command formatters
+
+	/**
+	 * Formats a configuration path for disabling static route with next-hop.
+	 *
+	 * @param destination Destination subnet in CIDR notation
+	 * @param nextHop Next-hop IP address
+	 * @return Formatted configuration path string
+	 */
+	public static String formatDisableRouteNextHop(String destination, String nextHop) {
+		return "protocols static route %s next-hop %s disable".formatted(destination, nextHop);
+	}
+
+	/**
+	 * Formats a configuration path for disabling static route with next-hop and distance.
+	 *
+	 * @param destination Destination subnet in CIDR notation
+	 * @param nextHop Next-hop IP address
+	 * @param distance Administrative distance
+	 * @return Formatted configuration path string
+	 */
+	public static String formatDisableRouteNextHopDistance(String destination, String nextHop, int distance) {
+		return "protocols static route %s next-hop %s distance %d disable".formatted(destination, nextHop, distance);
+	}
+
+	/**
+	 * Formats a configuration path for disabling static route with interface.
+	 *
+	 * @param destination Destination subnet in CIDR notation
+	 * @param interfaceName Name of the outgoing interface
+	 * @return Formatted configuration path string
+	 */
+	public static String formatDisableRouteInterface(String destination, String interfaceName) {
+		return "protocols static route %s interface %s disable".formatted(destination, interfaceName);
+	}
+
+	/**
+	 * Formats a configuration path for disabling static route with interface and distance.
+	 *
+	 * @param destination Destination subnet in CIDR notation
+	 * @param interfaceName Name of the outgoing interface
+	 * @param distance Administrative distance
+	 * @return Formatted configuration path string
+	 */
+	public static String formatDisableRouteInterfaceDistance(String destination, String interfaceName, int distance) {
+		return "protocols static route %s interface %s distance %d disable".formatted(destination, interfaceName, distance);
 	}
 }
 
