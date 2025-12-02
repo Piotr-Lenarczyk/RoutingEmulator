@@ -1,10 +1,10 @@
-import org.example.thesisuj.common.IPAddress;
-import org.example.thesisuj.common.Subnet;
-import org.example.thesisuj.common.SubnetMask;
-import org.example.thesisuj.router.Router;
-import org.example.thesisuj.router.RouterInterface;
-import org.example.thesisuj.router.RouterMode;
-import org.example.thesisuj.router.StaticRoutingEntry;
+import org.uj.routingemulator.common.IPAddress;
+import org.uj.routingemulator.common.Subnet;
+import org.uj.routingemulator.common.SubnetMask;
+import org.uj.routingemulator.router.Router;
+import org.uj.routingemulator.router.RouterInterface;
+import org.uj.routingemulator.router.RouterMode;
+import org.uj.routingemulator.router.StaticRoutingEntry;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

@@ -5,8 +5,8 @@ module org.example.thesisuj {
 	requires java.xml;
 
 
-	opens org.example.thesisuj to javafx.fxml;
-	exports org.example.thesisuj;
-	exports org.example.thesisuj.host;
-	opens org.example.thesisuj.host to javafx.fxml;
+	opens org.uj.routingemulator to javafx.fxml;
+	exports org.uj.routingemulator;
+	exports org.uj.routingemulator.host;
+	opens org.uj.routingemulator.host to javafx.fxml;
 }
