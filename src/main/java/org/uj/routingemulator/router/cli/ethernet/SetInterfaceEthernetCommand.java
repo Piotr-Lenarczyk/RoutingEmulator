@@ -1,17 +1,16 @@
-package org.uj.routingemulator.router.cli;
+package org.uj.routingemulator.router.cli.ethernet;
 
+import org.uj.routingemulator.common.Subnet;
 import org.uj.routingemulator.router.Router;
+import org.uj.routingemulator.router.cli.CLIErrorHandler;
+import org.uj.routingemulator.router.cli.RouterCommand;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * CLI command to delete an address from an ethernet interface.
- * Format: delete interfaces ethernet <interface> address <address>
- */
-public class DeleteInterfaceEthernetCommand implements RouterCommand {
+public class SetInterfaceEthernetCommand implements RouterCommand {
 	private static final Pattern PATTERN = Pattern.compile(
-			"delete\\s+interfaces\\s+ethernet\\s+(\\S+)\\s+address\\s+(\\S+)"
+			"set\\s+interfaces\\s+ethernet\\s+(\\S+)\\s+address\\s+(\\S+)"
 	);
 	private String routerInterfaceName;
 	private String subnet;
@@ -19,10 +18,10 @@ public class DeleteInterfaceEthernetCommand implements RouterCommand {
 	@Override
 	public void execute(Router router) {
 		try {
-			router.deleteInterfaceAddress(routerInterfaceName);
+			router.configureInterface(routerInterfaceName, Subnet.fromString(subnet));
 		} catch (RuntimeException e) {
 			throw CLIErrorHandler.handleInterfaceException(e,
-				CLIErrorHandler.formatDeleteInterfaceEthernet(routerInterfaceName, subnet));
+				CLIErrorHandler.formatSetInterfaceEthernet(routerInterfaceName, subnet));
 		}
 	}
 
@@ -39,12 +38,11 @@ public class DeleteInterfaceEthernetCommand implements RouterCommand {
 
 	@Override
 	public String getCommandPattern() {
-		return "delete interfaces ethernet <interface> address <address>";
+		return "set interfaces ethernet <interface> address <address>";
 	}
 
 	@Override
 	public String getDescription() {
-		return "Remove IP address from an ethernet interface";
+		return "Configure interface with one IP address";
 	}
 }
-

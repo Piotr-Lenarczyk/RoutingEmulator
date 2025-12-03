@@ -210,6 +210,9 @@ public class Router {
 		if (mode != RouterMode.CONFIGURATION) {
 			throw new RuntimeException("Invalid command: [commit]");
 		}
+		if (!hasUncommittedChanges) {
+			throw new RuntimeException("No configuration changes to commit");
+		}
 		this.routingTable = new RoutingTable(stagedRoutingTable);
 		this.interfaces = new ArrayList<>(stagedInterfaces);
 		hasUncommittedChanges = false;

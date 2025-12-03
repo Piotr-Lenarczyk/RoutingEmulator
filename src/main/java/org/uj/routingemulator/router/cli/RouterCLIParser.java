@@ -1,6 +1,10 @@
 package org.uj.routingemulator.router.cli;
 
 import org.uj.routingemulator.router.Router;
+import org.uj.routingemulator.router.cli.ethernet.DeleteInterfaceEthernetCommand;
+import org.uj.routingemulator.router.cli.ethernet.DisableInterfaceEthernetCommand;
+import org.uj.routingemulator.router.cli.ethernet.SetInterfaceEthernetCommand;
+import org.uj.routingemulator.router.cli.route.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +23,7 @@ public class RouterCLIParser {
 	 */
 	private void registerCommands() {
 		commands.add(new ConfigureCommand());
+		commands.add(new CommitCommand());
 		commands.add(new ExitCommand());
 		commands.add(new ForceExitCommand());
 		// Register route commands - order matters: more specific patterns first

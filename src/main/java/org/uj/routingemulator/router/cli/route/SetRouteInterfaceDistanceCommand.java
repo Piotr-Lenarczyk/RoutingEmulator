@@ -1,23 +1,25 @@
-package org.uj.routingemulator.router.cli;
+package org.uj.routingemulator.router.cli.route;
 
 import org.uj.routingemulator.common.Subnet;
 import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.StaticRoutingEntry;
+import org.uj.routingemulator.router.cli.CLIErrorHandler;
+import org.uj.routingemulator.router.cli.RouterCommand;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * CLI command to add a static route via an interface.
- * Uses default administrative distance (1).
- * Format: set protocols static route <destination> interface <interface>
+ * CLI command to add a static route via an interface with custom administrative distance.
+ * Format: set protocols static route <destination> interface <interface> distance <distance>
  */
-public class SetRouteInterfaceCommand implements RouterCommand {
+public class SetRouteInterfaceDistanceCommand implements RouterCommand {
 	private static final Pattern PATTERN = Pattern.compile(
-			"set\\s+protocols\\s+static\\s+route\\s+(\\S+)\\s+interface\\s+(\\S+)"
+			"set\\s+protocols\\s+static\\s+route\\s+(\\S+)\\s+interface\\s+(\\S+)\\s+distance\\s+(\\d+)"
 	);
 	private String destinationSubnet;
 	private String interfaceName;
+	private int distance;
 
 	@Override
 	public void execute(Router router) {
@@ -25,12 +27,13 @@ public class SetRouteInterfaceCommand implements RouterCommand {
 			router.addRoute(
 					new StaticRoutingEntry(
 							Subnet.fromString(destinationSubnet),
-							router.findFromName(interfaceName)
+							router.findFromName(interfaceName),
+							distance
 					)
 			);
 		} catch (RuntimeException e) {
 			throw CLIErrorHandler.handleRouteException(e,
-				CLIErrorHandler.formatRouteInterface(destinationSubnet, interfaceName));
+				CLIErrorHandler.formatRouteInterfaceDistance(destinationSubnet, interfaceName, distance));
 		}
 	}
 
@@ -40,6 +43,7 @@ public class SetRouteInterfaceCommand implements RouterCommand {
 		if (matcher.matches()) {
 			destinationSubnet = matcher.group(1);
 			interfaceName = matcher.group(2);
+			distance = Integer.parseInt(matcher.group(3));
 			return true;
 		}
 		return false;
@@ -47,12 +51,12 @@ public class SetRouteInterfaceCommand implements RouterCommand {
 
 	@Override
 	public String getCommandPattern() {
-		return "set protocols static route <destination> interface <interface>";
+		return "set protocols static route <destination> interface <interface> distance <distance>";
 	}
 
 	@Override
 	public String getDescription() {
-		return "Add static route via interface with default distance";
+		return "Add static route via interface with custom distance";
 	}
 }
 

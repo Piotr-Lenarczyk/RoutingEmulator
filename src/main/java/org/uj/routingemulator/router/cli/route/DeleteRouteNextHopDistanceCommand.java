@@ -1,20 +1,22 @@
-package org.uj.routingemulator.router.cli;
+package org.uj.routingemulator.router.cli.route;
 
 import org.uj.routingemulator.common.IPAddress;
 import org.uj.routingemulator.common.Subnet;
 import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.StaticRoutingEntry;
+import org.uj.routingemulator.router.cli.CLIErrorHandler;
+import org.uj.routingemulator.router.cli.RouterCommand;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * CLI command to add a static route with next-hop IP address and custom administrative distance.
- * Format: set protocols static route <destination> next-hop <next-hop> distance <distance>
+ * CLI command to delete a static route with next-hop IP address and custom administrative distance.
+ * Format: delete protocols static route <destination> next-hop <next-hop> distance <distance>
  */
-public class SetRouteNextHopDistanceCommand implements RouterCommand {
+public class DeleteRouteNextHopDistanceCommand implements RouterCommand {
 	private static final Pattern PATTERN = Pattern.compile(
-			"set\\s+protocols\\s+static\\s+route\\s+(\\S+)\\s+next-hop\\s+(\\S+)\\s+distance\\s+(\\d+)"
+			"delete\\s+protocols\\s+static\\s+route\\s+(\\S+)\\s+next-hop\\s+(\\S+)\\s+distance\\s+(\\d+)"
 	);
 	private String destinationSubnet;
 	private String nextHop;
@@ -23,7 +25,7 @@ public class SetRouteNextHopDistanceCommand implements RouterCommand {
 	@Override
 	public void execute(Router router) {
 		try {
-			router.addRoute(
+			router.removeRoute(
 					new StaticRoutingEntry(
 							Subnet.fromString(destinationSubnet),
 							IPAddress.fromString(nextHop),
@@ -32,7 +34,7 @@ public class SetRouteNextHopDistanceCommand implements RouterCommand {
 			);
 		} catch (RuntimeException e) {
 			throw CLIErrorHandler.handleRouteException(e,
-				CLIErrorHandler.formatRouteNextHopDistance(destinationSubnet, nextHop, distance));
+					CLIErrorHandler.formatDeleteRouteNextHopDistance(destinationSubnet, nextHop, distance));
 		}
 	}
 
@@ -50,12 +52,12 @@ public class SetRouteNextHopDistanceCommand implements RouterCommand {
 
 	@Override
 	public String getCommandPattern() {
-		return "set protocols static route <destination> next-hop <next-hop> distance <distance>";
+		return "delete protocols static route <destination> next-hop <next-hop> distance <distance>";
 	}
 
 	@Override
 	public String getDescription() {
-		return "Add static route via next-hop with custom distance";
+		return "Delete static route via next-hop with custom distance";
 	}
 }
 

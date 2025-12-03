@@ -1,24 +1,26 @@
-package org.uj.routingemulator.router.cli;
+package org.uj.routingemulator.router.cli.route;
 
 import org.uj.routingemulator.common.IPAddress;
 import org.uj.routingemulator.common.Subnet;
 import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.StaticRoutingEntry;
+import org.uj.routingemulator.router.cli.CLIErrorHandler;
+import org.uj.routingemulator.router.cli.RouterCommand;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * CLI command to disable a static route with next-hop IP address and custom administrative distance.
- * Format: set protocols static route <destination> next-hop <next-hop> distance <distance> disable
+ * CLI command to disable a static route with next-hop IP address.
+ * Uses default administrative distance (1).
+ * Format: set protocols static route <destination> next-hop <next-hop> disable
  */
-public class DisableRouteNextHopDistanceCommand implements RouterCommand {
+public class DisableRouteNextHopCommand implements RouterCommand {
 	private static final Pattern PATTERN = Pattern.compile(
-			"set\\s+protocols\\s+static\\s+route\\s+(\\S+)\\s+next-hop\\s+(\\S+)\\s+distance\\s+(\\d+)\\s+disable"
+			"set\\s+protocols\\s+static\\s+route\\s+(\\S+)\\s+next-hop\\s+(\\S+)\\s+disable"
 	);
 	private String destinationSubnet;
 	private String nextHop;
-	private int distance;
 
 	@Override
 	public void execute(Router router) {
@@ -26,13 +28,12 @@ public class DisableRouteNextHopDistanceCommand implements RouterCommand {
 			router.disableRoute(
 					new StaticRoutingEntry(
 							Subnet.fromString(destinationSubnet),
-							IPAddress.fromString(nextHop),
-							distance
+							IPAddress.fromString(nextHop)
 					)
 			);
 		} catch (RuntimeException e) {
 			throw CLIErrorHandler.handleRouteException(e,
-					CLIErrorHandler.formatDisableRouteNextHopDistance(destinationSubnet, nextHop, distance));
+					CLIErrorHandler.formatDisableRouteNextHop(destinationSubnet, nextHop));
 		}
 	}
 
@@ -42,7 +43,6 @@ public class DisableRouteNextHopDistanceCommand implements RouterCommand {
 		if (matcher.matches()) {
 			destinationSubnet = matcher.group(1);
 			nextHop = matcher.group(2);
-			distance = Integer.parseInt(matcher.group(3));
 			return true;
 		}
 		return false;
@@ -50,12 +50,11 @@ public class DisableRouteNextHopDistanceCommand implements RouterCommand {
 
 	@Override
 	public String getCommandPattern() {
-		return "set protocols static route <destination> next-hop <next-hop> distance <distance> disable";
+		return "set protocols static route <destination> next-hop <next-hop> disable";
 	}
 
 	@Override
 	public String getDescription() {
-		return "Disable static route via next-hop with custom distance";
+		return "Disable static route via next-hop with default distance";
 	}
 }
-

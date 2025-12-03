@@ -1,6 +1,8 @@
-package org.uj.routingemulator.router.cli;
+package org.uj.routingemulator.router.cli.ethernet;
 
 import org.uj.routingemulator.router.Router;
+import org.uj.routingemulator.router.cli.CLIErrorHandler;
+import org.uj.routingemulator.router.cli.RouterCommand;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

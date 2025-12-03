@@ -1,35 +1,33 @@
-package org.uj.routingemulator.router.cli;
+package org.uj.routingemulator.router.cli.route;
 
+import org.uj.routingemulator.common.IPAddress;
 import org.uj.routingemulator.common.Subnet;
 import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.StaticRoutingEntry;
+import org.uj.routingemulator.router.cli.CLIErrorHandler;
+import org.uj.routingemulator.router.cli.RouterCommand;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * CLI command to delete a static route via an interface.
- * Format: delete protocols static route <destination> interface <interface>
- */
-public class DeleteRouteInterfaceCommand implements RouterCommand {
+public class DeleteRouteNextHopCommand implements RouterCommand {
 	private static final Pattern PATTERN = Pattern.compile(
-			"delete\\s+protocols\\s+static\\s+route\\s+(\\S+)\\s+interface\\s+(\\S+)"
+			"delete\\s+protocols\\s+static\\s+route\\s+(\\S+)\\s+next-hop\\s+(\\S+)"
 	);
 	private String destinationSubnet;
-	private String interfaceName;
-
+	private String nextHop;
 	@Override
 	public void execute(Router router) {
 		try {
 			router.removeRoute(
 					new StaticRoutingEntry(
 							Subnet.fromString(destinationSubnet),
-							router.findFromName(interfaceName)
+							IPAddress.fromString(nextHop)
 					)
 			);
 		} catch (RuntimeException e) {
 			throw CLIErrorHandler.handleRouteException(e,
-					CLIErrorHandler.formatDeleteRouteInterface(destinationSubnet, interfaceName));
+					CLIErrorHandler.formatDeleteRouteNextHop(destinationSubnet, nextHop));
 		}
 	}
 
@@ -38,7 +36,7 @@ public class DeleteRouteInterfaceCommand implements RouterCommand {
 		Matcher matcher = PATTERN.matcher(command.trim());
 		if (matcher.matches()) {
 			destinationSubnet = matcher.group(1);
-			interfaceName = matcher.group(2);
+			nextHop = matcher.group(2);
 			return true;
 		}
 		return false;
@@ -46,12 +44,11 @@ public class DeleteRouteInterfaceCommand implements RouterCommand {
 
 	@Override
 	public String getCommandPattern() {
-		return "delete protocols static route <destination> interface <interface>";
+		return "delete protocols static route <destination> next-hop <next-hop>";
 	}
 
 	@Override
 	public String getDescription() {
-		return "Delete static route via interface with default distance";
+		return "Delete static route via next-hop with default distance";
 	}
 }
-
