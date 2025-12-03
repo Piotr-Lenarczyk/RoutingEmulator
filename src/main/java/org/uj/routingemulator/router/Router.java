@@ -142,11 +142,63 @@ public class Router {
 		if (mode != RouterMode.CONFIGURATION) {
 			throw new RuntimeException("Invalid command: set [interfaces]");
 		}
+
+		// Reject network addresses (e.g., 192.168.1.0/24, 10.0.0.0/16)
+		if (subnet.isNetworkAddress()) {
+			throw new RuntimeException("Cannot assign network address to interface");
+		}
+
 		RouterInterface routerInterface = stagedInterfaces.stream()
 				.filter(intf -> intf.getInterfaceName().equals(routerInterfaceName))
 				.findFirst()
 				.orElseThrow(() -> new RuntimeException("WARN: interface %s does not exist, changes will not be commited".formatted(routerInterfaceName)));
-		routerInterface.setSubnet(subnet);
+
+		if (routerInterface.getSubnet() == null || !routerInterface.getSubnet().equals(subnet)) {
+			routerInterface.setSubnet(subnet);
+			hasUncommittedChanges = true;
+			System.out.println("[edit]");
+		} else {
+			throw new RuntimeException("Configuration already exists");
+		}
+	}
+
+	/**
+	 * Disables a router interface in the staged configuration.
+	 * @param routerInterfaceName Name of the router interface to be disabled
+	 */
+	public void disableInterface(String routerInterfaceName) {
+		if (mode != RouterMode.CONFIGURATION) {
+			throw new RuntimeException("Invalid command: set [interfaces]");
+		}
+
+		RouterInterface routerInterface = stagedInterfaces.stream()
+				.filter(intf -> intf.getInterfaceName().equals(routerInterfaceName))
+				.findFirst()
+				.orElseThrow(() -> new RuntimeException("WARN: interface %s does not exist, changes will not be commited".formatted(routerInterfaceName)));
+
+		routerInterface.disable();
+		hasUncommittedChanges = true;
+	}
+
+	/**
+	 * Removes an address from a router interface in the staged configuration.
+	 * @param routerInterfaceName Name of the router interface
+	 */
+	public void deleteInterfaceAddress(String routerInterfaceName) {
+		if (mode != RouterMode.CONFIGURATION) {
+			throw new RuntimeException("Invalid command: delete [interfaces]");
+		}
+
+		RouterInterface routerInterface = stagedInterfaces.stream()
+				.filter(intf -> intf.getInterfaceName().equals(routerInterfaceName))
+				.findFirst()
+				.orElseThrow(() -> new RuntimeException("WARN: interface %s does not exist, changes will not be commited".formatted(routerInterfaceName)));
+
+		if (routerInterface.getSubnet() == null) {
+			throw new RuntimeException("No value to delete");
+		}
+
+		routerInterface.setSubnet(null);
 		hasUncommittedChanges = true;
 		System.out.println("[edit]");
 	}

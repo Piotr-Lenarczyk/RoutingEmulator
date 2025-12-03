@@ -37,6 +37,10 @@ public class RouterCLIParser {
 		commands.add(new SetRouteInterfaceDistanceCommand());
 		commands.add(new SetRouteNextHopCommand());
 		commands.add(new SetRouteInterfaceCommand());
+		// Interface commands
+		commands.add(new DeleteInterfaceEthernetCommand());
+		commands.add(new DisableInterfaceEthernetCommand());
+		commands.add(new SetInterfaceEthernetCommand());
 	}
 
 	public void executeCommand(String input, Router router) {

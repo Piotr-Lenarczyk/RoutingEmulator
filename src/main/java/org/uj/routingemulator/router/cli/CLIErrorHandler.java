@@ -36,6 +36,31 @@ public class CLIErrorHandler {
 		return e;
 	}
 
+	public static RuntimeException handleInterfaceException(RuntimeException e, String configPath) {
+		String message = e.getMessage();
+
+		if ("Configuration already exists".equals(message)) {
+			return new RuntimeException("\tConfiguration path: [%s] already exists\n\n[edit]".formatted(configPath));
+		}
+
+		if("Cannot assign network address to interface".equals(message)) {
+			String[] command = configPath.split(" ");
+			String ip = command[command.length - 1];
+			return new RuntimeException("\tError: %s is not a valid host IP host\n\n\n\tInvalid value\n\tValue validation failed\n\tSet failed\n\n[edit]".formatted(ip));
+		}
+
+		if (message != null && message.startsWith("Configuration path: [interfaces ethernet")) {
+			return new RuntimeException("\t%s\n\n[edit]".formatted(message));
+		}
+
+		if ("No value to delete".equals(message)) {
+			return new RuntimeException("\tNothing to delete (the specified value does not exist)\n\n[edit]");
+		}
+
+		// For unknown exceptions, rethrow the original
+		return e;
+	}
+
 	/**
 	 * Formats a configuration path for static route with next-hop.
 	 */
@@ -163,6 +188,21 @@ public class CLIErrorHandler {
 	 */
 	public static String formatDisableRouteInterfaceDistance(String destination, String interfaceName, int distance) {
 		return "protocols static route %s interface %s distance %d disable".formatted(destination, interfaceName, distance);
+	}
+
+	public static String formatSetInterfaceEthernet(String routerInterfaceName, String subnet) {
+		return "interfaces ethernet %s address %s".formatted(routerInterfaceName, subnet);
+	}
+
+	public static String formatDisableInterfaceEthernet(String routerInterfaceName, String subnet) {
+		if (subnet == null || subnet.isEmpty()) {
+			return "interfaces ethernet %s disable".formatted(routerInterfaceName);
+		}
+		return "interfaces ethernet %s address %s disable".formatted(routerInterfaceName, subnet);
+	}
+
+	public static String formatDeleteInterfaceEthernet(String routerInterfaceName, String subnet) {
+		return "interfaces ethernet %s address %s".formatted(routerInterfaceName, subnet);
 	}
 }
 
