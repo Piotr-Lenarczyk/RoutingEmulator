@@ -87,7 +87,6 @@ public class Router {
 		}
 		this.stagedRoutingTable.addRoute(entry);
 		hasUncommittedChanges = true;
-		System.out.println("[edit]");
 	}
 
 	/**
@@ -103,7 +102,6 @@ public class Router {
 		}
 		this.stagedRoutingTable.getRoutingEntries().remove(entry);
 		hasUncommittedChanges = true;
-		System.out.println("[edit]");
 	}
 
 	/**
@@ -130,7 +128,6 @@ public class Router {
 		}
 		existing.disable();
 		hasUncommittedChanges = true;
-		System.out.println("[edit]");
 	}
 
 	/**
@@ -156,7 +153,6 @@ public class Router {
 		if (routerInterface.getSubnet() == null || !routerInterface.getSubnet().equals(subnet)) {
 			routerInterface.setSubnet(subnet);
 			hasUncommittedChanges = true;
-			System.out.println("[edit]");
 		} else {
 			throw new RuntimeException("Configuration already exists");
 		}
@@ -200,7 +196,6 @@ public class Router {
 
 		routerInterface.setSubnet(null);
 		hasUncommittedChanges = true;
-		System.out.println("[edit]");
 	}
 
 	/**
@@ -280,7 +275,6 @@ public class Router {
 		this.stagedRoutingTable = new RoutingTable(this.routingTable);
 		this.stagedInterfaces = new ArrayList<>(this.interfaces);
 		this.hasUncommittedChanges = false;
-		System.out.println("Router restarted.");
 	}
 
 	/**

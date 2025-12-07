@@ -29,6 +29,7 @@ public class DeleteRouteInterfaceCommand implements RouterCommand {
 							router.findFromName(interfaceName)
 					)
 			);
+			System.out.println("[edit]");
 		} catch (RuntimeException e) {
 			throw CLIErrorHandler.handleRouteException(e,
 					CLIErrorHandler.formatDeleteRouteInterface(destinationSubnet, interfaceName));

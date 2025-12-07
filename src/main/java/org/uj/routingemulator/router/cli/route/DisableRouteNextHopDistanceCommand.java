@@ -32,6 +32,7 @@ public class DisableRouteNextHopDistanceCommand implements RouterCommand {
 							distance
 					)
 			);
+			System.out.println("[edit]");
 		} catch (RuntimeException e) {
 			throw CLIErrorHandler.handleRouteException(e,
 					CLIErrorHandler.formatDisableRouteNextHopDistance(destinationSubnet, nextHop, distance));

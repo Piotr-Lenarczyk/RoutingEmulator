@@ -32,6 +32,7 @@ public class DeleteRouteNextHopDistanceCommand implements RouterCommand {
 							distance
 					)
 			);
+			System.out.println("[edit]");
 		} catch (RuntimeException e) {
 			throw CLIErrorHandler.handleRouteException(e,
 					CLIErrorHandler.formatDeleteRouteNextHopDistance(destinationSubnet, nextHop, distance));

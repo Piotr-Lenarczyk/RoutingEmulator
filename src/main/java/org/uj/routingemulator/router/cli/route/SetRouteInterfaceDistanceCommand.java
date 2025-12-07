@@ -31,6 +31,7 @@ public class SetRouteInterfaceDistanceCommand implements RouterCommand {
 							distance
 					)
 			);
+			System.out.println("[edit]");
 		} catch (RuntimeException e) {
 			throw CLIErrorHandler.handleRouteException(e,
 				CLIErrorHandler.formatRouteInterfaceDistance(destinationSubnet, interfaceName, distance));

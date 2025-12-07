@@ -21,6 +21,7 @@ public class DisableInterfaceEthernetCommand implements RouterCommand {
 	public void execute(Router router) {
 		try {
 			router.disableInterface(routerInterfaceName);
+			System.out.println("[edit]");
 		} catch (RuntimeException e) {
 			throw CLIErrorHandler.handleInterfaceException(e,
 				CLIErrorHandler.formatDisableInterfaceEthernet(routerInterfaceName, ""));

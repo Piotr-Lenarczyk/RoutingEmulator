@@ -30,6 +30,7 @@ public class SetRouteInterfaceCommand implements RouterCommand {
 							router.findFromName(interfaceName)
 					)
 			);
+			System.out.println("[edit]");
 		} catch (RuntimeException e) {
 			throw CLIErrorHandler.handleRouteException(e,
 				CLIErrorHandler.formatRouteInterface(destinationSubnet, interfaceName));

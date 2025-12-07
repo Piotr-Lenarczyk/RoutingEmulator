@@ -19,6 +19,7 @@ public class SetInterfaceEthernetCommand implements RouterCommand {
 	public void execute(Router router) {
 		try {
 			router.configureInterface(routerInterfaceName, Subnet.fromString(subnet));
+			System.out.println("[edit]");
 		} catch (RuntimeException e) {
 			throw CLIErrorHandler.handleInterfaceException(e,
 				CLIErrorHandler.formatSetInterfaceEthernet(routerInterfaceName, subnet));

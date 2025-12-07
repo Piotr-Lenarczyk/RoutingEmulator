@@ -31,6 +31,7 @@ public class DisableRouteInterfaceDistanceCommand implements RouterCommand {
 							distance
 					)
 			);
+			System.out.println("[edit]");
 		} catch (RuntimeException e) {
 			throw CLIErrorHandler.handleRouteException(e,
 					CLIErrorHandler.formatDisableRouteInterfaceDistance(destinationSubnet, interfaceName, distance));

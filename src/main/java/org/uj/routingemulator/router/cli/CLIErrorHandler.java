@@ -17,19 +17,19 @@ public class CLIErrorHandler {
 		String message = e.getMessage();
 
 		if ("Route already exists".equals(message)) {
-			return new RuntimeException("\tConfiguration path: [%s] already exists\n\n[edit]".formatted(configPath));
+			return new RuntimeException("\tConfiguration path: [%s] already exists".formatted(configPath));
 		}
 
 		if ("Route not found".equals(message)) {
-			return new RuntimeException("\tConfiguration path: [%s] does not exist\n\n[edit]".formatted(configPath));
+			return new RuntimeException("\tConfiguration path: [%s] does not exist".formatted(configPath));
 		}
 
 		if ("Route is already disabled".equals(message)) {
-			return new RuntimeException("\tConfiguration path: [%s] is already disabled\n\n[edit]".formatted(configPath));
+			return new RuntimeException("\tConfiguration path: [%s] is already disabled".formatted(configPath));
 		}
 
 		if ("Nothing to delete".equals(message)) {
-			return new RuntimeException("\tNothing to delete (the specified node does not exist)\n\n[edit]");
+			return new RuntimeException("\tNothing to delete (the specified node does not exist)");
 		}
 
 		// For unknown exceptions, rethrow the original
@@ -40,7 +40,7 @@ public class CLIErrorHandler {
 		String message = e.getMessage();
 
 		if ("Configuration already exists".equals(message)) {
-			return new RuntimeException("\tConfiguration path: [%s] already exists\n\n[edit]".formatted(configPath));
+			return new RuntimeException("\tConfiguration path: [%s] already exists".formatted(configPath));
 		}
 
 		if("Cannot assign network address to interface".equals(message)) {
@@ -50,11 +50,11 @@ public class CLIErrorHandler {
 		}
 
 		if (message != null && message.startsWith("Configuration path: [interfaces ethernet")) {
-			return new RuntimeException("\t%s\n\n[edit]".formatted(message));
+			return new RuntimeException("\t%s".formatted(message));
 		}
 
 		if ("No value to delete".equals(message)) {
-			return new RuntimeException("\tNothing to delete (the specified value does not exist)\n\n[edit]");
+			return new RuntimeException("\tNothing to delete (the specified value does not exist)");
 		}
 
 		// For unknown exceptions, rethrow the original

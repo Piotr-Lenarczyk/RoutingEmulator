@@ -60,7 +60,6 @@ public class RouterInterface {
 			throw new RuntimeException("Configuration path: [interfaces ethernet %s disable] already exists".formatted(this.interfaceName));
 		}
 		this.status = new InterfaceStatus(AdminState.ADMIN_DOWN, LinkState.DOWN);
-		System.out.println("[edit]");
 	}
 
 	/**
@@ -73,6 +72,5 @@ public class RouterInterface {
 			throw new RuntimeException("Nothing to delete (the specified node does not exist)");
 		}
 		this.status = new InterfaceStatus(AdminState.UP, LinkState.UP);
-		System.out.println("[edit]");
 	}
 }

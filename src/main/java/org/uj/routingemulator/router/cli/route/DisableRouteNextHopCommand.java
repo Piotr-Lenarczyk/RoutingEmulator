@@ -31,6 +31,7 @@ public class DisableRouteNextHopCommand implements RouterCommand {
 							IPAddress.fromString(nextHop)
 					)
 			);
+			System.out.println("[edit]");
 		} catch (RuntimeException e) {
 			throw CLIErrorHandler.handleRouteException(e,
 					CLIErrorHandler.formatDisableRouteNextHop(destinationSubnet, nextHop));

@@ -22,6 +22,7 @@ public class DeleteInterfaceEthernetCommand implements RouterCommand {
 	public void execute(Router router) {
 		try {
 			router.deleteInterfaceAddress(routerInterfaceName);
+			System.out.println("[edit]");
 		} catch (RuntimeException e) {
 			throw CLIErrorHandler.handleInterfaceException(e,
 				CLIErrorHandler.formatDeleteInterfaceEthernet(routerInterfaceName, subnet));

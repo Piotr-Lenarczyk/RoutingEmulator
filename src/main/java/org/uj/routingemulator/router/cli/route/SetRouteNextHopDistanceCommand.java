@@ -32,6 +32,7 @@ public class SetRouteNextHopDistanceCommand implements RouterCommand {
 							distance
 					)
 			);
+			System.out.println("[edit]");
 		} catch (RuntimeException e) {
 			throw CLIErrorHandler.handleRouteException(e,
 				CLIErrorHandler.formatRouteNextHopDistance(destinationSubnet, nextHop, distance));
