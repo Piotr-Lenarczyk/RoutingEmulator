@@ -27,15 +27,15 @@ public class Main /*extends Application*/ {
 		RouterCLIParser parser = new RouterCLIParser();
 		Scanner scanner = new Scanner(System.in);
 		Router router = new Router("R1");
-		while (true) {
+		String input = "";
+		while (!input.equals("q")) {
 			if (router.getMode() == RouterMode.OPERATIONAL) {
 				System.out.print("vyos@vyos$ ");
 			} else if (router.getMode() == RouterMode.CONFIGURATION) {
 				System.out.print("vyos@vyos# ");
 			}
-			String input = scanner.nextLine();
+			input = scanner.nextLine();
 			parser.executeCommand(input, router);
 		}
-
 	}
 }

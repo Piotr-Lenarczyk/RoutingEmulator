@@ -51,6 +51,20 @@ public class RouterInterface {
 	}
 
 	/**
+	 * Copy constructor for creating a deep copy of RouterInterface.
+	 * @param other The RouterInterface to copy
+	 */
+	public RouterInterface(RouterInterface other) {
+		this.interfaceName = other.interfaceName;
+		this.subnet = other.subnet; // Subnet is immutable
+		this.macAddress = other.macAddress; // MacAddress is immutable
+		this.description = other.description;
+		this.vrf = other.vrf;
+		this.mtu = other.mtu;
+		this.status = other.status; // InterfaceStatus is immutable
+	}
+
+	/**
 	 * Administratively disables the interface.
 	 *
 	 * @throws RuntimeException if the interface is already disabled

@@ -49,7 +49,7 @@ public class Router {
 		this.interfaces.add(new RouterInterface("lo"));
 		this.mode = RouterMode.OPERATIONAL;
 		this.stagedRoutingTable = new RoutingTable(this.routingTable);
-		this.stagedInterfaces = new ArrayList<>(this.interfaces);
+		this.stagedInterfaces = deepCopyInterfaces(this.interfaces);
 	}
 
 	/**`
@@ -273,7 +273,7 @@ public class Router {
 		this.interfaces.add(new RouterInterface("lo"));
 		this.mode = RouterMode.OPERATIONAL;
 		this.stagedRoutingTable = new RoutingTable(this.routingTable);
-		this.stagedInterfaces = new ArrayList<>(this.interfaces);
+		this.stagedInterfaces = deepCopyInterfaces(this.interfaces);
 		this.hasUncommittedChanges = false;
 	}
 
@@ -288,6 +288,21 @@ public class Router {
 				.filter(intf -> intf.getInterfaceName().equals(interfaceName))
 				.findFirst()
 				.orElse(null);
+	}
+
+	/**
+	 * Creates a deep copy of the interface list.
+	 * Each RouterInterface is copied using its copy constructor.
+	 *
+	 * @param interfaces List of interfaces to copy
+	 * @return A new list containing copies of all interfaces
+	 */
+	private List<RouterInterface> deepCopyInterfaces(List<RouterInterface> interfaces) {
+		List<RouterInterface> copy = new ArrayList<>();
+		for (RouterInterface iface : interfaces) {
+			copy.add(new RouterInterface(iface));
+		}
+		return copy;
 	}
 
 	@Override

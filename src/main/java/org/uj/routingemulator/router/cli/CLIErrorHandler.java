@@ -46,7 +46,7 @@ public class CLIErrorHandler {
 		if("Cannot assign network address to interface".equals(message)) {
 			String[] command = configPath.split(" ");
 			String ip = command[command.length - 1];
-			return new RuntimeException("\tError: %s is not a valid host IP host\n\n\n\tInvalid value\n\tValue validation failed\n\tSet failed\n\n[edit]".formatted(ip));
+			return new RuntimeException("\tError: %s is not a valid host IP host\n\n\n\tInvalid value\n\tValue validation failed\n\tSet failed".formatted(ip));
 		}
 
 		if (message != null && message.startsWith("Configuration path: [interfaces ethernet")) {

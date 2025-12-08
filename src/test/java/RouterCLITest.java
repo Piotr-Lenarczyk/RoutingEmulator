@@ -31,18 +31,21 @@ public class RouterCLITest {
 		System.setOut(originalOut);
 	}
 
+	private String normalizeOutput(String output) {
+		return output.replaceAll("\r", "");
+	}
+
 	/**
 	 * Test that 'configure' command changes router mode from OPERATIONAL to CONFIGURATION.
 	 */
 	@Test
 	void testConfigureCommandFromOperationalMode() {
-		// Given
-		router.setMode(RouterMode.OPERATIONAL);
+		
 
-		// When
+		
 		parser.executeCommand("configure", router);
 
-		// Then
+		
 		assertEquals(RouterMode.CONFIGURATION, router.getMode());
 		assertTrue(outputStream.toString().contains("[edit]"));
 	}
@@ -52,13 +55,13 @@ public class RouterCLITest {
 	 */
 	@Test
 	void testConfigureCommandFromConfigurationMode() {
-		// Given
-		router.setMode(RouterMode.CONFIGURATION);
+		
 
-		// When
+		
+		parser.executeCommand("configure", router);
 		parser.executeCommand("configure", router);
 
-		// Then
+		
 		assertEquals(RouterMode.CONFIGURATION, router.getMode());
 		String output = outputStream.toString();
 		assertTrue(output.contains("Invalid command: [configure]"));
@@ -70,13 +73,12 @@ public class RouterCLITest {
 	 */
 	@Test
 	void testConfigureCommandWithWhitespace() {
-		// Given
-		router.setMode(RouterMode.OPERATIONAL);
+		
 
-		// When
+		
 		parser.executeCommand("  configure  ", router);
 
-		// Then
+		
 		assertEquals(RouterMode.CONFIGURATION, router.getMode());
 		assertTrue(outputStream.toString().contains("[edit]"));
 	}
@@ -86,13 +88,12 @@ public class RouterCLITest {
 	 */
 	@Test
 	void testConfigureCommandCaseSensitive() {
-		// Given
-		router.setMode(RouterMode.OPERATIONAL);
+		
 
-		// When
+		
 		parser.executeCommand("Configure", router);
 
-		// Then
+		
 		assertEquals(RouterMode.OPERATIONAL, router.getMode());
 		assertTrue(outputStream.toString().contains("Command not recognized or not supported"));
 	}
@@ -102,14 +103,372 @@ public class RouterCLITest {
 	 */
 	@Test
 	void testConfigureCommandWithExtraParameters() {
-		// Given
-		router.setMode(RouterMode.OPERATIONAL);
+		
 
-		// When
+		
 		parser.executeCommand("configure something", router);
 
-		// Then
+		
 		assertEquals(RouterMode.OPERATIONAL, router.getMode());
+		assertTrue(outputStream.toString().contains("Command not recognized or not supported"));
+	}
+
+	@Test
+	void testExitCommandWithoutChanges() {
+		
+
+		
+		parser.executeCommand("configure", router);
+		outputStream.reset();
+		parser.executeCommand("exit", router);
+
+		
+		assertEquals(RouterMode.OPERATIONAL, router.getMode());
+		assertTrue(outputStream.toString().contains("exit"));
+	}
+	
+	@Test
+	void testExitCommandWithUncommittedChanges() {
+		parser.executeCommand("configure", router);
+		parser.executeCommand("set interfaces ethernet eth0 address 192.168.1.1/24", router);
+		outputStream.reset();
+		parser.executeCommand("exit", router);
+		assertEquals(RouterMode.CONFIGURATION, router.getMode());
+		String output = normalizeOutput(outputStream.toString());
+		assertTrue(output.contains("Cannot exit: configuration modified.\n" +
+				"Use 'exit discard' to discard the changes and exit.\n" +
+				"[edit]\n"));
+	}
+
+	@Test
+	void testExitDiscardCommandWithUncommittedChanges() {
+		parser.executeCommand("configure", router);
+		parser.executeCommand("set interfaces ethernet eth0 address 192.168.1.1/24", router);
+		outputStream.reset();
+		parser.executeCommand("exit discard", router);
+		assertEquals(RouterMode.OPERATIONAL, router.getMode());
+		assertTrue(outputStream.toString().contains("exit"));
+	}
+
+	@Test
+	void testCommitCommandWithChanges() {
+		parser.executeCommand("configure", router);
+		parser.executeCommand("set interfaces ethernet eth0 address 192.168.1.1/24", router);
+		outputStream.reset();
+
+		parser.executeCommand("commit", router);
+
+		assertFalse(router.hasUncommittedChanges());
+		assertTrue(outputStream.toString().contains("[edit]"));
+	}
+
+	@Test
+	void testCommitCommandWithoutChanges() {
+		parser.executeCommand("configure", router);
+		outputStream.reset();
+
+		parser.executeCommand("commit", router);
+
+		String output = normalizeOutput(outputStream.toString());
+		assertTrue(output.contains("No configuration changes to commit"));
+		assertTrue(output.contains("[edit]"));
+	}
+
+	@Test
+	void testCommitCommandInOperationalMode() {
+		outputStream.reset();
+
+		parser.executeCommand("commit", router);
+
+		String output = outputStream.toString();
+		assertTrue(output.contains("Invalid command: [commit]"));
+	}
+
+
+	@Test
+	void testSetRouteNextHop() {
+		parser.executeCommand("configure", router);
+		outputStream.reset();
+
+		parser.executeCommand("set protocols static route 192.168.1.0/24 next-hop 10.0.0.1", router);
+
+		assertTrue(router.hasUncommittedChanges());
+		assertTrue(outputStream.toString().contains("[edit]"));
+		assertEquals(1, router.getStagedRoutingTable().getRoutingEntries().size());
+	}
+
+	@Test
+	void testSetRouteNextHopWithDistance() {
+		parser.executeCommand("configure", router);
+		outputStream.reset();
+
+		parser.executeCommand("set protocols static route 192.168.1.0/24 next-hop 10.0.0.1 distance 50", router);
+
+		assertTrue(router.hasUncommittedChanges());
+		assertTrue(outputStream.toString().contains("[edit]"));
+		assertEquals(1, router.getStagedRoutingTable().getRoutingEntries().size());
+	}
+
+	@Test
+	void testSetRouteInterface() {
+		parser.executeCommand("configure", router);
+		outputStream.reset();
+
+		parser.executeCommand("set protocols static route 192.168.1.0/24 interface eth0", router);
+
+		assertTrue(router.hasUncommittedChanges());
+		assertTrue(outputStream.toString().contains("[edit]"));
+		assertEquals(1, router.getStagedRoutingTable().getRoutingEntries().size());
+	}
+
+	@Test
+	void testSetRouteInterfaceWithDistance() {
+		parser.executeCommand("configure", router);
+		outputStream.reset();
+
+		parser.executeCommand("set protocols static route 192.168.1.0/24 interface eth0 distance 100", router);
+
+		assertTrue(router.hasUncommittedChanges());
+		assertTrue(outputStream.toString().contains("[edit]"));
+		assertEquals(1, router.getStagedRoutingTable().getRoutingEntries().size());
+	}
+
+	@Test
+	void testSetDuplicateRouteShowsError() {
+		parser.executeCommand("configure", router);
+		parser.executeCommand("set protocols static route 192.168.1.0/24 next-hop 10.0.0.1", router);
+		outputStream.reset();
+
+		parser.executeCommand("set protocols static route 192.168.1.0/24 next-hop 10.0.0.1", router);
+
+		String output = normalizeOutput(outputStream.toString());
+		assertTrue(output.contains("Configuration path:"));
+		assertTrue(output.contains("already exists"));
+		assertFalse(output.contains("[edit]\n[edit]")); // Should not have double [edit]
+	}
+
+	@Test
+	void testDeleteRouteNextHop() {
+		parser.executeCommand("configure", router);
+		parser.executeCommand("set protocols static route 192.168.1.0/24 next-hop 10.0.0.1", router);
+		outputStream.reset();
+
+		parser.executeCommand("delete protocols static route 192.168.1.0/24 next-hop 10.0.0.1", router);
+
+		assertTrue(outputStream.toString().contains("[edit]"));
+		assertEquals(0, router.getStagedRoutingTable().getRoutingEntries().size());
+	}
+
+	@Test
+	void testDeleteRouteNextHopWithDistance() {
+		parser.executeCommand("configure", router);
+		parser.executeCommand("set protocols static route 192.168.1.0/24 next-hop 10.0.0.1 distance 50", router);
+		outputStream.reset();
+
+		parser.executeCommand("delete protocols static route 192.168.1.0/24 next-hop 10.0.0.1 distance 50", router);
+
+		assertTrue(outputStream.toString().contains("[edit]"));
+		assertEquals(0, router.getStagedRoutingTable().getRoutingEntries().size());
+	}
+
+	@Test
+	void testDeleteNonExistentRouteShowsError() {
+		parser.executeCommand("configure", router);
+		outputStream.reset();
+
+		parser.executeCommand("delete protocols static route 192.168.1.0/24 next-hop 10.0.0.1", router);
+
+		String output = normalizeOutput(outputStream.toString());
+		assertTrue(output.contains("Nothing to delete"));
+		assertFalse(output.endsWith("[edit]\n"));
+	}
+
+	@Test
+	void testDisableRouteNextHop() {
+		parser.executeCommand("configure", router);
+		parser.executeCommand("set protocols static route 192.168.1.0/24 next-hop 10.0.0.1", router);
+		outputStream.reset();
+
+		parser.executeCommand("set protocols static route 192.168.1.0/24 next-hop 10.0.0.1 disable", router);
+
+		assertTrue(outputStream.toString().contains("[edit]"));
+		assertTrue(router.getStagedRoutingTable().getRoutingEntries().get(0).isDisabled());
+	}
+
+	@Test
+	void testDisableRouteInterface() {
+		parser.executeCommand("configure", router);
+		parser.executeCommand("set protocols static route 192.168.1.0/24 interface eth0", router);
+		outputStream.reset();
+
+		parser.executeCommand("set protocols static route 192.168.1.0/24 interface eth0 disable", router);
+
+		assertTrue(outputStream.toString().contains("[edit]"));
+		assertTrue(router.getStagedRoutingTable().getRoutingEntries().get(0).isDisabled());
+	}
+
+	@Test
+	void testDisableAlreadyDisabledRouteShowsError() {
+		parser.executeCommand("configure", router);
+		parser.executeCommand("set protocols static route 192.168.1.0/24 next-hop 10.0.0.1", router);
+		parser.executeCommand("set protocols static route 192.168.1.0/24 next-hop 10.0.0.1 disable", router);
+		outputStream.reset();
+
+		parser.executeCommand("set protocols static route 192.168.1.0/24 next-hop 10.0.0.1 disable", router);
+
+		String output = normalizeOutput(outputStream.toString());
+		assertTrue(output.contains("already exists"));
+		assertFalse(output.endsWith("[edit]\n"));
+	}
+
+	@Test
+	void testSetInterfaceAddress() {
+		parser.executeCommand("configure", router);
+		outputStream.reset();
+
+		parser.executeCommand("set interfaces ethernet eth0 address 192.168.1.1/24", router);
+
+		assertTrue(router.hasUncommittedChanges());
+		assertTrue(outputStream.toString().contains("[edit]"));
+		assertNotNull(router.getStagedInterfaces().get(0).getSubnet());
+	}
+
+	@Test
+	void testSetInterfaceNetworkAddressShowsError() {
+		parser.executeCommand("configure", router);
+		outputStream.reset();
+
+		parser.executeCommand("set interfaces ethernet eth0 address 192.168.1.0/24", router);
+
+		String output = normalizeOutput(outputStream.toString());
+		assertTrue(output.contains("Error:"));
+		assertTrue(output.contains("is not a valid host IP"));
+		assertTrue(output.contains("Set failed"));
+		assertFalse(output.endsWith("[edit]\n"));
+	}
+
+	@Test
+	void testSetDuplicateInterfaceAddressShowsError() {
+		parser.executeCommand("configure", router);
+		parser.executeCommand("set interfaces ethernet eth0 address 192.168.1.1/24", router);
+		outputStream.reset();
+
+		parser.executeCommand("set interfaces ethernet eth0 address 192.168.1.1/24", router);
+
+		String output = normalizeOutput(outputStream.toString());
+		assertTrue(output.contains("Configuration path:"));
+		assertTrue(output.contains("already exists"));
+		assertFalse(output.endsWith("[edit]\n"));
+	}
+
+	@Test
+	void testDeleteInterfaceAddress() {
+		parser.executeCommand("configure", router);
+		parser.executeCommand("set interfaces ethernet eth0 address 192.168.1.1/24", router);
+		outputStream.reset();
+
+		parser.executeCommand("delete interfaces ethernet eth0 address 192.168.1.1/24", router);
+
+		assertTrue(outputStream.toString().contains("[edit]"));
+		assertNull(router.getStagedInterfaces().get(0).getSubnet());
+	}
+
+	@Test
+	void testDeleteNonExistentInterfaceAddressShowsError() {
+		parser.executeCommand("configure", router);
+		outputStream.reset();
+
+		parser.executeCommand("delete interfaces ethernet eth0 address 192.168.1.1/24", router);
+
+		String output = normalizeOutput(outputStream.toString());
+		assertTrue(output.contains("Nothing to delete"));
+		assertFalse(output.endsWith("[edit]\n"));
+	}
+
+	@Test
+	void testDisableInterface() {
+		parser.executeCommand("configure", router);
+		outputStream.reset();
+
+		parser.executeCommand("set interfaces ethernet eth0 disable", router);
+
+		assertTrue(outputStream.toString().contains("[edit]"));
+		assertTrue(router.hasUncommittedChanges());
+	}
+
+	@Test
+	void testSetRouteInOperationalModeShowsError() {
+		outputStream.reset();
+
+		parser.executeCommand("set protocols static route 192.168.1.0/24 next-hop 10.0.0.1", router);
+
+		String output = outputStream.toString();
+		assertTrue(output.contains("Invalid command: set [protocols]"));
+	}
+
+	@Test
+	void testSetInterfaceInOperationalModeShowsError() {
+		outputStream.reset();
+
+		parser.executeCommand("set interfaces ethernet eth0 address 192.168.1.1/24", router);
+
+		String output = outputStream.toString();
+		assertTrue(output.contains("Invalid command: set [interfaces]"));
+	}
+
+
+	@Test
+	void testFullWorkflowWithCommit() {
+		// Enter configuration mode
+		parser.executeCommand("configure", router);
+
+		// Add routes and configure interface
+		parser.executeCommand("set protocols static route 192.168.1.0/24 next-hop 10.0.0.1", router);
+		parser.executeCommand("set interfaces ethernet eth0 address 10.0.0.2/24", router);
+
+		assertTrue(router.hasUncommittedChanges());
+		assertEquals(1, router.getStagedRoutingTable().getRoutingEntries().size());
+		assertNotNull(router.getStagedInterfaces().get(0).getSubnet());
+
+		// Commit changes
+		parser.executeCommand("commit", router);
+
+		assertFalse(router.hasUncommittedChanges());
+		assertEquals(1, router.getRoutingTable().getRoutingEntries().size());
+		assertNotNull(router.getInterfaces().get(0).getSubnet());
+
+		// Exit to operational mode
+		parser.executeCommand("exit", router);
+
+		assertEquals(RouterMode.OPERATIONAL, router.getMode());
+	}
+
+	@Test
+	void testFullWorkflowWithDiscard() {
+		// Enter configuration mode
+		parser.executeCommand("configure", router);
+
+		// Add configuration
+		parser.executeCommand("set protocols static route 192.168.1.0/24 next-hop 10.0.0.1", router);
+		parser.executeCommand("set interfaces ethernet eth0 address 10.0.0.2/24", router);
+
+		assertTrue(router.hasUncommittedChanges());
+
+		// Exit with discard
+		parser.executeCommand("exit discard", router);
+
+		assertEquals(RouterMode.OPERATIONAL, router.getMode());
+		assertFalse(router.hasUncommittedChanges());
+		assertEquals(0, router.getRoutingTable().getRoutingEntries().size());
+		assertNull(router.getInterfaces().get(0).getSubnet());
+	}
+
+	@Test
+	void testUnrecognizedCommandShowsError() {
+		outputStream.reset();
+
+		parser.executeCommand("invalid command", router);
+
 		assertTrue(outputStream.toString().contains("Command not recognized or not supported"));
 	}
 }
