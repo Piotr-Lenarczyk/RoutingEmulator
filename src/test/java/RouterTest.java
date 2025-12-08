@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class RouterTest {
+class RouterTest {
 	@Test
 	void testDefaultRouterConstructor() {
 		Router router = new Router("Router");

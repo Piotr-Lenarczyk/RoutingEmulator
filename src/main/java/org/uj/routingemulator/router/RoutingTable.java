@@ -15,8 +15,17 @@ public class RoutingTable {
 		this.routingEntries = new ArrayList<>();
 	}
 
-	public RoutingTable(RoutingTable stagedRoutingTable) {
-		this.routingEntries = new ArrayList<>(stagedRoutingTable.getRoutingEntries());
+	/**
+	 * Copy constructor that creates a deep copy of the routing table.
+	 * Creates new StaticRoutingEntry objects to avoid sharing mutable state.
+	 *
+	 * @param other RoutingTable to copy
+	 */
+	public RoutingTable(RoutingTable other) {
+		this.routingEntries = new ArrayList<>();
+		for (StaticRoutingEntry entry : other.getRoutingEntries()) {
+			this.routingEntries.add(new StaticRoutingEntry(entry));
+		}
 	}
 
 	public void addRoute(StaticRoutingEntry entry) {

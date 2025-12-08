@@ -1,5 +1,8 @@
 package org.uj.routingemulator.router;
 
+import lombok.Getter;
+
+@Getter
 public enum LinkState {
 	UP('u'),
 	DOWN('D');
@@ -8,10 +11,6 @@ public enum LinkState {
 
 	LinkState(char code) {
 		this.code = code;
-	}
-
-	public char getCode() {
-		return code;
 	}
 
 	/**

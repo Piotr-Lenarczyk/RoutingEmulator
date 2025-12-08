@@ -6,6 +6,10 @@ package org.uj.routingemulator.router.cli;
  */
 public class CLIErrorHandler {
 
+	private CLIErrorHandler() {
+
+	}
+
 	/**
 	 * Handles RuntimeException from Router and formats it into a CLI-friendly message.
 	 *

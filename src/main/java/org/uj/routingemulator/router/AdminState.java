@@ -1,5 +1,8 @@
 package org.uj.routingemulator.router;
 
+import lombok.Getter;
+
+@Getter
 public enum AdminState {
 	UP('u'),
 	ADMIN_DOWN('A');
@@ -8,10 +11,6 @@ public enum AdminState {
 
 	AdminState(char code) {
 		this.code = code;
-	}
-
-	public char getCode() {
-		return code;
 	}
 
 	/**

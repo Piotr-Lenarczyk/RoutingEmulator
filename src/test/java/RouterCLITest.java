@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Tests for Router CLI commands.
  */
-public class RouterCLITest {
+class RouterCLITest {
 	private Router router;
 	private RouterCLIParser parser;
 	private final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -471,4 +471,31 @@ public class RouterCLITest {
 
 		assertTrue(outputStream.toString().contains("Command not recognized or not supported"));
 	}
+
+	@Test
+	void testDuplicateRouteAndInterfaceAfterCommitAndReconfigure() {
+		// First configuration session
+		parser.executeCommand("configure", router);
+		parser.executeCommand("set protocols static route 192.168.1.0/24 interface eth0", router);
+		parser.executeCommand("set interfaces ethernet eth0 address 192.168.1.255/24", router);
+		parser.executeCommand("commit", router);
+		parser.executeCommand("exit", router);
+
+		// Second configuration session - try to add the same route again
+		parser.executeCommand("configure", router);
+		outputStream.reset();
+		parser.executeCommand("set protocols static route 192.168.1.0/24 interface eth0", router);
+		String output = normalizeOutput(outputStream.toString());
+		assertTrue(output.contains("Configuration path:"));
+		assertTrue(output.contains("already exists"));
+		outputStream.reset();
+
+		// Try to configure the same interface address again - should show error
+		parser.executeCommand("set interfaces ethernet eth0 address 192.168.1.255/24", router);
+
+		output = normalizeOutput(outputStream.toString());
+		assertTrue(output.contains("Configuration path:"));
+		assertTrue(output.contains("already exists"));
+	}
+
 }

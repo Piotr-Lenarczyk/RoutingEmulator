@@ -50,6 +50,21 @@ public class StaticRoutingEntry {
 		this.administrativeDistance = administrativeDistance;
 	}
 
+	/**
+	 * Copy constructor for creating a deep copy of a StaticRoutingEntry.
+	 * Note: RouterInterface is not deep-copied as it may be intentionally shared.
+	 * Subnet and IPAddress are immutable so no copying is needed.
+	 *
+	 * @param other StaticRoutingEntry to copy
+	 */
+	public StaticRoutingEntry(StaticRoutingEntry other) {
+		this.subnet = other.subnet; // Immutable
+		this.nextHop = other.nextHop; // Immutable
+		this.routerInterface = other.routerInterface; // Intentionally shared reference
+		this.administrativeDistance = other.administrativeDistance;
+		this.isDisabled = other.isDisabled;
+	}
+
 	public void disable() {
 		this.isDisabled = true;
 	}

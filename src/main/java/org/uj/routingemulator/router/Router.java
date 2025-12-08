@@ -208,8 +208,8 @@ public class Router {
 		if (!hasUncommittedChanges) {
 			throw new RuntimeException("No configuration changes to commit");
 		}
-		this.routingTable = new RoutingTable(stagedRoutingTable);
-		this.interfaces = new ArrayList<>(stagedInterfaces);
+		this.interfaces = deepCopyInterfaces(stagedInterfaces);
+		this.routingTable = copyRoutingTableWithUpdatedInterfaces(stagedRoutingTable, stagedInterfaces, interfaces);
 		hasUncommittedChanges = false;
 	}
 
@@ -220,8 +220,8 @@ public class Router {
 		if (mode != RouterMode.CONFIGURATION) {
 			throw new RuntimeException("Invalid command: [discard]");
 		}
-		this.stagedRoutingTable = new RoutingTable(routingTable);
-		this.stagedInterfaces = new ArrayList<>(interfaces);
+		this.stagedInterfaces = deepCopyInterfaces(interfaces);
+		this.stagedRoutingTable = copyRoutingTableWithUpdatedInterfaces(routingTable, interfaces, stagedInterfaces);
 		hasUncommittedChanges = false;
 	}
 
@@ -242,11 +242,17 @@ public class Router {
 	/**
 	 * Changes router mode. In case of leaving configuration mode, checks for uncommitted changes. Uncommitted changes
 	 * will prevent exiting configuration mode.
+	 * When entering configuration mode, resets staged configuration to current committed state.
 	 * @param mode Target router mode
 	 */
 	public void setMode(RouterMode mode) {
 		if (this.mode == RouterMode.CONFIGURATION && hasUncommittedChanges) {
 			throw new RuntimeException("Cannot exit: configuration modified.\nUse 'exit discard' to discard the changes and exit.\n[edit]");
+		}
+		// When entering configuration mode, reset staged configuration to current committed state
+		if (mode == RouterMode.CONFIGURATION && this.mode == RouterMode.OPERATIONAL) {
+			this.stagedInterfaces = deepCopyInterfaces(this.interfaces);
+			this.stagedRoutingTable = copyRoutingTableWithUpdatedInterfaces(this.routingTable, this.interfaces, this.stagedInterfaces);
 		}
 		this.mode = mode;
 	}
@@ -279,20 +285,23 @@ public class Router {
 
 	/**
 	 * Finds a router interface by name.
+	 * Returns interface from staged configuration if in CONFIGURATION mode,
+	 * otherwise from committed configuration.
 	 *
 	 * @param interfaceName Name of the interface to find
 	 * @return RouterInterface object if found, null otherwise
 	 */
 	public RouterInterface findFromName(String interfaceName) {
-		return interfaces.stream()
+		List<RouterInterface> interfaceList = (mode == RouterMode.CONFIGURATION) ? stagedInterfaces : interfaces;
+		return interfaceList.stream()
 				.filter(intf -> intf.getInterfaceName().equals(interfaceName))
 				.findFirst()
 				.orElse(null);
 	}
 
 	/**
-	 * Creates a deep copy of the interface list.
-	 * Each RouterInterface is copied using its copy constructor.
+	/**
+	 * Creates a deep copy of interface list.
 	 *
 	 * @param interfaces List of interfaces to copy
 	 * @return A new list containing copies of all interfaces
@@ -303,6 +312,54 @@ public class Router {
 			copy.add(new RouterInterface(iface));
 		}
 		return copy;
+	}
+
+	/**
+	 * Copies a routing table while updating RouterInterface references.
+	 * Maps interface references from oldInterfaces to corresponding interfaces in newInterfaces.
+	 *
+	 * @param routingTable Original routing table
+	 * @param oldInterfaces Original interface list
+	 * @param newInterfaces New interface list to map to
+	 * @return New routing table with updated interface references
+	 */
+	private RoutingTable copyRoutingTableWithUpdatedInterfaces(
+			RoutingTable routingTable,
+			List<RouterInterface> oldInterfaces,
+			List<RouterInterface> newInterfaces) {
+
+		RoutingTable newTable = new RoutingTable();
+		for (StaticRoutingEntry entry : routingTable.getRoutingEntries()) {
+			StaticRoutingEntry newEntry;
+			if (entry.getRouterInterface() != null) {
+				// Find corresponding interface in newInterfaces
+				String interfaceName = entry.getRouterInterface().getInterfaceName();
+				RouterInterface newInterface = newInterfaces.stream()
+						.filter(intf -> intf.getInterfaceName().equals(interfaceName))
+						.findFirst()
+						.orElse(null);
+
+				// Create new entry with updated interface reference
+				if (entry.getAdministrativeDistance() == 1) {
+					newEntry = new StaticRoutingEntry(entry.getSubnet(), newInterface);
+				} else {
+					newEntry = new StaticRoutingEntry(entry.getSubnet(), newInterface, entry.getAdministrativeDistance());
+				}
+			} else {
+				// Next-hop route - just copy
+				if (entry.getAdministrativeDistance() == 1) {
+					newEntry = new StaticRoutingEntry(entry.getSubnet(), entry.getNextHop());
+				} else {
+					newEntry = new StaticRoutingEntry(entry.getSubnet(), entry.getNextHop(), entry.getAdministrativeDistance());
+				}
+			}
+			// Preserve disabled state
+			if (entry.isDisabled()) {
+				newEntry.disable();
+			}
+			newTable.addRoute(newEntry);
+		}
+		return newTable;
 	}
 
 	@Override

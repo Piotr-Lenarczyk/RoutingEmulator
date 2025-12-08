@@ -54,7 +54,7 @@ public class Subnet {
 		long ipAsLong = ((long) networkAddress.getOctet1() << 24) |
 		                ((long) networkAddress.getOctet2() << 16) |
 		                ((long) networkAddress.getOctet3() << 8) |
-		                ((long) networkAddress.getOctet4());
+		                (networkAddress.getOctet4());
 
 		// Check if all host bits are 0
 		return (ipAsLong & hostMask) == 0;
