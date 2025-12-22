@@ -5,13 +5,14 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.uj.routingemulator.common.MacAddress;
+import org.uj.routingemulator.common.NetworkInterface;
 import org.uj.routingemulator.common.Subnet;
 
 @Setter
 @Getter
 @EqualsAndHashCode
 @ToString
-public class RouterInterface {
+public class RouterInterface implements NetworkInterface {
 	private String interfaceName;
 	private Subnet subnet;
 	private MacAddress macAddress;

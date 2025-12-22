@@ -4,11 +4,19 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import org.uj.routingemulator.common.*;
+import org.uj.routingemulator.host.Host;
+import org.uj.routingemulator.host.HostInterface;
 import org.uj.routingemulator.router.Router;
+import org.uj.routingemulator.router.RouterInterface;
 import org.uj.routingemulator.router.RouterMode;
 import org.uj.routingemulator.router.cli.RouterCLIParser;
+import org.uj.routingemulator.switching.Switch;
+import org.uj.routingemulator.switching.SwitchPort;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 
@@ -26,16 +34,44 @@ public class Main /*extends Application*/ {
 		//launch();
 		RouterCLIParser parser = new RouterCLIParser();
 		Scanner scanner = new Scanner(System.in);
-		Router router = new Router("R1");
+		NetworkTopology topology = new NetworkTopology();
+		Host h1 = new Host("PC1", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 1, 1), new SubnetMask(24)), new IPAddress(192, 168, 1, 254)));
+		Host h2 = new Host("PC2", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 2, 1), new SubnetMask(24)), new IPAddress(192, 168, 2, 254)));
+		Host h3 = new Host("PC3", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 3, 1), new SubnetMask(24)), new IPAddress(192, 168, 3, 254)));
+		topology.addHost(h1);
+		topology.addHost(h2);
+		topology.addHost(h3);
+		Switch sw1 = new Switch("SW1", List.of(new SwitchPort("GigabitEthernet0/1"), new SwitchPort("GigabitEthernet0/2"), new SwitchPort("GigabitEthernet0/3"), new SwitchPort("GigabitEthernet0/4")));
+		Switch sw2 = new Switch("SW2", List.of(new SwitchPort("GigabitEthernet0/1"), new SwitchPort("GigabitEthernet0/2"), new SwitchPort("GigabitEthernet0/3"), new SwitchPort("GigabitEthernet0/4")));
+		Switch sw3 = new Switch("SW3", List.of(new SwitchPort("GigabitEthernet0/1"), new SwitchPort("GigabitEthernet0/2"), new SwitchPort("GigabitEthernet0/3"), new SwitchPort("GigabitEthernet0/4")));
+		topology.addSwitch(sw1);
+		topology.addSwitch(sw2);
+		topology.addSwitch(sw3);
+		Router r1 = new Router("R1", List.of(new RouterInterface("eth0"), new RouterInterface("eth1"), new RouterInterface("eth2")));
+		Router r2 = new Router("R2", List.of(new RouterInterface("eth0"), new RouterInterface("eth1"), new RouterInterface("eth2")));
+		Router r3 = new Router("R3", List.of(new RouterInterface("eth0"), new RouterInterface("eth1"), new RouterInterface("eth2")));
+		topology.addRouter(r1);
+		topology.addRouter(r2);
+		topology.addRouter(r3);
+		topology.addConnection(new Connection(h1.getHostInterface(), sw1.getPorts().getFirst()));
+		topology.addConnection(new Connection(h2.getHostInterface(), sw2.getPorts().getFirst()));
+		topology.addConnection(new Connection(h3.getHostInterface(), sw3.getPorts().getFirst()));
+		topology.addConnection(new Connection(sw1.getPorts().get(1), r1.getInterfaces().getFirst()));
+		topology.addConnection(new Connection(sw2.getPorts().get(1), r2.getInterfaces().getFirst()));
+		topology.addConnection(new Connection(sw3.getPorts().get(1), r3.getInterfaces().getFirst()));
+		topology.addConnection(new Connection(r1.getInterfaces().get(1), r2.getInterfaces().get(1)));
+		topology.addConnection(new Connection(r2.getInterfaces().get(2), r3.getInterfaces().get(1)));
+		topology.addConnection(new Connection(r3.getInterfaces().get(2), r1.getInterfaces().get(2)));
+		System.out.println(topology.visualize());
 		String input = "";
 		while (!input.equals("q")) {
-			if (router.getMode() == RouterMode.OPERATIONAL) {
+			if (r1.getMode() == RouterMode.OPERATIONAL) {
 				System.out.print("vyos@vyos$ ");
-			} else if (router.getMode() == RouterMode.CONFIGURATION) {
+			} else if (r1.getMode() == RouterMode.CONFIGURATION) {
 				System.out.print("vyos@vyos# ");
 			}
 			input = scanner.nextLine();
-			parser.executeCommand(input, router);
+			parser.executeCommand(input, r1);
 		}
 	}
 }
