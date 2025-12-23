@@ -3,12 +3,26 @@ package org.uj.routingemulator.common;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
+/**
+ * Represents a network subnet (network address + subnet mask).
+ * The network address should always have all host bits set to 0.
+ * For example: 192.168.1.0/24, 10.0.0.0/8, etc.
+ *
+ * <p>This is distinct from {@link InterfaceAddress} which represents
+ * an IP address assigned to an interface.
+ */
 @Getter
 @EqualsAndHashCode
 public class Subnet {
-	private IPAddress networkAddress;
-	private SubnetMask subnetMask;
+	private final IPAddress networkAddress;
+	private final SubnetMask subnetMask;
 
+	/**
+	 * Creates a subnet with the given network address and mask.
+	 *
+	 * @param networkAddress the network address (should have host bits = 0)
+	 * @param subnetMask the subnet mask
+	 */
 	public Subnet(IPAddress networkAddress, SubnetMask subnetMask) {
 		this.networkAddress = networkAddress;
 		this.subnetMask = subnetMask;
@@ -35,13 +49,13 @@ public class Subnet {
 	 * Checks if the network address is actually a network address (all host bits are 0).
 	 * For example, 192.168.1.0/24 is a network address, but 192.168.1.1/24 is not.
 	 *
-	 * @return true if this is a network address, false otherwise
+	 * @return true if this is a valid network address, false otherwise
 	 */
-	public boolean isNetworkAddress() {
+	public boolean isValidNetworkAddress() {
 		int prefixLength = subnetMask.getShortMask();
 		if (prefixLength == 32) {
-			// /32 is a host address, not a network address
-			return false;
+			// /32 is a host route, but technically valid
+			return true;
 		}
 
 		// Calculate the number of host bits
@@ -62,6 +76,6 @@ public class Subnet {
 
 	@Override
 	public String toString() {
-		return networkAddress.toString() + "/" + subnetMask.toString();
+		return networkAddress.toString() + "/" + subnetMask.getShortMask();
 	}
 }

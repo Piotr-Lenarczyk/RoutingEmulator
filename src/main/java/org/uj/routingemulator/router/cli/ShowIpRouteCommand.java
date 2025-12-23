@@ -24,7 +24,7 @@ public class ShowIpRouteCommand implements RouterCommand {
 		}
 
 		String output = router.showIpRoute();
-		System.out.print(output);
+		System.out.println(output);
 	}
 
 	@Override

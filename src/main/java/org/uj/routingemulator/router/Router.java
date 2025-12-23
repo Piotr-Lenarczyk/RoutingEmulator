@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import org.uj.routingemulator.common.InterfaceAddress;
 import org.uj.routingemulator.common.IPAddress;
 import org.uj.routingemulator.common.Subnet;
 
@@ -132,18 +133,32 @@ public class Router {
 	}
 
 	/**
-	 * Configures a router interface in the staged configuration.
+	 * Configures a router interface with an IP address in the staged configuration.
 	 * @param routerInterfaceName Name of the router interface to be configured
-	 * @param subnet Subnet to be assigned to the interface
+	 * @param interfaceAddress IP address and mask to be assigned to the interface
 	 */
-	public void configureInterface(String routerInterfaceName, Subnet subnet) {
+	public void configureInterface(String routerInterfaceName, InterfaceAddress interfaceAddress) {
 		if (mode != RouterMode.CONFIGURATION) {
 			throw new RuntimeException("Invalid command: set [interfaces]");
 		}
 
-		// Reject network addresses (e.g., 192.168.1.0/24, 10.0.0.0/16)
-		if (subnet.isNetworkAddress()) {
-			throw new RuntimeException("Cannot assign network address to interface");
+		// Provide validation with concise error messages
+		if (interfaceAddress.isNetworkAddress()) {
+			throw new RuntimeException(
+				String.format("Cannot assign network address %s to the interface. Use a host address instead",
+					interfaceAddress)
+			);
+		}
+
+		if (interfaceAddress.isBroadcastAddress()) {
+			throw new RuntimeException(
+				String.format("Cannot assign broadcast address %s to the interface. Use a host address instead",
+					interfaceAddress)
+			);
+		}
+
+		if (!interfaceAddress.isValidHostAddress()) {
+			throw new RuntimeException(interfaceAddress + " is not a valid host IP address");
 		}
 
 		RouterInterface routerInterface = stagedInterfaces.stream()
@@ -151,8 +166,8 @@ public class Router {
 				.findFirst()
 				.orElseThrow(() -> new RuntimeException("WARN: interface %s does not exist, changes will not be commited".formatted(routerInterfaceName)));
 
-		if (routerInterface.getSubnet() == null || !routerInterface.getSubnet().equals(subnet)) {
-			routerInterface.setSubnet(subnet);
+		if (routerInterface.getInterfaceAddress() == null || !routerInterface.getInterfaceAddress().equals(interfaceAddress)) {
+			routerInterface.setInterfaceAddress(interfaceAddress);
 			hasUncommittedChanges = true;
 		} else {
 			throw new RuntimeException("Configuration already exists");
@@ -191,11 +206,11 @@ public class Router {
 				.findFirst()
 				.orElseThrow(() -> new RuntimeException("WARN: interface %s does not exist, changes will not be commited".formatted(routerInterfaceName)));
 
-		if (routerInterface.getSubnet() == null) {
+		if (routerInterface.getInterfaceAddress() == null) {
 			throw new RuntimeException("No value to delete");
 		}
 
-		routerInterface.setSubnet(null);
+		routerInterface.setInterfaceAddress(null);
 		hasUncommittedChanges = true;
 	}
 
@@ -395,11 +410,8 @@ public class Router {
 			    iface.getStatus().getAdmin().toString().equals("UP") &&
 			    iface.getStatus().getLink().toString().equals("UP")) {
 
-				// Create network address for the connected subnet
-				Subnet connectedNetwork = new Subnet(
-					iface.getSubnet().getNetworkAddress(),
-					iface.getSubnet().getSubnetMask()
-				);
+				// getSubnet() now returns the actual network subnet from the interface address
+				Subnet connectedNetwork = iface.getSubnet();
 
 				displayEntries.add(new RouteDisplayEntry(
 					"C",

@@ -1,6 +1,6 @@
 package org.uj.routingemulator.router.cli.ethernet;
 
-import org.uj.routingemulator.common.Subnet;
+import org.uj.routingemulator.common.InterfaceAddress;
 import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.cli.CLIErrorHandler;
 import org.uj.routingemulator.router.cli.RouterCommand;
@@ -13,16 +13,16 @@ public class SetInterfaceEthernetCommand implements RouterCommand {
 			"set\\s+interfaces\\s+ethernet\\s+(\\S+)\\s+address\\s+(\\S+)"
 	);
 	private String routerInterfaceName;
-	private String subnet;
+	private String address;
 
 	@Override
 	public void execute(Router router) {
 		try {
-			router.configureInterface(routerInterfaceName, Subnet.fromString(subnet));
+			router.configureInterface(routerInterfaceName, InterfaceAddress.fromString(address));
 			System.out.println("[edit]");
 		} catch (RuntimeException e) {
 			throw CLIErrorHandler.handleInterfaceException(e,
-				CLIErrorHandler.formatSetInterfaceEthernet(routerInterfaceName, subnet));
+				CLIErrorHandler.formatSetInterfaceEthernet(routerInterfaceName, address));
 		}
 	}
 
@@ -31,7 +31,7 @@ public class SetInterfaceEthernetCommand implements RouterCommand {
 		Matcher matcher = PATTERN.matcher(command.trim());
 		if (matcher.matches()) {
 			routerInterfaceName = matcher.group(1);
-			subnet = matcher.group(2);
+			address = matcher.group(2);
 			return true;
 		}
 		return false;
