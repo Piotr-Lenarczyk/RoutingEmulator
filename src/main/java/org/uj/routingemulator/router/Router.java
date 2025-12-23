@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import org.uj.routingemulator.common.IPAddress;
 import org.uj.routingemulator.common.Subnet;
 
 import java.util.ArrayList;
@@ -360,6 +361,139 @@ public class Router {
 			newTable.addRoute(newEntry);
 		}
 		return newTable;
+	}
+
+	/**
+	 * Displays the IP routing table in VyOS format.
+	 * Shows both static routes and connected routes (directly connected networks).
+	 * Must be executed in OPERATIONAL mode.
+	 *
+	 * @return Formatted routing table output
+	 */
+	public String showIpRoute() {
+		if (mode != RouterMode.OPERATIONAL) {
+			throw new RuntimeException("Invalid command: show [ip]");
+		}
+
+		StringBuilder output = new StringBuilder();
+
+		// Legend (copied from VyOS)
+		output.append("Codes: K - kernel route, C - connected, S - static, R - RIP,\n");
+		output.append("       O - OSPF, I - IS-IS, B - BGP, E - EIGRP, N - NHRP,\n");
+		output.append("       T - Table, v - VNC, V - VNC-Direct, A - Babel, F - PBR,\n");
+		output.append("       f - OpenFabric,\n");
+		output.append("       > - selected route, * - FIB route, q - queued, r - rejected, b - backup\n");
+		output.append("       t - trapped, o - offload failure\n\n");
+
+		// Collect all routes (static + connected)
+		List<RouteDisplayEntry> displayEntries = new ArrayList<>();
+
+		// Add connected routes (directly connected networks from configured interfaces)
+		for (RouterInterface iface : interfaces) {
+			if (iface.getSubnet() != null &&
+			    iface.getStatus() != null &&
+			    iface.getStatus().getAdmin().toString().equals("UP") &&
+			    iface.getStatus().getLink().toString().equals("UP")) {
+
+				// Create network address for the connected subnet
+				Subnet connectedNetwork = new Subnet(
+					iface.getSubnet().getNetworkAddress(),
+					iface.getSubnet().getSubnetMask()
+				);
+
+				displayEntries.add(new RouteDisplayEntry(
+					"C",
+					connectedNetwork,
+					null,
+					iface.getInterfaceName(),
+					0,
+					false,
+					true
+				));
+			}
+		}
+
+		// Add static routes
+		for (StaticRoutingEntry entry : routingTable.getRoutingEntries()) {
+			displayEntries.add(new RouteDisplayEntry(
+				"S",
+				entry.getSubnet(),
+				entry.getNextHop(),
+				entry.getRouterInterface() != null ? entry.getRouterInterface().getInterfaceName() : null,
+				entry.getAdministrativeDistance(),
+				entry.isDisabled(),
+				false
+			));
+		}
+
+		// Sort routes by subnet (network address, then mask length)
+		displayEntries.sort((a, b) -> {
+			int addrCompare = a.subnet.getNetworkAddress().toString()
+				.compareTo(b.subnet.getNetworkAddress().toString());
+			if (addrCompare != 0) return addrCompare;
+			return Integer.compare(
+				b.subnet.getSubnetMask().getShortMask(),
+				a.subnet.getSubnetMask().getShortMask()
+			);
+		});
+
+		// Display routes
+		for (RouteDisplayEntry entry : displayEntries) {
+			if (entry.isDisabled) {
+				// Disabled routes are not shown in routing table
+				continue;
+			}
+
+			String prefix = entry.isConnected ? "C>*" : "S>*";
+			output.append(prefix).append(" ");
+			output.append(entry.subnet.getNetworkAddress()).append("/");
+			output.append(entry.subnet.getSubnetMask().getShortMask());
+
+			if (entry.isConnected) {
+				// Connected routes - actually connected to the interface
+				output.append(" is directly connected, ").append(entry.interfaceName);
+			} else {
+				// Static routes
+				output.append(" [").append(entry.distance).append("]");
+				if (entry.nextHop != null) {
+					// Static route with next-hop
+					output.append(" via ").append(entry.nextHop);
+					if (entry.interfaceName != null) {
+						output.append(", ").append(entry.interfaceName);
+					}
+				} else if (entry.interfaceName != null) {
+					// Static route via interface (not "directly connected")
+					output.append(" via ").append(entry.interfaceName);
+				}
+			}
+			output.append("\n");
+		}
+
+		return output.toString();
+	}
+
+	/**
+	 * Helper class for displaying routing table entries.
+	 */
+	private static class RouteDisplayEntry {
+		String type; // "C" for connected, "S" for static
+		Subnet subnet;
+		IPAddress nextHop;
+		String interfaceName;
+		int distance;
+		boolean isDisabled;
+		boolean isConnected;
+
+		RouteDisplayEntry(String type, Subnet subnet, IPAddress nextHop,
+		                  String interfaceName, int distance, boolean isDisabled, boolean isConnected) {
+			this.type = type;
+			this.subnet = subnet;
+			this.nextHop = nextHop;
+			this.interfaceName = interfaceName;
+			this.distance = distance;
+			this.isDisabled = isDisabled;
+			this.isConnected = isConnected;
+		}
 	}
 
 	@Override

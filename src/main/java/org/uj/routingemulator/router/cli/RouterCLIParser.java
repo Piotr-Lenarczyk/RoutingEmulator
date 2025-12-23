@@ -22,6 +22,9 @@ public class RouterCLIParser {
 	 * Order is important: more specific patterns must be registered before general ones.
 	 */
 	private void registerCommands() {
+		// Show commands (should be early to avoid conflicts)
+		commands.add(new ShowIpRouteCommand());
+		// Configuration mode commands
 		commands.add(new ConfigureCommand());
 		commands.add(new CommitCommand());
 		commands.add(new ExitCommand());
