@@ -6,7 +6,9 @@ module org.example.thesisuj {
 
 
 	opens org.uj.routingemulator to javafx.fxml;
+	opens org.uj.routingemulator.gui to javafx.fxml;
 	exports org.uj.routingemulator;
+	exports org.uj.routingemulator.gui;
 	exports org.uj.routingemulator.host;
 	opens org.uj.routingemulator.host to javafx.fxml;
 	exports org.uj.routingemulator.router;

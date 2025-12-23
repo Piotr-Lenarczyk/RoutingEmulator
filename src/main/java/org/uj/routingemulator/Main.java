@@ -15,26 +15,42 @@ import org.uj.routingemulator.switching.Switch;
 import org.uj.routingemulator.switching.SwitchPort;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * Main application class for the Network Routing Emulator.
+ * Provides both GUI and CLI interfaces for network topology management and router configuration.
+ */
+public class Main extends Application {
 
-public class Main /*extends Application*/ {
-	//@Override
+	@Override
 	public void start(Stage stage) throws IOException {
-		FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("hello-view.fxml"));
-		Scene scene = new Scene(fxmlLoader.load(), 320, 240);
-		stage.setTitle("Hello!");
+		FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("network-topology-view.fxml"));
+		Scene scene = new Scene(fxmlLoader.load(), 1200, 800);
+		stage.setTitle("Network Routing Emulator - VyOS");
 		stage.setScene(scene);
 		stage.show();
 	}
 
 	public static void main(String[] args) {
-		//launch();
+		// Check if CLI mode is requested
+		if (args.length > 0 && args[0].equals("--cli")) {
+			runCLIMode();
+		} else {
+			// Launch GUI
+			launch();
+		}
+	}
+
+	/**
+	 * Runs the application in CLI-only mode for testing purposes.
+	 */
+	private static void runCLIMode() {
 		RouterCLIParser parser = new RouterCLIParser();
 		Scanner scanner = new Scanner(System.in);
 		NetworkTopology topology = new NetworkTopology();
+
 		Host h1 = new Host("PC1", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 1, 1), new SubnetMask(24)), new IPAddress(192, 168, 1, 254)));
 		Host h2 = new Host("PC2", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 2, 1), new SubnetMask(24)), new IPAddress(192, 168, 2, 254)));
 		Host h3 = new Host("PC3", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 3, 1), new SubnetMask(24)), new IPAddress(192, 168, 3, 254)));
@@ -77,3 +93,4 @@ public class Main /*extends Application*/ {
 		}
 	}
 }
+

@@ -30,4 +30,21 @@ public class HostInterface implements NetworkInterface {
 		this.macAddress = new MacAddress();
 		this.defaultGateway = defaultGateway;
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("HostInterface(interfaceName=").append(interfaceName);
+		if (subnet != null) {
+			sb.append(", subnet=").append(subnet);
+		}
+		if (macAddress != null) {
+			sb.append(", macAddress=").append(macAddress);
+		}
+		if (defaultGateway != null) {
+			sb.append(", defaultGateway=").append(defaultGateway);
+		}
+		sb.append(")");
+		return sb.toString();
+	}
 }

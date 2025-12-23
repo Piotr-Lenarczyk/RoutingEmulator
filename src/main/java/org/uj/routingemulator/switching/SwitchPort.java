@@ -30,4 +30,18 @@ public class SwitchPort implements NetworkInterface {
 		this.subnet = null;
 		this.macAddress = new MacAddress();
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("SwitchPort(interfaceName=").append(interfaceName);
+		if (subnet != null) {
+			sb.append(", subnet=").append(subnet);
+		}
+		if (macAddress != null) {
+			sb.append(", macAddress=").append(macAddress);
+		}
+		sb.append(")");
+		return sb.toString();
+	}
 }
