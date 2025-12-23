@@ -12,4 +12,5 @@ module org.example.thesisuj {
 	exports org.uj.routingemulator.router;
 	exports org.uj.routingemulator.router.cli;
 	exports org.uj.routingemulator.common;
+	exports org.uj.routingemulator.switching;
 }

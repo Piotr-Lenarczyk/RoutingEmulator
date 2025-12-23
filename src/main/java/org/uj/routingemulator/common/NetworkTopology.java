@@ -79,14 +79,26 @@ public class NetworkTopology {
 	}
 
 	public void removeHost(Host host) {
+		connections.removeIf(conn ->
+				conn.getInterfaceA().equals(host.getHostInterface()) ||
+				conn.getInterfaceB().equals(host.getHostInterface())
+		);
 		this.hosts.remove(host);
 	}
 
 	public void removeSwitch(Switch sw) {
+		connections.removeIf(conn ->
+			sw.getPorts().stream().anyMatch(port -> port.equals(conn.getInterfaceA())) ||
+			sw.getPorts().stream().anyMatch(port -> port.equals(conn.getInterfaceB()))
+		);
 		this.switches.remove(sw);
 	}
 
 	public void removeRouter(Router router) {
+		connections.removeIf(conn ->
+			router.getInterfaces().stream().anyMatch(iface -> iface.equals(conn.getInterfaceA())) ||
+			router.getInterfaces().stream().anyMatch(iface -> iface.equals(conn.getInterfaceB()))
+		);
 		this.routers.remove(router);
 	}
 
@@ -97,14 +109,14 @@ public class NetworkTopology {
 	private String getDeviceName(NetworkInterface iface) {
 		// Check routers
 		for (Router router : routers) {
-			if (router.getInterfaces().contains(iface)) {
+			if (router.getInterfaces().stream().anyMatch(i -> i.equals(iface))) {
 				return router.getName();
 			}
 		}
 
 		// Check switches
 		for (Switch sw : switches) {
-			if (sw.getPorts().contains(iface)) {
+			if (sw.getPorts().stream().anyMatch(port -> port.equals(iface))) {
 				return sw.getName();
 			}
 		}

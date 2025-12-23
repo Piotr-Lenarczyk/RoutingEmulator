@@ -63,6 +63,8 @@ public class Main /*extends Application*/ {
 		topology.addConnection(new Connection(r2.getInterfaces().get(2), r3.getInterfaces().get(1)));
 		topology.addConnection(new Connection(r3.getInterfaces().get(2), r1.getInterfaces().get(2)));
 		System.out.println(topology.visualize());
+		topology.removeHost(h1);
+		System.out.println(topology.visualize());
 		String input = "";
 		while (!input.equals("q")) {
 			if (r1.getMode() == RouterMode.OPERATIONAL) {
