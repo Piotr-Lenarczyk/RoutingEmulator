@@ -341,9 +341,11 @@ class RouterCLITest {
 		parser.executeCommand("set interfaces ethernet eth0 address 192.168.1.0/24", router);
 
 		String output = normalizeOutput(outputStream.toString());
-		assertTrue(output.contains("not a valid host IP") || output.contains("Error") || output.contains("network address"),
-			"Should contain error about invalid host IP");
-		assertFalse(output.endsWith("[edit]\n"));
+		assertTrue(output.contains("network address") || output.contains("Network addresses"),
+			"Should contain error about network address");
+		assertTrue(output.contains("host address") || output.contains("Use a host address"),
+			"Should suggest using a host address");
+		assertFalse(output.endsWith("[edit]\n"), "Should not show [edit] on error");
 	}
 
 	@Test
@@ -354,9 +356,9 @@ class RouterCLITest {
 		parser.executeCommand("set interfaces ethernet eth0 address 192.168.1.255/24", router);
 
 		String output = normalizeOutput(outputStream.toString());
-		assertTrue(output.contains("Cannot assign broadcast address") || output.contains("broadcast"),
+		assertTrue(output.contains("broadcast address") || output.contains("broadcast"),
 			"Should contain error about broadcast address");
-		assertTrue(output.contains("Use a host address instead") || output.contains("host address"),
+		assertTrue(output.contains("host address") || output.contains("Use a host address"),
 			"Should suggest using a host address");
 		assertFalse(output.endsWith("[edit]\n"), "Should not show [edit] on error");
 	}

@@ -2,7 +2,9 @@ package org.uj.routingemulator.common;
 
 import lombok.*;
 import org.uj.routingemulator.host.Host;
+import org.uj.routingemulator.router.AdminState;
 import org.uj.routingemulator.router.Router;
+import org.uj.routingemulator.router.RouterInterface;
 import org.uj.routingemulator.switching.Switch;
 
 import java.util.ArrayList;
@@ -311,10 +313,10 @@ public class NetworkTopology {
 		NetworkInterface neighbor = conn.getNeighborInterface(iface);
 
 		// If neighbor is a RouterInterface, check if it's administratively up
-		if (neighbor instanceof org.uj.routingemulator.router.RouterInterface) {
-			org.uj.routingemulator.router.RouterInterface routerNeighbor =
-				(org.uj.routingemulator.router.RouterInterface) neighbor;
-			return routerNeighbor.getStatus().getAdmin() == org.uj.routingemulator.router.AdminState.UP;
+		if (neighbor instanceof RouterInterface) {
+			RouterInterface routerNeighbor =
+				(RouterInterface) neighbor;
+			return routerNeighbor.getStatus().getAdmin() == AdminState.UP;
 		}
 
 		// For other interface types (Switch, Host), assume they're always up
@@ -329,9 +331,9 @@ public class NetworkTopology {
 	 * @param iface the interface to update
 	 */
 	private void updateInterfaceLinkState(NetworkInterface iface) {
-		if (iface instanceof org.uj.routingemulator.router.RouterInterface) {
-			org.uj.routingemulator.router.RouterInterface routerIface =
-				(org.uj.routingemulator.router.RouterInterface) iface;
+		if (iface instanceof RouterInterface) {
+			RouterInterface routerIface =
+				(RouterInterface) iface;
 			routerIface.updateLinkState(this);
 		}
 	}

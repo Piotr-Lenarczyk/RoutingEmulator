@@ -1,5 +1,4 @@
 import org.uj.routingemulator.common.InterfaceAddress;
-import org.uj.routingemulator.common.InterfaceAddress;
 import org.uj.routingemulator.common.IPAddress;
 import org.uj.routingemulator.common.Subnet;
 import org.uj.routingemulator.common.SubnetMask;

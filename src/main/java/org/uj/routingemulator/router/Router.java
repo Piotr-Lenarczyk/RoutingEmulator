@@ -7,6 +7,7 @@ import lombok.Setter;
 import org.uj.routingemulator.common.InterfaceAddress;
 import org.uj.routingemulator.common.IPAddress;
 import org.uj.routingemulator.common.Subnet;
+import org.uj.routingemulator.router.exceptions.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,13 +80,15 @@ public class Router {
 	/**
 	 * Adds a new static route to the routing table.
 	 * @param entry Static routing entry to be added
+	 * @throws InvalidModeException if not in CONFIGURATION mode
+	 * @throws DuplicateConfigurationException if route already exists
 	 */
 	public void addRoute(StaticRoutingEntry entry) {
 		if (mode != RouterMode.CONFIGURATION) {
-			throw new RuntimeException("Invalid command: set [protocols]");
+			throw new InvalidModeException("Invalid command: set [protocols]");
 		}
 		if (stagedRoutingTable.contains(entry)) {
-			throw new RuntimeException("Route already exists");
+			throw new DuplicateConfigurationException("Route already exists");
 		}
 		this.stagedRoutingTable.addRoute(entry);
 		hasUncommittedChanges = true;
@@ -94,13 +97,15 @@ public class Router {
 	/**
 	 * Removes a static route from the routing table.
 	 * @param entry Static routing entry to be removed
+	 * @throws InvalidModeException if not in CONFIGURATION mode
+	 * @throws ConfigurationNotFoundException if route doesn't exist
 	 */
 	public void removeRoute(StaticRoutingEntry entry) {
 		if (mode != RouterMode.CONFIGURATION) {
-			throw new RuntimeException("Invalid command: delete [protocols]");
+			throw new InvalidModeException("Invalid command: delete [protocols]");
 		}
 		if (!stagedRoutingTable.getRoutingEntries().contains(entry)) {
-			throw new RuntimeException("Nothing to delete");
+			throw new ConfigurationNotFoundException("Nothing to delete");
 		}
 		this.stagedRoutingTable.getRoutingEntries().remove(entry);
 		hasUncommittedChanges = true;
@@ -112,21 +117,24 @@ public class Router {
 	 * If the route is already disabled -> throws "Route already exists" (duplicate configuration).
 	 *
 	 * @param entry routing entry to disable (matches by subnet/nextHop/interface/distance)
+	 * @throws InvalidModeException if not in CONFIGURATION mode
+	 * @throws ConfigurationNotFoundException if route doesn't exist
+	 * @throws DuplicateConfigurationException if route is already disabled
 	 */
 	public void disableRoute(StaticRoutingEntry entry) {
 		if (mode != RouterMode.CONFIGURATION) {
-			throw new RuntimeException("Invalid command: set [protocols]");
+			throw new InvalidModeException("Invalid command: set [protocols]");
 		}
 		// Find existing entry by equality (equals ignores isDisabled)
 		List<StaticRoutingEntry> entries = stagedRoutingTable.getRoutingEntries();
 		int idx = entries.indexOf(entry);
 		if (idx == -1) {
-			throw new RuntimeException("Route not found");
+			throw new ConfigurationNotFoundException("Route not found");
 		}
 		StaticRoutingEntry existing = entries.get(idx);
 		if (existing.isDisabled()) {
 			// disabling an already-disabled route is a duplicate configuration
-			throw new RuntimeException("Route already exists");
+			throw new DuplicateConfigurationException("Route already exists");
 		}
 		existing.disable();
 		hasUncommittedChanges = true;
@@ -136,57 +144,63 @@ public class Router {
 	 * Configures a router interface with an IP address in the staged configuration.
 	 * @param routerInterfaceName Name of the router interface to be configured
 	 * @param interfaceAddress IP address and mask to be assigned to the interface
+	 * @throws InvalidModeException if not in CONFIGURATION mode
+	 * @throws InvalidAddressException if the address is invalid (network/broadcast address)
+	 * @throws InterfaceNotFoundException if the interface doesn't exist
+	 * @throws DuplicateConfigurationException if the interface already has this address
 	 */
 	public void configureInterface(String routerInterfaceName, InterfaceAddress interfaceAddress) {
 		if (mode != RouterMode.CONFIGURATION) {
-			throw new RuntimeException("Invalid command: set [interfaces]");
+			throw new InvalidModeException("Invalid command: set [interfaces]");
 		}
 
 		// Provide validation with concise error messages
 		if (interfaceAddress.isNetworkAddress()) {
-			throw new RuntimeException(
+			throw new InvalidAddressException(
 				String.format("Cannot assign network address %s to the interface. Use a host address instead",
 					interfaceAddress)
 			);
 		}
 
 		if (interfaceAddress.isBroadcastAddress()) {
-			throw new RuntimeException(
+			throw new InvalidAddressException(
 				String.format("Cannot assign broadcast address %s to the interface. Use a host address instead",
 					interfaceAddress)
 			);
 		}
 
 		if (!interfaceAddress.isValidHostAddress()) {
-			throw new RuntimeException(interfaceAddress + " is not a valid host IP address");
+			throw new InvalidAddressException(interfaceAddress + " is not a valid host IP address");
 		}
 
 		RouterInterface routerInterface = stagedInterfaces.stream()
 				.filter(intf -> intf.getInterfaceName().equals(routerInterfaceName))
 				.findFirst()
-				.orElseThrow(() -> new RuntimeException("WARN: interface %s does not exist, changes will not be commited".formatted(routerInterfaceName)));
+				.orElseThrow(() -> new InterfaceNotFoundException("WARN: interface %s does not exist, changes will not be commited".formatted(routerInterfaceName)));
 
 		if (routerInterface.getInterfaceAddress() == null || !routerInterface.getInterfaceAddress().equals(interfaceAddress)) {
 			routerInterface.setInterfaceAddress(interfaceAddress);
 			hasUncommittedChanges = true;
 		} else {
-			throw new RuntimeException("Configuration already exists");
+			throw new DuplicateConfigurationException("Configuration already exists");
 		}
 	}
 
 	/**
 	 * Disables a router interface in the staged configuration.
 	 * @param routerInterfaceName Name of the router interface to be disabled
+	 * @throws InvalidModeException if not in CONFIGURATION mode
+	 * @throws InterfaceNotFoundException if the interface doesn't exist
 	 */
 	public void disableInterface(String routerInterfaceName) {
 		if (mode != RouterMode.CONFIGURATION) {
-			throw new RuntimeException("Invalid command: set [interfaces]");
+			throw new InvalidModeException("Invalid command: set [interfaces]");
 		}
 
 		RouterInterface routerInterface = stagedInterfaces.stream()
 				.filter(intf -> intf.getInterfaceName().equals(routerInterfaceName))
 				.findFirst()
-				.orElseThrow(() -> new RuntimeException("WARN: interface %s does not exist, changes will not be commited".formatted(routerInterfaceName)));
+				.orElseThrow(() -> new InterfaceNotFoundException("WARN: interface %s does not exist, changes will not be commited".formatted(routerInterfaceName)));
 
 		routerInterface.disable();
 		hasUncommittedChanges = true;
@@ -195,19 +209,22 @@ public class Router {
 	/**
 	 * Removes an address from a router interface in the staged configuration.
 	 * @param routerInterfaceName Name of the router interface
+	 * @throws InvalidModeException if not in CONFIGURATION mode
+	 * @throws InterfaceNotFoundException if the interface doesn't exist
+	 * @throws ConfigurationNotFoundException if the interface has no address to delete
 	 */
 	public void deleteInterfaceAddress(String routerInterfaceName) {
 		if (mode != RouterMode.CONFIGURATION) {
-			throw new RuntimeException("Invalid command: delete [interfaces]");
+			throw new InvalidModeException("Invalid command: delete [interfaces]");
 		}
 
 		RouterInterface routerInterface = stagedInterfaces.stream()
 				.filter(intf -> intf.getInterfaceName().equals(routerInterfaceName))
 				.findFirst()
-				.orElseThrow(() -> new RuntimeException("WARN: interface %s does not exist, changes will not be commited".formatted(routerInterfaceName)));
+				.orElseThrow(() -> new InterfaceNotFoundException("WARN: interface %s does not exist, changes will not be commited".formatted(routerInterfaceName)));
 
 		if (routerInterface.getInterfaceAddress() == null) {
-			throw new RuntimeException("No value to delete");
+			throw new ConfigurationNotFoundException("No value to delete");
 		}
 
 		routerInterface.setInterfaceAddress(null);
@@ -216,13 +233,15 @@ public class Router {
 
 	/**
 	 * Commits configuration changes. Takes place immediately but is not persisted meaning if the device restarts/shuts down, changes will not be saved.
+	 * @throws InvalidModeException if not in CONFIGURATION mode
+	 * @throws NoChangesToCommitException if there are no changes to commit
 	 */
 	public void commitChanges() {
 		if (mode != RouterMode.CONFIGURATION) {
-			throw new RuntimeException("Invalid command: [commit]");
+			throw new InvalidModeException("Invalid command: [commit]");
 		}
 		if (!hasUncommittedChanges) {
-			throw new RuntimeException("No configuration changes to commit");
+			throw new NoChangesToCommitException("No configuration changes to commit");
 		}
 		this.interfaces = deepCopyInterfaces(stagedInterfaces);
 		this.routingTable = copyRoutingTableWithUpdatedInterfaces(stagedRoutingTable, stagedInterfaces, interfaces);
@@ -231,10 +250,11 @@ public class Router {
 
 	/**
 	 * Discard configuration changes and restores the last committed state.
+	 * @throws InvalidModeException if not in CONFIGURATION mode
 	 */
 	public void discardChanges() {
 		if (mode != RouterMode.CONFIGURATION) {
-			throw new RuntimeException("Invalid command: [discard]");
+			throw new InvalidModeException("Invalid command: [discard]");
 		}
 		this.stagedInterfaces = deepCopyInterfaces(interfaces);
 		this.stagedRoutingTable = copyRoutingTableWithUpdatedInterfaces(routingTable, interfaces, stagedInterfaces);
@@ -245,10 +265,11 @@ public class Router {
 	 * Clears all staged configuration, removing all interface addresses and routing entries.
 	 * This is typically used before loading configuration from a file to ensure a clean slate.
 	 * Must be in CONFIGURATION mode to use this method.
+	 * @throws InvalidModeException if not in CONFIGURATION mode
 	 */
 	public void clearStagedConfiguration() {
 		if (mode != RouterMode.CONFIGURATION) {
-			throw new RuntimeException("Cannot clear configuration in operational mode");
+			throw new InvalidModeException("Cannot clear configuration in operational mode");
 		}
 
 		// Clear all interface addresses and reset to enabled state
@@ -268,14 +289,16 @@ public class Router {
 
 	/**
 	 * Saves configuration to persistent storage, ensuring it will stay after a reboot.
+	 * This operation is currently not supported.
+	 * @throws UnsupportedOperationException always thrown as this feature is not implemented
 	 */
 	public void saveConfiguration() {
-		throw new RuntimeException("Saving configuration is not supported.");
+		throw new UnsupportedOperationException("Saving configuration is not supported.");
 		//if (mode != RouterMode.CONFIGURATION) {
-		//	throw new RuntimeException("Invalid command: [save]");
+		//	throw new InvalidModeException("Invalid command: [save]");
 		//}
 		//if (hasUncommittedChanges) {
-		//	throw new RuntimeException("Cannot save configuration with uncommitted changes.");
+		//	throw new UncommittedChangesException("Cannot save configuration with uncommitted changes.");
 		//}
 		//System.out.println("Configuration saved.");
 	}
@@ -285,10 +308,11 @@ public class Router {
 	 * will prevent exiting configuration mode.
 	 * When entering configuration mode, resets staged configuration to current committed state.
 	 * @param mode Target router mode
+	 * @throws UncommittedChangesException if trying to exit configuration mode with uncommitted changes
 	 */
 	public void setMode(RouterMode mode) {
 		if (this.mode == RouterMode.CONFIGURATION && hasUncommittedChanges) {
-			throw new RuntimeException("Cannot exit: configuration modified.\nUse 'exit discard' to discard the changes and exit.\n[edit]");
+			throw new UncommittedChangesException("Cannot exit: configuration modified.\nUse 'exit discard' to discard the changes and exit.\n[edit]");
 		}
 		// When entering configuration mode, reset staged configuration to current committed state
 		if (mode == RouterMode.CONFIGURATION && this.mode == RouterMode.OPERATIONAL) {
@@ -409,10 +433,11 @@ public class Router {
 	 * Must be executed in OPERATIONAL mode.
 	 *
 	 * @return Formatted routing table output
+	 * @throws InvalidModeException if not in OPERATIONAL mode
 	 */
 	public String showIpRoute() {
 		if (mode != RouterMode.OPERATIONAL) {
-			throw new RuntimeException("Invalid command: show [ip]");
+			throw new InvalidModeException("Invalid command: show [ip]");
 		}
 
 		StringBuilder output = new StringBuilder();
@@ -537,7 +562,7 @@ public class Router {
 	@Override
 	public String toString() {
 		if (mode != RouterMode.OPERATIONAL) {
-			throw new RuntimeException("Configuration path: [ip] is not valid\nShow failed");
+			throw new InvalidModeException("Configuration path: [ip] is not valid\nShow failed");
 		}
 		return "Router{" +
 				"name='" + name + '\'' +

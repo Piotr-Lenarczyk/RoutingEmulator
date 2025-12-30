@@ -4,10 +4,9 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.uj.routingemulator.common.InterfaceAddress;
-import org.uj.routingemulator.common.MacAddress;
-import org.uj.routingemulator.common.NetworkInterface;
-import org.uj.routingemulator.common.Subnet;
+import org.uj.routingemulator.common.*;
+import org.uj.routingemulator.router.exceptions.ConfigurationNotFoundException;
+import org.uj.routingemulator.router.exceptions.DuplicateConfigurationException;
 
 /**
  * Represents a network interface on a router device.
@@ -157,11 +156,11 @@ public class RouterInterface implements NetworkInterface {
 	 * <p>
 	 * Sets administrative state to ADMIN_DOWN while preserving the current link state.
 	 *
-	 * @throws RuntimeException if the interface is already administratively disabled
+	 * @throws DuplicateConfigurationException if the interface is already administratively disabled
 	 */
 	public void disable() {
 		if (this.status.getAdmin() == AdminState.ADMIN_DOWN) {
-			throw new RuntimeException("Configuration path: [interfaces ethernet %s disable] already exists".formatted(this.interfaceName));
+			throw new DuplicateConfigurationException("Configuration path: [interfaces ethernet %s disable] already exists".formatted(this.interfaceName));
 		}
 		this.status = new InterfaceStatus(AdminState.ADMIN_DOWN, this.status.getLink());
 	}
@@ -171,11 +170,11 @@ public class RouterInterface implements NetworkInterface {
 	 * <p>
 	 * Sets administrative state to UP while preserving the current link state.
 	 *
-	 * @throws RuntimeException if the interface is already administratively enabled
+	 * @throws ConfigurationNotFoundException if the interface is already administratively enabled
 	 */
 	public void enable() {
 		if (this.status.getAdmin() == AdminState.UP) {
-			throw new RuntimeException("Nothing to delete (the specified node does not exist)");
+			throw new ConfigurationNotFoundException("Nothing to delete (the specified node does not exist)");
 		}
 		this.status = new InterfaceStatus(AdminState.UP, this.status.getLink());
 	}
@@ -214,7 +213,7 @@ public class RouterInterface implements NetworkInterface {
 	 *
 	 * @param topology the network topology to check for connections
 	 */
-	public void updateLinkState(org.uj.routingemulator.common.NetworkTopology topology) {
+	public void updateLinkState(NetworkTopology topology) {
 		LinkState newLinkState = topology.hasActiveConnection(this) ? LinkState.UP : LinkState.DOWN;
 		this.status = new InterfaceStatus(this.status.getAdmin(), newLinkState);
 	}

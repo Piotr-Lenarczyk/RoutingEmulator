@@ -1,6 +1,7 @@
 package org.uj.routingemulator.router.cli;
 
 import org.uj.routingemulator.router.Router;
+import org.uj.routingemulator.router.exceptions.NoChangesToCommitException;
 
 /**
  * Command to commit configuration changes.
@@ -12,13 +13,9 @@ public class CommitCommand implements RouterCommand {
 		try {
 			router.commitChanges();
 			System.out.println("[edit]");
-		} catch (RuntimeException e) {
-			if ("No configuration changes to commit".equals(e.getMessage())) {
-				System.out.println("No configuration changes to commit");
-				System.out.println("[edit]");
-			} else {
-				throw e;
-			}
+		} catch (NoChangesToCommitException e) {
+			System.out.println("No configuration changes to commit");
+			System.out.println("[edit]");
 		}
 	}
 

@@ -1,8 +1,10 @@
 package org.uj.routingemulator.router.cli;
 
+import org.uj.routingemulator.router.exceptions.*;
+
 /**
  * Utility class for handling and formatting CLI error messages.
- * Translates generic Router exceptions into VyOS-style configuration path messages.
+ * Translates Router exceptions into VyOS-style configuration path messages.
  */
 public class CLIErrorHandler {
 
@@ -11,7 +13,7 @@ public class CLIErrorHandler {
 	}
 
 	/**
-	 * Handles RuntimeException from Router and formats it into a CLI-friendly message.
+	 * Handles RouterException from Router and formats it into a CLI-friendly message.
 	 *
 	 * @param e The exception thrown by Router
 	 * @param configPath The configuration path that caused the error (e.g., "protocols static route 192.168.1.0/24 next-hop 192.168.1.1")
@@ -20,20 +22,21 @@ public class CLIErrorHandler {
 	public static RuntimeException handleRouteException(RuntimeException e, String configPath) {
 		String message = e.getMessage();
 
-		if ("Route already exists".equals(message)) {
+		// Handle specific exception types
+		if (e instanceof DuplicateConfigurationException) {
 			return new RuntimeException("\tConfiguration path: [%s] already exists".formatted(configPath));
 		}
 
-		if ("Route not found".equals(message)) {
-			return new RuntimeException("\tConfiguration path: [%s] does not exist".formatted(configPath));
+		if (e instanceof ConfigurationNotFoundException) {
+			if ("Route not found".equals(message)) {
+				return new RuntimeException("\tConfiguration path: [%s] does not exist".formatted(configPath));
+			}
+			return new RuntimeException("\tNothing to delete (the specified node does not exist)");
 		}
 
+		// Legacy message-based handling for backwards compatibility
 		if ("Route is already disabled".equals(message)) {
 			return new RuntimeException("\tConfiguration path: [%s] is already disabled".formatted(configPath));
-		}
-
-		if ("Nothing to delete".equals(message)) {
-			return new RuntimeException("\tNothing to delete (the specified node does not exist)");
 		}
 
 		// For unknown exceptions, rethrow the original
@@ -43,23 +46,62 @@ public class CLIErrorHandler {
 	public static RuntimeException handleInterfaceException(RuntimeException e, String configPath) {
 		String message = e.getMessage();
 
-		if ("Configuration already exists".equals(message)) {
+		// Handle specific exception types
+		if (e instanceof DuplicateConfigurationException) {
 			return new RuntimeException("\tConfiguration path: [%s] already exists".formatted(configPath));
 		}
 
-		if("Cannot assign network address to interface".equals(message)) {
+		if (e instanceof InvalidAddressException) {
+			// Extract the IP address from the config path
 			String[] command = configPath.split(" ");
-			String ip = command[command.length - 1];
-			return new RuntimeException("\tError: %s is not a valid host IP host\n\n\n\tInvalid value\n\tValue validation failed\n\tSet failed".formatted(ip));
+			String ipWithMask = command[command.length - 1];
+
+			// Provide educational error messages
+			if (message != null && message.contains("Cannot assign network address")) {
+				// Extract just the IP (without mask) for display
+				String ip = ipWithMask.contains("/") ? ipWithMask.split("/")[0] : ipWithMask;
+				String mask = ipWithMask.contains("/") ? ipWithMask.split("/")[1] : "unknown";
+				return new RuntimeException(
+					String.format("\t%s is the network address for this subnet\n" +
+					              "\tNetwork addresses cannot be assigned to interfaces\n" +
+					              "\tUse a host address from this subnet (e.g., %s.1/%s)",
+						ip, ip.substring(0, ip.lastIndexOf('.')), mask)
+				);
+			}
+
+			if (message != null && message.contains("Cannot assign broadcast address")) {
+				// Extract just the IP (without mask) for display
+				String ip = ipWithMask.contains("/") ? ipWithMask.split("/")[0] : ipWithMask;
+				String mask = ipWithMask.contains("/") ? ipWithMask.split("/")[1] : "unknown";
+				// Calculate suggested IP (one less than broadcast)
+				String[] octets = ip.split("\\.");
+				int lastOctet = Integer.parseInt(octets[3]);
+				String suggestedIp = String.format("%s.%s.%s.%d", octets[0], octets[1], octets[2], lastOctet - 1);
+				return new RuntimeException(
+					String.format("\t%s is the broadcast address for this subnet\n" +
+					              "\tBroadcast addresses cannot be assigned to interfaces\n" +
+					              "\tUse a host address from this subnet (e.g., %s/%s)",
+						ip, suggestedIp, mask)
+				);
+			}
+
+			// Generic invalid address error
+			return new RuntimeException("\tError: Invalid IP address\n\n\n\tInvalid value\n\tValue validation failed\n\tSet failed");
 		}
 
+		if (e instanceof ConfigurationNotFoundException) {
+			return new RuntimeException("\tNothing to delete (the specified value does not exist)");
+		}
+
+		if (e instanceof InterfaceNotFoundException) {
+			return new RuntimeException("\t%s".formatted(message));
+		}
+
+		// Legacy message-based handling for backwards compatibility
 		if (message != null && message.startsWith("Configuration path: [interfaces ethernet")) {
 			return new RuntimeException("\t%s".formatted(message));
 		}
 
-		if ("No value to delete".equals(message)) {
-			return new RuntimeException("\tNothing to delete (the specified value does not exist)");
-		}
 
 		// For unknown exceptions, rethrow the original
 		return e;

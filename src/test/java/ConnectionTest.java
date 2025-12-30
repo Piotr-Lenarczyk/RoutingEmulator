@@ -4,13 +4,9 @@ import org.uj.routingemulator.common.Connection;
 import org.uj.routingemulator.common.IPAddress;
 import org.uj.routingemulator.common.Subnet;
 import org.uj.routingemulator.common.SubnetMask;
-import org.uj.routingemulator.host.Host;
 import org.uj.routingemulator.host.HostInterface;
 import org.uj.routingemulator.router.RouterInterface;
-import org.uj.routingemulator.switching.Switch;
 import org.uj.routingemulator.switching.SwitchPort;
-
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
