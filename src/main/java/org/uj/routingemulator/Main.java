@@ -14,11 +14,7 @@ import org.uj.routingemulator.router.cli.RouterCLIParser;
 import org.uj.routingemulator.switching.Switch;
 import org.uj.routingemulator.switching.SwitchPort;
 
-import org.uj.routingemulator.router.config.*;
-
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Scanner;
 

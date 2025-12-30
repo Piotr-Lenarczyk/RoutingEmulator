@@ -5,6 +5,19 @@ import lombok.Getter;
 import org.uj.routingemulator.common.IPAddress;
 import org.uj.routingemulator.common.Subnet;
 
+/**
+ * Represents a static routing entry in the routing table.
+ * <p>
+ * A static route defines how to reach a specific network destination.
+ * Routes can be configured with either:
+ * <ul>
+ *   <li>Next-hop IP address - forward packets to this IP</li>
+ *   <li>Exit interface - forward packets out this interface</li>
+ * </ul>
+ * <p>
+ * Each route has an administrative distance (default 1) used for route selection
+ * when multiple routes to the same destination exist.
+ */
 @Getter
 @EqualsAndHashCode(exclude = "isDisabled")
 public class StaticRoutingEntry {
@@ -14,7 +27,12 @@ public class StaticRoutingEntry {
 	private final int administrativeDistance;
 	private boolean isDisabled;
 
-	// IPv4 Next-Hop Routes
+	/**
+	 * Creates a next-hop based static route with default administrative distance (1).
+	 *
+	 * @param subnet destination network
+	 * @param nextHop IP address of next hop router
+	 */
 	public StaticRoutingEntry(Subnet subnet, IPAddress nextHop) {
 		this.subnet = subnet;
 		this.nextHop = nextHop;
@@ -23,6 +41,13 @@ public class StaticRoutingEntry {
 		this.administrativeDistance = 1;
 	}
 
+	/**
+	 * Creates a next-hop based static route with specified administrative distance.
+	 *
+	 * @param subnet destination network
+	 * @param nextHop IP address of next hop router
+	 * @param administrativeDistance metric for route selection (1-255)
+	 */
 	public StaticRoutingEntry(Subnet subnet, IPAddress nextHop, int administrativeDistance) {
 		this.subnet = subnet;
 		this.nextHop = nextHop;
@@ -32,7 +57,12 @@ public class StaticRoutingEntry {
 		this.administrativeDistance = administrativeDistance;
 	}
 
-	// IPv4 Interface Routes
+	/**
+	 * Creates an interface-based static route with default administrative distance (1).
+	 *
+	 * @param subnet destination network
+	 * @param routerInterface exit interface for this route
+	 */
 	public StaticRoutingEntry(Subnet subnet, RouterInterface routerInterface) {
 		this.subnet = subnet;
 		this.routerInterface = routerInterface;
@@ -41,6 +71,13 @@ public class StaticRoutingEntry {
 		this.administrativeDistance = 1;
 	}
 
+	/**
+	 * Creates an interface-based static route with specified administrative distance.
+	 *
+	 * @param subnet destination network
+	 * @param routerInterface exit interface for this route
+	 * @param administrativeDistance metric for route selection (1-255)
+	 */
 	public StaticRoutingEntry(Subnet subnet, RouterInterface routerInterface, int administrativeDistance) {
 		this.subnet = subnet;
 		this.routerInterface = routerInterface;
@@ -65,6 +102,10 @@ public class StaticRoutingEntry {
 		this.isDisabled = other.isDisabled;
 	}
 
+	/**
+	 * Disables this routing entry.
+	 * Disabled routes remain in the routing table but are not used for forwarding.
+	 */
 	public void disable() {
 		this.isDisabled = true;
 	}

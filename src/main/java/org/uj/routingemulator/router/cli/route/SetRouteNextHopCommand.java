@@ -11,9 +11,20 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * CLI command to add a static route with next-hop IP address.
- * Uses default administrative distance (1).
- * Format: set protocols static route <destination> next-hop <next-hop>
+ * Command to add a static route with next-hop IP address.
+ * <p>
+ * Command format: {@code set protocols static route <destination> next-hop <next-hop>}
+ * <p>
+ * Example: {@code set protocols static route 192.168.1.0/24 next-hop 10.0.0.1}
+ * <p>
+ * This creates a static route with:
+ * <ul>
+ *   <li>Destination network in CIDR notation</li>
+ *   <li>Next-hop IP address (must be reachable)</li>
+ *   <li>Default administrative distance of 1</li>
+ * </ul>
+ * <p>
+ * The next-hop address should be on a directly connected network.
  */
 public class SetRouteNextHopCommand implements RouterCommand {
 	private static final Pattern PATTERN = Pattern.compile(

@@ -9,6 +9,12 @@ import org.uj.routingemulator.common.MacAddress;
 import org.uj.routingemulator.common.NetworkInterface;
 import org.uj.routingemulator.common.Subnet;
 
+/**
+ * Represents a network interface on a host device.
+ * <p>
+ * Host interfaces have a subnet configuration and default gateway for routing.
+ * The interface is always active (no administrative state management).
+ */
 @Getter
 @Setter
 public class HostInterface implements NetworkInterface {
@@ -17,6 +23,10 @@ public class HostInterface implements NetworkInterface {
 	private MacAddress macAddress;
 	private IPAddress defaultGateway;
 
+	/**
+	 * Creates a host interface with default values.
+	 * MAC address is randomly generated.
+	 */
 	public HostInterface() {
 		this.interfaceName = "";
 		this.subnet = null;
@@ -24,6 +34,13 @@ public class HostInterface implements NetworkInterface {
 		this.defaultGateway = null;
 	}
 
+	/**
+	 * Creates a host interface with specified configuration.
+	 *
+	 * @param interfaceName the name of the interface
+	 * @param subnet the subnet configuration including IP and mask
+	 * @param defaultGateway the default gateway IP address
+	 */
 	public HostInterface(String interfaceName, Subnet subnet, IPAddress defaultGateway) {
 		this.interfaceName = interfaceName;
 		this.subnet = subnet;

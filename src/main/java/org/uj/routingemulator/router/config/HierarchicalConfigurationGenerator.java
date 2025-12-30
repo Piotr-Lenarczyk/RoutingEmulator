@@ -18,6 +18,21 @@ import org.uj.routingemulator.router.StaticRoutingEntry;
  */
 public class HierarchicalConfigurationGenerator implements ConfigurationGenerator {
 
+	/**
+	 * Generates hierarchical configuration for the specified router.
+	 * <p>
+	 * The output format matches VyOS "show configuration" output with curly braces.
+	 * Configuration includes:
+	 * <ul>
+	 *   <li>interfaces block with ethernet interfaces</li>
+	 *   <li>protocols/static block with routing entries</li>
+	 * </ul>
+	 * <p>
+	 * The generated configuration can be parsed back by {@link HierarchicalConfigurationParser}.
+	 *
+	 * @param router the router to generate configuration for
+	 * @return configuration in hierarchical format with curly braces
+	 */
 	@Override
 	public String generateConfiguration(Router router) {
 		StringBuilder config = new StringBuilder();

@@ -10,6 +10,16 @@ import org.uj.routingemulator.router.cli.RouterCommand;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Command to delete a static route with next-hop IP address (default distance).
+ * <p>
+ * Command format: {@code delete protocols static route <destination> next-hop <next-hop>}
+ * <p>
+ * Example: {@code delete protocols static route 192.168.1.0/24 next-hop 10.0.0.1}
+ * <p>
+ * This permanently removes the route from the routing table.
+ * The route must be re-added if needed again.
+ */
 public class DeleteRouteNextHopCommand implements RouterCommand {
 	private static final Pattern PATTERN = Pattern.compile(
 			"delete\\s+protocols\\s+static\\s+route\\s+(\\S+)\\s+next-hop\\s+(\\S+)"

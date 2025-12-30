@@ -8,8 +8,19 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * CLI command to delete an address from an ethernet interface.
- * Format: delete interfaces ethernet <interface> address <address>
+ * Command to remove IP address configuration from an ethernet interface.
+ * <p>
+ * Command format: {@code delete interfaces ethernet <interface> address <address>}
+ * <p>
+ * Example: {@code delete interfaces ethernet eth0 address 192.168.1.1/24}
+ * <p>
+ * This command:
+ * <ul>
+ *   <li>Removes the IP address from the interface</li>
+ *   <li>Does not disable the interface (admin state remains UP)</li>
+ *   <li>Routing entries using this interface's subnet become invalid</li>
+ *   <li>Cannot be executed if configuration doesn't exist</li>
+ * </ul>
  */
 public class DeleteInterfaceEthernetCommand implements RouterCommand {
 	private static final Pattern PATTERN = Pattern.compile(

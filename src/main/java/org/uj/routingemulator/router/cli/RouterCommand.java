@@ -2,6 +2,19 @@ package org.uj.routingemulator.router.cli;
 
 import org.uj.routingemulator.router.Router;
 
+/**
+ * Interface for all router CLI commands.
+ * <p>
+ * Each command implementation must:
+ * <ul>
+ *   <li>Define a pattern that matches the command syntax</li>
+ *   <li>Implement execution logic</li>
+ *   <li>Provide help text (pattern and description)</li>
+ * </ul>
+ * <p>
+ * Commands are processed by {@link RouterCLIParser} which matches input
+ * against registered commands and executes the matching one.
+ */
 public interface RouterCommand {
 	/**
 	 * Executes the command on the given router.

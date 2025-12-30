@@ -8,6 +8,18 @@ import org.uj.routingemulator.switching.Switch;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents the complete network topology including all devices and their connections.
+ * <p>
+ * The topology maintains:
+ * <ul>
+ *   <li>All network devices (routers, switches, hosts)</li>
+ *   <li>All connections between interfaces</li>
+ * </ul>
+ * <p>
+ * Provides operations for adding/removing devices and connections,
+ * with validation to prevent duplicate or invalid connections.
+ */
 @Getter
 @Setter
 public class NetworkTopology {
@@ -16,6 +28,9 @@ public class NetworkTopology {
 	private List<Router> routers;
 	private List<Connection> connections;
 
+	/**
+	 * Creates an empty network topology.
+	 */
 	public NetworkTopology() {
 		this.hosts = new ArrayList<>();
 		this.switches = new ArrayList<>();
@@ -23,6 +38,14 @@ public class NetworkTopology {
 		this.connections = new ArrayList<>();
 	}
 
+	/**
+	 * Creates a network topology with specified devices and connections.
+	 *
+	 * @param hosts list of host devices
+	 * @param switches list of switch devices
+	 * @param routers list of router devices
+	 * @param connections list of connections between interfaces
+	 */
 	public NetworkTopology(List<Host> hosts, List<Switch> switches, List<Router> routers, List<Connection> connections) {
 		this.hosts = hosts;
 		this.switches = switches;
@@ -30,14 +53,29 @@ public class NetworkTopology {
 		this.connections = connections;
 	}
 
+	/**
+	 * Adds a host to the topology.
+	 *
+	 * @param host the host to add
+	 */
 	public void addHost(Host host) {
 		this.hosts.add(host);
 	}
 
+	/**
+	 * Adds a switch to the topology.
+	 *
+	 * @param sw the switch to add
+	 */
 	public void addSwitch(Switch sw) {
 		this.switches.add(sw);
 	}
 
+	/**
+	 * Adds a router to the topology.
+	 *
+	 * @param router the router to add
+	 */
 	public void addRouter(Router router) {
 		this.routers.add(router);
 	}
@@ -78,6 +116,12 @@ public class NetworkTopology {
 		this.connections.add(connection);
 	}
 
+	/**
+	 * Removes a host from the topology.
+	 * Also removes all connections involving this host's interface.
+	 *
+	 * @param host the host to remove
+	 */
 	public void removeHost(Host host) {
 		connections.removeIf(conn ->
 				conn.getInterfaceA().equals(host.getHostInterface()) ||
@@ -86,6 +130,12 @@ public class NetworkTopology {
 		this.hosts.remove(host);
 	}
 
+	/**
+	 * Removes a switch from the topology.
+	 * Also removes all connections involving this switch's ports.
+	 *
+	 * @param sw the switch to remove
+	 */
 	public void removeSwitch(Switch sw) {
 		connections.removeIf(conn ->
 			sw.getPorts().stream().anyMatch(port -> port.equals(conn.getInterfaceA())) ||
@@ -94,6 +144,12 @@ public class NetworkTopology {
 		this.switches.remove(sw);
 	}
 
+	/**
+	 * Removes a router from the topology.
+	 * Also removes all connections involving this router's interfaces.
+	 *
+	 * @param router the router to remove
+	 */
 	public void removeRouter(Router router) {
 		connections.removeIf(conn ->
 			router.getInterfaces().stream().anyMatch(iface -> iface.equals(conn.getInterfaceA())) ||
@@ -102,10 +158,21 @@ public class NetworkTopology {
 		this.routers.remove(router);
 	}
 
+	/**
+	 * Removes a connection from the topology.
+	 *
+	 * @param connection the connection to remove
+	 */
 	public void removeConnection(Connection connection) {
 		this.connections.remove(connection);
 	}
 
+	/**
+	 * Gets the device name for a given interface.
+	 *
+	 * @param iface the interface to find the owner device for
+	 * @return device name, or "Unknown" if not found
+	 */
 	private String getDeviceName(NetworkInterface iface) {
 		// Check routers
 		for (Router router : routers) {
@@ -131,7 +198,19 @@ public class NetworkTopology {
 		return "Unknown";
 	}
 
-
+	/**
+	 * Generates a text-based visualization of the network topology.
+	 * <p>
+	 * The visualization includes:
+	 * <ul>
+	 *   <li>All hosts with their IP addresses and gateways</li>
+	 *   <li>All switches with their ports</li>
+	 *   <li>All routers with their interfaces</li>
+	 *   <li>All connections between interfaces</li>
+	 * </ul>
+	 *
+	 * @return text representation of the network topology
+	 */
 	public String visualize() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("=== Network Topology ===\n\n");

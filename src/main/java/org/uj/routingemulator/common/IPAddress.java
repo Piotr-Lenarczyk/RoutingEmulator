@@ -3,14 +3,40 @@ package org.uj.routingemulator.common;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
+/**
+ * Represents an IPv4 address.
+ * <p>
+ * An IPv4 address consists of four octets (bytes), each with a value between 0 and 255.
+ * The address is represented in dotted-decimal notation (e.g., 192.168.1.1).
+ * <p>
+ * This class is immutable - once created, the address cannot be changed.
+ * <p>
+ * Examples:
+ * <ul>
+ *   <li>192.168.1.1 - typical private network address</li>
+ *   <li>10.0.0.1 - private network address</li>
+ *   <li>8.8.8.8 - public IP address</li>
+ *   <li>127.0.0.1 - localhost</li>
+ * </ul>
+ */
 @Getter
 @EqualsAndHashCode
 public class IPAddress {
-	private int octet1;
-	private int octet2;
-	private int octet3;
-	private int octet4;
+	private final int octet1;
+	private final int octet2;
+	private final int octet3;
+	private final int octet4;
 
+	/**
+	 * Creates an IPv4 address with the specified octets.
+	 * Each octet must be in the range 0-255.
+	 *
+	 * @param octet1 first octet (0-255)
+	 * @param octet2 second octet (0-255)
+	 * @param octet3 third octet (0-255)
+	 * @param octet4 fourth octet (0-255)
+	 * @throws RuntimeException if any octet is outside the valid range
+	 */
 	public IPAddress(int octet1, int octet2, int octet3, int octet4) {
 		validateOctet(octet1);
 		validateOctet(octet2);
@@ -37,9 +63,10 @@ public class IPAddress {
 	/**
 	 * Parses an IP address from string format (e.g., "192.168.1.1").
 	 *
-	 * @param ipString String representation of the IP address
+	 * @param ipString String representation of the IP address in dotted-decimal notation
 	 * @return IPAddress object
-	 * @throws RuntimeException if the format is invalid
+	 * @throws RuntimeException if the format is invalid or octets are out of range
+	 * @throws NumberFormatException if any octet cannot be parsed as an integer
 	 */
 	public static IPAddress fromString(String ipString) {
 	    String[] parts = ipString.split("\\.");
@@ -53,6 +80,11 @@ public class IPAddress {
 	    return new IPAddress(octet1, octet2, octet3, octet4);
 	}
 
+	/**
+	 * Returns the string representation of this IP address in dotted-decimal notation.
+	 *
+	 * @return IP address as string (e.g., "192.168.1.1")
+	 */
 	@Override
 	public String toString() {
 		return octet1 + "." + octet2 + "." + octet3 + "." + octet4;

@@ -8,6 +8,21 @@ import org.uj.routingemulator.router.cli.RouterCommand;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Command to configure an IP address on an ethernet interface.
+ * <p>
+ * Command format: {@code set interfaces ethernet <interface> address <address>}
+ * <p>
+ * Example: {@code set interfaces ethernet eth0 address 192.168.1.1/24}
+ * <p>
+ * The command validates:
+ * <ul>
+ *   <li>Interface exists on the router</li>
+ *   <li>IP address is in valid format (CIDR notation)</li>
+ *   <li>IP is not a network or broadcast address</li>
+ *   <li>Configuration doesn't already exist</li>
+ * </ul>
+ */
 public class SetInterfaceEthernetCommand implements RouterCommand {
 	private static final Pattern PATTERN = Pattern.compile(
 			"set\\s+interfaces\\s+ethernet\\s+(\\S+)\\s+address\\s+(\\S+)"

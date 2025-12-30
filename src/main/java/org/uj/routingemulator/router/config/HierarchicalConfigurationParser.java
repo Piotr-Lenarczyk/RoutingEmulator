@@ -29,6 +29,24 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 	private List<String> lines;
 	private int position;
 
+	/**
+	 * Loads and applies hierarchical configuration to the specified router.
+	 * <p>
+	 * The method:
+	 * <ul>
+	 *   <li>Preprocesses the configuration (removes comments, empty lines)</li>
+	 *   <li>Puts router in configuration mode</li>
+	 *   <li>Clears existing staged configuration</li>
+	 *   <li>Recursively parses configuration blocks</li>
+	 *   <li>Commits changes on success</li>
+	 *   <li>Rolls back on error</li>
+	 *   <li>Restores original router mode</li>
+	 * </ul>
+	 *
+	 * @param router the router to configure
+	 * @param config the configuration text in hierarchical format
+	 * @throws ConfigurationParseException if the configuration is invalid
+	 */
 	@Override
 	public void loadConfiguration(Router router, String config) {
 		this.lines = preprocessConfig(config);
@@ -51,6 +69,9 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 
 	/**
 	 * Preprocesses configuration by removing comments and empty lines.
+	 *
+	 * @param config the raw configuration text
+	 * @return list of non-empty, non-comment lines
 	 */
 	private List<String> preprocessConfig(String config) {
 		List<String> result = new ArrayList<>();
@@ -113,6 +134,14 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 
 	/**
 	 * Parses a complete route block and collects all configuration values.
+	 * <p>
+	 * Route blocks in hierarchical format contain multiple configuration lines
+	 * (next-hop, interface, distance, disable). This method collects all values
+	 * before creating the routing entry.
+	 *
+	 * @param router the router to configure
+	 * @param path current path including route destination (e.g., ["protocols", "static", "route", "192.168.1.0/24"])
+	 * @throws ConfigurationParseException if route configuration is invalid
 	 */
 	private void parseRouteBlock(Router router, List<String> path) {
 		// path is: ["protocols", "static", "route", "192.168.1.0/24"]
@@ -204,7 +233,13 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 
 	/**
 	 * Applies a single configuration path to the router.
+	 * <p>
 	 * Used for interface configuration (routes are handled by parseRouteBlock).
+	 * Handles configuration lines that are not part of a nested block structure.
+	 *
+	 * @param router the router to configure
+	 * @param path the full configuration path as a list of tokens
+	 * @throws ConfigurationParseException if configuration cannot be applied
 	 */
 	private void applyConfiguration(Router router, List<String> path) {
 		if (path.size() < 2) {

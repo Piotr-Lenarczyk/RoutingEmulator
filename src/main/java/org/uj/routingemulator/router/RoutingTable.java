@@ -6,11 +6,20 @@ import lombok.Getter;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents a routing table containing static routing entries.
+ * <p>
+ * The routing table maintains a list of static routes that determine how packets
+ * are forwarded to different network destinations.
+ */
 @Getter
 @EqualsAndHashCode
 public class RoutingTable {
 	private List<StaticRoutingEntry> routingEntries;
 
+	/**
+	 * Creates an empty routing table.
+	 */
 	public RoutingTable() {
 		this.routingEntries = new ArrayList<>();
 	}
@@ -28,10 +37,21 @@ public class RoutingTable {
 		}
 	}
 
+	/**
+	 * Adds a route to the routing table.
+	 *
+	 * @param entry the routing entry to add
+	 */
 	public void addRoute(StaticRoutingEntry entry) {
 		this.routingEntries.add(entry);
 	}
 
+	/**
+	 * Checks if the routing table contains a specific entry.
+	 *
+	 * @param entry the routing entry to check
+	 * @return true if the entry exists in the table
+	 */
 	public boolean contains(StaticRoutingEntry entry) {
 		return this.routingEntries.contains(entry);
 	}
@@ -45,6 +65,12 @@ public class RoutingTable {
 		this.routingEntries.remove(entry);
 	}
 
+	/**
+	 * Disables a routing entry in the table.
+	 * The entry remains in the table but is marked as disabled.
+	 *
+	 * @param entry the routing entry to disable
+	 */
 	public void disableRoute(StaticRoutingEntry entry) {
 		if (this.routingEntries.contains(entry)) {
 			StaticRoutingEntry route = this.routingEntries.get(this.routingEntries.indexOf(entry));

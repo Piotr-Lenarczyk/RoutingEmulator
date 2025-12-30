@@ -11,9 +11,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * CLI command to disable a static route with next-hop IP address.
- * Uses default administrative distance (1).
- * Format: set protocols static route <destination> next-hop <next-hop> disable
+ * Command to disable a static route with next-hop IP address (default distance).
+ * <p>
+ * Command format: {@code set protocols static route <destination> next-hop <next-hop> disable}
+ * <p>
+ * Example: {@code set protocols static route 192.168.1.0/24 next-hop 10.0.0.1 disable}
+ * <p>
+ * Disabling a route:
+ * <ul>
+ *   <li>Keeps the route in configuration but marks it inactive</li>
+ *   <li>Route will not be used for forwarding</li>
+ *   <li>Can be re-enabled without re-entering full configuration</li>
+ * </ul>
  */
 public class DisableRouteNextHopCommand implements RouterCommand {
 	private static final Pattern PATTERN = Pattern.compile(

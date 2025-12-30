@@ -9,6 +9,30 @@ import org.uj.routingemulator.common.MacAddress;
 import org.uj.routingemulator.common.NetworkInterface;
 import org.uj.routingemulator.common.Subnet;
 
+/**
+ * Represents a network interface on a router device.
+ * <p>
+ * Router interfaces are Layer 3 interfaces capable of forwarding IP packets.
+ * Each interface can be configured with:
+ * <ul>
+ *   <li>IP address and subnet mask ({@link InterfaceAddress})</li>
+ *   <li>MAC address</li>
+ *   <li>Administrative state (enabled/disabled)</li>
+ *   <li>MTU (Maximum Transmission Unit)</li>
+ *   <li>VRF (Virtual Routing and Forwarding) assignment</li>
+ *   <li>Description for documentation</li>
+ * </ul>
+ * <p>
+ * Interface names follow standard conventions:
+ * <ul>
+ *   <li>eth0, eth1, ... - Ethernet interfaces (MTU 1500)</li>
+ *   <li>lo - Loopback interface (MTU 65536)</li>
+ * </ul>
+ * <p>
+ * The interface status combines administrative state (controlled by configuration)
+ * and link state (physical layer status). Both must be UP for the interface
+ * to be operational.
+ */
 @Setter
 @Getter
 @EqualsAndHashCode
@@ -22,6 +46,20 @@ public class RouterInterface implements NetworkInterface {
 	private int mtu;
 	private InterfaceStatus status;
 
+	/**
+	 * Creates a router interface with the specified name.
+	 * <p>
+	 * The interface is created with:
+	 * <ul>
+	 *   <li>No IP address configured</li>
+	 *   <li>Random MAC address</li>
+	 *   <li>Administrative state UP</li>
+	 *   <li>MTU based on interface type (1500 for eth*, 65536 for lo)</li>
+	 *   <li>Default VRF</li>
+	 * </ul>
+	 *
+	 * @param interfaceName the name of the interface (e.g., "eth0", "lo")
+	 */
 	public RouterInterface(String interfaceName) {
 		this.interfaceName = interfaceName;
 		this.interfaceAddress = null;
@@ -35,6 +73,15 @@ public class RouterInterface implements NetworkInterface {
 		this.status = InterfaceStatus.fromChars('u', 'u');
 	}
 
+	/**
+	 * Creates a router interface with full configuration.
+	 *
+	 * @param interfaceName the name of the interface
+	 * @param interfaceAddress the IP address and subnet mask
+	 * @param macAddress the MAC address
+	 * @param mtu the Maximum Transmission Unit
+	 * @param status the interface status (admin and link state)
+	 */
 	public RouterInterface(String interfaceName, InterfaceAddress interfaceAddress, MacAddress macAddress, int mtu, InterfaceStatus status) {
 		this.interfaceName = interfaceName;
 		this.interfaceAddress = interfaceAddress;
@@ -43,6 +90,16 @@ public class RouterInterface implements NetworkInterface {
 		this.status = status;
 	}
 
+	/**
+	 * Creates a router interface with full configuration including VRF.
+	 *
+	 * @param interfaceName the name of the interface
+	 * @param interfaceAddress the IP address and subnet mask
+	 * @param macAddress the MAC address
+	 * @param vrf the VRF (Virtual Routing and Forwarding) name
+	 * @param mtu the Maximum Transmission Unit
+	 * @param status the interface status (admin and link state)
+	 */
 	public RouterInterface(String interfaceName, InterfaceAddress interfaceAddress, MacAddress macAddress, String vrf, int mtu, InterfaceStatus status) {
 		this.interfaceName = interfaceName;
 		this.interfaceAddress = interfaceAddress;
@@ -118,6 +175,17 @@ public class RouterInterface implements NetworkInterface {
 		this.status = new InterfaceStatus(AdminState.UP, LinkState.UP);
 	}
 
+	/**
+	 * Checks if the interface is disabled (either administratively or physically).
+	 * <p>
+	 * An interface is considered disabled if:
+	 * <ul>
+	 *   <li>Administrative state is ADMIN_DOWN (shutdown), or</li>
+	 *   <li>Link state is DOWN (no physical connection)</li>
+	 * </ul>
+	 *
+	 * @return true if the interface is disabled, false if it is operational
+	 */
 	public boolean isDisabled() {
 		return this.status.getAdmin() == AdminState.ADMIN_DOWN || this.status.getLink() == LinkState.DOWN;
 	}

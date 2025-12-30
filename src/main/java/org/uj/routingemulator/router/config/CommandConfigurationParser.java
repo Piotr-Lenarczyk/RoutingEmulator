@@ -71,6 +71,12 @@ public class CommandConfigurationParser implements ConfigurationParser {
 		}
 	}
 
+	/**
+	 * Parses a single 'set' command and applies it to the router.
+	 *
+	 * @param router the router to configure
+	 * @throws ConfigurationParseException if the command is invalid
+	 */
 	private void parseCommand(Router router) {
 		Token token = getCurrentToken();
 
@@ -93,6 +99,13 @@ public class CommandConfigurationParser implements ConfigurationParser {
 		}
 	}
 
+	/**
+	 * Parses interface configuration commands.
+	 * Handles 'set interfaces ethernet' commands.
+	 *
+	 * @param router the router to configure
+	 * @throws ConfigurationParseException if the interface command is invalid
+	 */
 	private void parseInterfaces(Router router) {
 		advance();
 		Token token = getCurrentToken();
@@ -152,6 +165,13 @@ public class CommandConfigurationParser implements ConfigurationParser {
 		}
 	}
 
+	/**
+	 * Parses static routing protocol configuration commands.
+	 * Handles 'set protocols static route' commands with various options.
+	 *
+	 * @param router the router to configure
+	 * @throws ConfigurationParseException if the route command is invalid
+	 */
 	private void parseProtocols(Router router) {
 		advance();
 		Token token = getCurrentToken();
@@ -286,6 +306,12 @@ public class CommandConfigurationParser implements ConfigurationParser {
 		}
 	}
 
+	/**
+	 * Gets the token at the current parsing position.
+	 *
+	 * @return the current token
+	 * @throws ConfigurationParseException if position is beyond the end of tokens
+	 */
 	private Token getCurrentToken() {
 		if (position >= tokens.size()) {
 			throw new ConfigurationParseException(
@@ -296,6 +322,9 @@ public class CommandConfigurationParser implements ConfigurationParser {
 		return tokens.get(position);
 	}
 
+	/**
+	 * Advances the parser to the next token.
+	 */
 	private void advance() {
 		position++;
 	}

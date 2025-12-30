@@ -8,8 +8,19 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * CLI command to administratively disable an ethernet interface.
- * Format: set interfaces ethernet <interface> disable
+ * Command to administratively disable an ethernet interface (shutdown).
+ * <p>
+ * Command format: {@code set interfaces ethernet <interface> disable}
+ * <p>
+ * Example: {@code set interfaces ethernet eth0 disable}
+ * <p>
+ * When an interface is disabled:
+ * <ul>
+ *   <li>Administrative state is set to ADMIN_DOWN</li>
+ *   <li>Interface cannot pass traffic</li>
+ *   <li>Routing entries using this interface remain but are inactive</li>
+ *   <li>Configuration is preserved and can be re-enabled</li>
+ * </ul>
  */
 public class DisableInterfaceEthernetCommand implements RouterCommand {
 	private static final Pattern PATTERN = Pattern.compile(

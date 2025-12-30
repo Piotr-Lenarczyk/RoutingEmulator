@@ -10,9 +10,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * CLI command to add a static route via an interface.
- * Uses default administrative distance (1).
- * Format: set protocols static route <destination> interface <interface>
+ * Command to add a static route via an exit interface.
+ * <p>
+ * Command format: {@code set protocols static route <destination> interface <interface>}
+ * <p>
+ * Example: {@code set protocols static route 192.168.1.0/24 interface eth1}
+ * <p>
+ * Interface-based routes are useful for:
+ * <ul>
+ *   <li>Point-to-point links where next-hop is implicit</li>
+ *   <li>Networks where ARP resolution isn't needed</li>
+ *   <li>Default administrative distance of 1</li>
+ * </ul>
  */
 public class SetRouteInterfaceCommand implements RouterCommand {
 	private static final Pattern PATTERN = Pattern.compile(

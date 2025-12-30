@@ -10,8 +10,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * CLI command to add a static route via an interface with custom administrative distance.
- * Format: set protocols static route <destination> interface <interface> distance <distance>
+ * Command to add a static route via an interface with custom administrative distance.
+ * <p>
+ * Command format: {@code set protocols static route <destination> interface <interface> distance <distance>}
+ * <p>
+ * Example: {@code set protocols static route 192.168.1.0/24 interface eth1 distance 10}
+ * <p>
+ * Combines interface-based routing with custom administrative distance for route preference control.
  */
 public class SetRouteInterfaceDistanceCommand implements RouterCommand {
 	private static final Pattern PATTERN = Pattern.compile(

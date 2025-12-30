@@ -11,8 +11,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * CLI command to add a static route with next-hop IP address and custom administrative distance.
- * Format: set protocols static route <destination> next-hop <next-hop> distance <distance>
+ * Command to add a static route with next-hop IP address and custom administrative distance.
+ * <p>
+ * Command format: {@code set protocols static route <destination> next-hop <next-hop> distance <distance>}
+ * <p>
+ * Example: {@code set protocols static route 192.168.1.0/24 next-hop 10.0.0.1 distance 10}
+ * <p>
+ * Administrative distance (1-255) is used for route selection when multiple routes
+ * to the same destination exist. Lower values are preferred.
  */
 public class SetRouteNextHopDistanceCommand implements RouterCommand {
 	private static final Pattern PATTERN = Pattern.compile(
