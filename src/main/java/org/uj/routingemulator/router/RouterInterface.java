@@ -70,7 +70,8 @@ public class RouterInterface implements NetworkInterface {
 		} else if (interfaceName.startsWith("lo")) {
 			this.mtu = 65536;
 		}
-		this.status = InterfaceStatus.fromChars('u', 'u');
+		// Interface starts with admin UP but link DOWN (no physical connection yet)
+		this.status = InterfaceStatus.fromChars('u', 'D');
 	}
 
 	/**
@@ -153,26 +154,30 @@ public class RouterInterface implements NetworkInterface {
 
 	/**
 	 * Administratively disables the interface.
+	 * <p>
+	 * Sets administrative state to ADMIN_DOWN while preserving the current link state.
 	 *
-	 * @throws RuntimeException if the interface is already disabled
+	 * @throws RuntimeException if the interface is already administratively disabled
 	 */
 	public void disable() {
-		if (this.status.equals(new InterfaceStatus(AdminState.ADMIN_DOWN, LinkState.DOWN))) {
+		if (this.status.getAdmin() == AdminState.ADMIN_DOWN) {
 			throw new RuntimeException("Configuration path: [interfaces ethernet %s disable] already exists".formatted(this.interfaceName));
 		}
-		this.status = new InterfaceStatus(AdminState.ADMIN_DOWN, LinkState.DOWN);
+		this.status = new InterfaceStatus(AdminState.ADMIN_DOWN, this.status.getLink());
 	}
 
 	/**
 	 * Administratively enables the interface.
+	 * <p>
+	 * Sets administrative state to UP while preserving the current link state.
 	 *
-	 * @throws RuntimeException if the interface is already enabled
+	 * @throws RuntimeException if the interface is already administratively enabled
 	 */
 	public void enable() {
-		if (this.status.equals(new InterfaceStatus(AdminState.UP, LinkState.UP))) {
+		if (this.status.getAdmin() == AdminState.UP) {
 			throw new RuntimeException("Nothing to delete (the specified node does not exist)");
 		}
-		this.status = new InterfaceStatus(AdminState.UP, LinkState.UP);
+		this.status = new InterfaceStatus(AdminState.UP, this.status.getLink());
 	}
 
 	/**
@@ -188,5 +193,29 @@ public class RouterInterface implements NetworkInterface {
 	 */
 	public boolean isDisabled() {
 		return this.status.getAdmin() == AdminState.ADMIN_DOWN || this.status.getLink() == LinkState.DOWN;
+	}
+
+	/**
+	 * Updates the link state based on the network topology.
+	 * <p>
+	 * Link state is set to UP if:
+	 * <ul>
+	 *   <li>Interface has a physical connection in the topology</li>
+	 *   <li>The neighboring interface is administratively UP (for RouterInterface neighbors)</li>
+	 * </ul>
+	 * <p>
+	 * Otherwise, link state is set to DOWN.
+	 * <p>
+	 * This method should be called whenever:
+	 * <ul>
+	 *   <li>A connection is added or removed</li>
+	 *   <li>A neighboring interface changes administrative state</li>
+	 * </ul>
+	 *
+	 * @param topology the network topology to check for connections
+	 */
+	public void updateLinkState(org.uj.routingemulator.common.NetworkTopology topology) {
+		LinkState newLinkState = topology.hasActiveConnection(this) ? LinkState.UP : LinkState.DOWN;
+		this.status = new InterfaceStatus(this.status.getAdmin(), newLinkState);
 	}
 }

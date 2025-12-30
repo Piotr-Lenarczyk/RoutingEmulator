@@ -254,7 +254,8 @@ public class Router {
 		// Clear all interface addresses and reset to enabled state
 		for (RouterInterface iface : stagedInterfaces) {
 			iface.setInterfaceAddress(null);
-			if (iface.isDisabled()) {
+			// Only enable if administratively disabled (don't care about link state)
+			if (iface.getStatus().getAdmin() == AdminState.ADMIN_DOWN) {
 				iface.enable();
 			}
 		}
@@ -429,10 +430,11 @@ public class Router {
 
 		// Add connected routes (directly connected networks from configured interfaces)
 		for (RouterInterface iface : interfaces) {
+			// Show connected route if interface has IP and is administratively UP
+			// (Link state doesn't matter for route table - route exists even if link is down)
 			if (iface.getSubnet() != null &&
 			    iface.getStatus() != null &&
-			    iface.getStatus().getAdmin().toString().equals("UP") &&
-			    iface.getStatus().getLink().toString().equals("UP")) {
+			    iface.getStatus().getAdmin() == AdminState.UP) {
 
 				// getSubnet() now returns the actual network subnet from the interface address
 				Subnet connectedNetwork = iface.getSubnet();

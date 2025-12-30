@@ -114,6 +114,10 @@ public class NetworkTopology {
 		}
 
 		this.connections.add(connection);
+
+		// Update link states for both interfaces
+		updateInterfaceLinkState(connection.getInterfaceA());
+		updateInterfaceLinkState(connection.getInterfaceB());
 	}
 
 	/**
@@ -165,6 +169,10 @@ public class NetworkTopology {
 	 */
 	public void removeConnection(Connection connection) {
 		this.connections.remove(connection);
+
+		// Update link states for both interfaces
+		updateInterfaceLinkState(connection.getInterfaceA());
+		updateInterfaceLinkState(connection.getInterfaceB());
 	}
 
 	/**
@@ -263,6 +271,85 @@ public class NetworkTopology {
 		}
 
 		return sb.toString();
+	}
+
+	/**
+	 * Finds the connection associated with the given interface.
+	 *
+	 * @param iface the interface to find connection for
+	 * @return the connection containing this interface, or null if not connected
+	 */
+	public Connection getConnectionForInterface(NetworkInterface iface) {
+		for (Connection conn : connections) {
+			if (conn.getInterfaceA().equals(iface) || conn.getInterfaceB().equals(iface)) {
+				return conn;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Checks if an interface has an active physical connection.
+	 * <p>
+	 * An interface has an active connection if:
+	 * <ul>
+	 *   <li>It is part of a Connection</li>
+	 *   <li>The neighboring interface exists</li>
+	 *   <li>If neighbor is a RouterInterface, it must be administratively UP</li>
+	 * </ul>
+	 *
+	 * @param iface the interface to check
+	 * @return true if the interface has an active connection
+	 */
+	public boolean hasActiveConnection(NetworkInterface iface) {
+		Connection conn = getConnectionForInterface(iface);
+		if (conn == null) {
+			return false;
+		}
+
+		// Get the neighbor interface
+		NetworkInterface neighbor = conn.getNeighborInterface(iface);
+
+		// If neighbor is a RouterInterface, check if it's administratively up
+		if (neighbor instanceof org.uj.routingemulator.router.RouterInterface) {
+			org.uj.routingemulator.router.RouterInterface routerNeighbor =
+				(org.uj.routingemulator.router.RouterInterface) neighbor;
+			return routerNeighbor.getStatus().getAdmin() == org.uj.routingemulator.router.AdminState.UP;
+		}
+
+		// For other interface types (Switch, Host), assume they're always up
+		return true;
+	}
+
+	/**
+	 * Updates the link state of an interface if it's a RouterInterface.
+	 * <p>
+	 * This method should be called automatically whenever connections change.
+	 *
+	 * @param iface the interface to update
+	 */
+	private void updateInterfaceLinkState(NetworkInterface iface) {
+		if (iface instanceof org.uj.routingemulator.router.RouterInterface) {
+			org.uj.routingemulator.router.RouterInterface routerIface =
+				(org.uj.routingemulator.router.RouterInterface) iface;
+			routerIface.updateLinkState(this);
+		}
+	}
+
+	/**
+	 * Updates the link states of all neighboring interfaces.
+	 * <p>
+	 * Should be called when an interface's administrative state changes,
+	 * as this affects the link state of connected interfaces.
+	 *
+	 * @param iface the interface whose neighbors should be updated
+	 */
+	public void updateNeighborLinkStates(NetworkInterface iface) {
+		Connection conn = getConnectionForInterface(iface);
+		if (conn != null) {
+			NetworkInterface neighbor = conn.getNeighborInterface(iface);
+			updateInterfaceLinkState(neighbor);
+		}
 	}
 
 }

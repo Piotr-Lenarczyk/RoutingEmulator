@@ -11,7 +11,10 @@ import org.uj.routingemulator.router.RouterInterface;
  * Represents a bidirectional connection between two network interfaces.
  * <p>
  * Connections are validated upon creation to ensure interfaces are in operational state.
- * Router interfaces must be administratively up and have link state up.
+ * Router interfaces must be administratively up (AdminState.UP).
+ * <p>
+ * LinkState is set automatically when connection is established - it is a result
+ * of the connection, not a prerequisite.
  */
 @Getter
 @EqualsAndHashCode
@@ -52,15 +55,15 @@ public class Connection {
 	 * Validates router interface state.
 	 *
 	 * @param networkInterface interface to validate
-	 * @throws RuntimeException if router interface is administratively or physically down
+	 * @throws RuntimeException if router interface is administratively down
 	 */
 	private void handleRouterInterface(NetworkInterface networkInterface) {
 		if (networkInterface instanceof RouterInterface) {
 			RouterInterface router = (RouterInterface) networkInterface;
 			InterfaceStatus status = router.getStatus();
-			if (status != null && (status.getAdmin().equals(AdminState.ADMIN_DOWN)
-					|| status.getLink().equals(LinkState.DOWN))) {
-				throw new RuntimeException("Interface " + networkInterface.getInterfaceName() + " is down.");
+			// Only check administrative state - link state will be set as result of connection
+			if (status != null && status.getAdmin().equals(AdminState.ADMIN_DOWN)) {
+				throw new RuntimeException("Interface " + networkInterface.getInterfaceName() + " is administratively down.");
 			}
 		}
 	}
