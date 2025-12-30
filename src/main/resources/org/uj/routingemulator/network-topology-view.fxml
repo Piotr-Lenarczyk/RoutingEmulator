@@ -50,6 +50,12 @@
             <Button fx:id="removeDeviceButton" text="Remove Device" maxWidth="Infinity"
                     style="-fx-background-color: #ff6b6b; -fx-text-fill: white;"/>
 
+            <Separator/>
+
+            <Label text="Router Configuration" style="-fx-font-weight: bold;"/>
+            <Button fx:id="loadConfigButton" text="Load Configuration" maxWidth="Infinity"/>
+            <Button fx:id="saveConfigButton" text="Save Configuration" maxWidth="Infinity"/>
+
             <Region VBox.vgrow="ALWAYS"/>
 
             <Label text="Instructions:" style="-fx-font-weight: bold; -fx-font-size: 12px;"/>

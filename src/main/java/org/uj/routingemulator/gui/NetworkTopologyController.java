@@ -11,6 +11,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.text.Text;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import org.uj.routingemulator.common.Connection;
 import org.uj.routingemulator.common.IPAddress;
 import org.uj.routingemulator.common.NetworkInterface;
@@ -21,9 +23,12 @@ import org.uj.routingemulator.host.Host;
 import org.uj.routingemulator.host.HostInterface;
 import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.RouterInterface;
+import org.uj.routingemulator.router.config.*;
 import org.uj.routingemulator.switching.Switch;
 import org.uj.routingemulator.switching.SwitchPort;
 
+import java.io.File;
+import java.nio.file.Files;
 import java.util.*;
 
 /**
@@ -56,6 +61,12 @@ public class NetworkTopologyController {
 	@FXML
 	private Button removeConnectionButton;
 
+	@FXML
+	private Button loadConfigButton;
+
+	@FXML
+	private Button saveConfigButton;
+
 	private NetworkTopology topology;
 	private Map<Object, DeviceNode> deviceNodes; // Device (Router/Switch/Host) -> Visual Node
 	private Map<Connection, Line> connectionLines; // Connection -> Visual Line
@@ -86,6 +97,8 @@ public class NetworkTopologyController {
 		removeDeviceButton.setOnAction(e -> removeSelectedDevice());
 		addConnectionButton.setOnAction(e -> startConnectionMode());
 		removeConnectionButton.setOnAction(e -> removeConnection());
+		loadConfigButton.setOnAction(e -> loadRouterConfiguration());
+		saveConfigButton.setOnAction(e -> saveRouterConfiguration());
 
 		canvasPane.setOnMouseClicked(e -> {
 			if (e.getButton() == MouseButton.PRIMARY && connectionStartNode == null) {
@@ -821,6 +834,145 @@ public class NetworkTopologyController {
 		alert.setHeaderText(null);
 		alert.setContentText(message);
 		alert.showAndWait();
+	}
+
+	/**
+	 * Loads router configuration from a file.
+	 * Automatically detects the format (command-based or hierarchical).
+	 */
+	private void loadRouterConfiguration() {
+		if (selectedNode == null || !(selectedNode.device instanceof Router)) {
+			showError("Please select a router first");
+			return;
+		}
+
+		Router router = (Router) selectedNode.device;
+
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle("Load Router Configuration");
+		fileChooser.getExtensionFilters().addAll(
+			new FileChooser.ExtensionFilter("All Config Files", "*.conf", "*.cfg", "*.txt"),
+			new FileChooser.ExtensionFilter("Command Format", "*.conf"),
+			new FileChooser.ExtensionFilter("Hierarchical Format", "*.cfg"),
+			new FileChooser.ExtensionFilter("Text Files", "*.txt"),
+			new FileChooser.ExtensionFilter("All Files", "*.*")
+		);
+
+		Stage stage = (Stage) canvasPane.getScene().getWindow();
+		File file = fileChooser.showOpenDialog(stage);
+
+		if (file != null) {
+			try {
+				String config = Files.readString(file.toPath());
+
+				// Automatically detect format
+				ConfigurationParser parser = ConfigurationFactory.getParser(config);
+				parser.loadConfiguration(router, config);
+
+				// Update visual representation if interface states changed
+				updateInterfaceStates(router);
+
+				showInfo("Configuration loaded successfully from " + file.getName());
+			} catch (ConfigurationParseException e) {
+				showError("Configuration error: " + e.getMessage());
+			} catch (Exception e) {
+				showError("Failed to load configuration: " + e.getMessage());
+			}
+		}
+	}
+
+	/**
+	 * Saves router configuration to a file.
+	 * Allows user to choose the format (command-based or hierarchical).
+	 */
+	private void saveRouterConfiguration() {
+		if (selectedNode == null || !(selectedNode.device instanceof Router)) {
+			showError("Please select a router first");
+			return;
+		}
+
+		Router router = (Router) selectedNode.device;
+
+		// Ask user for format
+		Alert formatAlert = new Alert(Alert.AlertType.CONFIRMATION);
+		formatAlert.setTitle("Choose Configuration Format");
+		formatAlert.setHeaderText("Select the configuration format");
+		formatAlert.setContentText("Choose the format for the configuration file:");
+
+		ButtonType commandFormatButton = new ButtonType("Command Format (.conf)");
+		ButtonType hierarchicalFormatButton = new ButtonType("Hierarchical Format (.cfg)");
+		ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+
+		formatAlert.getButtonTypes().setAll(commandFormatButton, hierarchicalFormatButton, cancelButton);
+
+		Optional<ButtonType> formatResult = formatAlert.showAndWait();
+		if (!formatResult.isPresent() || formatResult.get() == cancelButton) {
+			return;
+		}
+
+		boolean isCommandFormat = formatResult.get() == commandFormatButton;
+		ConfigurationGenerator generator = isCommandFormat ?
+			ConfigurationFactory.getCommandGenerator() :
+			ConfigurationFactory.getHierarchicalGenerator();
+
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle("Save Router Configuration");
+
+		String extension = isCommandFormat ? "*.conf" : "*.cfg";
+		String description = isCommandFormat ? "Command Format" : "Hierarchical Format";
+
+		fileChooser.getExtensionFilters().addAll(
+			new FileChooser.ExtensionFilter(description, extension),
+			new FileChooser.ExtensionFilter("Text Files", "*.txt"),
+			new FileChooser.ExtensionFilter("All Files", "*.*")
+		);
+
+		// Suggest filename
+		fileChooser.setInitialFileName(router.getName() + (isCommandFormat ? ".conf" : ".cfg"));
+
+		Stage stage = (Stage) canvasPane.getScene().getWindow();
+		File file = fileChooser.showSaveDialog(stage);
+
+		if (file != null) {
+			try {
+				String config = generator.generateConfiguration(router);
+				Files.writeString(file.toPath(), config);
+				showInfo("Configuration saved successfully to " + file.getName());
+			} catch (Exception e) {
+				showError("Failed to save configuration: " + e.getMessage());
+			}
+		}
+	}
+
+	/**
+	 * Updates visual representation of interface states after configuration load.
+	 *
+	 * @param router the router whose interfaces to update
+	 */
+	private void updateInterfaceStates(Router router) {
+		// Update connection line colors based on interface states
+		for (Map.Entry<Connection, Line> entry : connectionLines.entrySet()) {
+			Connection conn = entry.getKey();
+			Line line = entry.getValue();
+
+			// Check if this connection involves the router
+			boolean hasRouterInterface = false;
+			boolean allInterfacesUp = true;
+
+			for (RouterInterface iface : router.getInterfaces()) {
+				if (iface.equals(conn.getInterfaceA()) || iface.equals(conn.getInterfaceB())) {
+					hasRouterInterface = true;
+					if (iface.isDisabled()) {
+						allInterfacesUp = false;
+					}
+				}
+			}
+
+			// Update line color if it involves this router
+			if (hasRouterInterface) {
+				line.setStroke(allInterfacesUp ? Color.DARKGRAY : Color.RED);
+			}
+		}
 	}
 
 	/**
