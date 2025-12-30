@@ -117,4 +117,8 @@ public class RouterInterface implements NetworkInterface {
 		}
 		this.status = new InterfaceStatus(AdminState.UP, LinkState.UP);
 	}
+
+	public boolean isDisabled() {
+		return this.status.getAdmin() == AdminState.ADMIN_DOWN || this.status.getLink() == LinkState.DOWN;
+	}
 }

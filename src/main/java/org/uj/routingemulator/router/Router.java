@@ -242,6 +242,30 @@ public class Router {
 	}
 
 	/**
+	 * Clears all staged configuration, removing all interface addresses and routing entries.
+	 * This is typically used before loading configuration from a file to ensure a clean slate.
+	 * Must be in CONFIGURATION mode to use this method.
+	 */
+	public void clearStagedConfiguration() {
+		if (mode != RouterMode.CONFIGURATION) {
+			throw new RuntimeException("Cannot clear configuration in operational mode");
+		}
+
+		// Clear all interface addresses and reset to enabled state
+		for (RouterInterface iface : stagedInterfaces) {
+			iface.setInterfaceAddress(null);
+			if (iface.isDisabled()) {
+				iface.enable();
+			}
+		}
+
+		// Clear routing table
+		this.stagedRoutingTable = new RoutingTable();
+
+		hasUncommittedChanges = true;
+	}
+
+	/**
 	 * Saves configuration to persistent storage, ensuring it will stay after a reboot.
 	 */
 	public void saveConfiguration() {
