@@ -1,9 +1,9 @@
-import org.uj.routingemulator.common.InterfaceAddress;
+import org.junit.jupiter.api.Test;
 import org.uj.routingemulator.common.IPAddress;
+import org.uj.routingemulator.common.InterfaceAddress;
 import org.uj.routingemulator.common.Subnet;
 import org.uj.routingemulator.common.SubnetMask;
 import org.uj.routingemulator.router.*;
-import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 

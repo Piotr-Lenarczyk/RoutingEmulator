@@ -342,9 +342,9 @@ class RouterCLITest {
 
 		String output = normalizeOutput(outputStream.toString());
 		assertTrue(output.contains("network address") || output.contains("Network addresses"),
-			"Should contain error about network address");
+				"Should contain error about network address");
 		assertTrue(output.contains("host address") || output.contains("Use a host address"),
-			"Should suggest using a host address");
+				"Should suggest using a host address");
 		assertFalse(output.endsWith("[edit]\n"), "Should not show [edit] on error");
 	}
 
@@ -658,4 +658,124 @@ class RouterCLITest {
 		// Command should either show error or be rejected
 		assertTrue(output.contains("Octet value must be"), "Should reject invalid octet");
 	}
+
+	@Test
+	void testShowConfigurationInOperationalMode() {
+		parser.executeCommand("configure", router);
+		parser.executeCommand("set interfaces ethernet eth0 address 192.168.1.1/24", router);
+		parser.executeCommand("set protocols static route 10.0.0.0/8 next-hop 192.168.1.254", router);
+		parser.executeCommand("commit", router);
+		parser.executeCommand("exit", router);
+		outputStream.reset();
+
+		parser.executeCommand("show configuration", router);
+
+		String output = outputStream.toString();
+		assertFalse(output.isEmpty(), "Output should not be empty");
+		assertTrue(output.contains("interfaces {"), "Should contain interfaces block");
+		assertTrue(output.contains("ethernet eth0 {"), "Should contain eth0 configuration");
+		assertTrue(output.contains("address 192.168.1.1/24"), "Should contain IP address");
+		assertTrue(output.contains("protocols {"), "Should contain protocols block");
+		assertTrue(output.contains("route 10.0.0.0/8"), "Should contain static route");
+		// Should NOT show disable for interfaces that are not disabled
+		String[] lines = output.split("\n");
+		boolean foundEth0Block = false;
+		boolean foundDisableInEth0 = false;
+		for (int i = 0; i < lines.length; i++) {
+			if (lines[i].contains("ethernet eth0 {")) {
+				foundEth0Block = true;
+				// Check lines until closing brace
+				for (int j = i + 1; j < lines.length && !lines[j].contains("}"); j++) {
+					if (lines[j].contains("disable")) {
+						foundDisableInEth0 = true;
+						break;
+					}
+				}
+				break;
+			}
+		}
+		assertTrue(foundEth0Block, "Should find eth0 block");
+		assertFalse(foundDisableInEth0, "eth0 should not have disable statement when not administratively disabled");
+	}
+
+	@Test
+	void testShowConfigurationInConfigurationMode() {
+		parser.executeCommand("configure", router);
+		parser.executeCommand("set interfaces ethernet eth0 address 192.168.1.1/24", router);
+		parser.executeCommand("commit", router);
+		outputStream.reset();
+
+		parser.executeCommand("show configuration", router);
+
+		String output = outputStream.toString();
+		assertFalse(output.isEmpty(), "Output should not be empty");
+		assertTrue(output.contains("interfaces {"), "Should show configuration even in config mode");
+	}
+
+	@Test
+	void testShowConfigurationWithNoConfig() {
+		outputStream.reset();
+
+		parser.executeCommand("show configuration", router);
+
+		String output = outputStream.toString();
+		assertFalse(output.isEmpty(), "Output should not be empty");
+		assertTrue(output.contains("/* No configuration */"), "Should show no configuration message");
+	}
+
+	@Test
+	void testShowInterfacesInOperationalMode() {
+		parser.executeCommand("configure", router);
+		parser.executeCommand("set interfaces ethernet eth0 address 192.168.1.1/24", router);
+		parser.executeCommand("commit", router);
+		parser.executeCommand("exit", router);
+		outputStream.reset();
+
+		parser.executeCommand("show interfaces", router);
+
+		String output = outputStream.toString();
+		assertFalse(output.isEmpty(), "Output should not be empty");
+		assertTrue(output.contains("Codes:"), "Should contain header");
+		assertTrue(output.contains("Interface"), "Should contain column headers");
+		assertTrue(output.contains("IP Address"), "Should contain IP Address column");
+		assertTrue(output.contains("MAC"), "Should contain MAC column");
+		assertTrue(output.contains("VRF"), "Should contain VRF column");
+		assertTrue(output.contains("MTU"), "Should contain MTU column");
+		assertTrue(output.contains("eth0"), "Should list eth0");
+		assertTrue(output.contains("192.168.1.1/24"), "Should show IP address");
+		assertTrue(output.contains("default"), "Should show default VRF");
+		assertTrue(output.contains("1500"), "Should show MTU");
+		// Should show MAC address in format XX:XX:XX:XX:XX:XX
+		assertTrue(output.matches("(?s).*[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}.*"),
+			"Should contain MAC address");
+	}
+
+	@Test
+	void testShowInterfacesInConfigurationModeFails() {
+		parser.executeCommand("configure", router);
+		outputStream.reset();
+
+		parser.executeCommand("show interfaces", router);
+
+		String output = outputStream.toString();
+		assertTrue(output.contains("Invalid command: show [interfaces]"));
+	}
+
+	@Test
+	void testShowInterfacesWithDisabledInterface() {
+		parser.executeCommand("configure", router);
+		parser.executeCommand("set interfaces ethernet eth0 disable", router);
+		parser.executeCommand("commit", router);
+		parser.executeCommand("exit", router);
+		outputStream.reset();
+
+		parser.executeCommand("show interfaces", router);
+
+		String output = outputStream.toString();
+		// Should show interface status as A/D (Admin Down / Link Down) or A/u (Admin Down / Link Up)
+		assertTrue(output.contains("eth0"), "Should list eth0");
+		assertTrue(output.contains("A/D") || output.contains("A/u"), "Should show admin down status");
+	}
 }
+
+

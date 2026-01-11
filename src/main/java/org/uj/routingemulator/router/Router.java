@@ -4,8 +4,8 @@ import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import org.uj.routingemulator.common.InterfaceAddress;
 import org.uj.routingemulator.common.IPAddress;
+import org.uj.routingemulator.common.InterfaceAddress;
 import org.uj.routingemulator.common.Subnet;
 import org.uj.routingemulator.router.exceptions.*;
 

@@ -57,8 +57,7 @@ public class Connection {
 	 * @throws RuntimeException if router interface is administratively down
 	 */
 	private void handleRouterInterface(NetworkInterface networkInterface) {
-		if (networkInterface instanceof RouterInterface) {
-			RouterInterface router = (RouterInterface) networkInterface;
+		if (networkInterface instanceof RouterInterface router) {
 			InterfaceStatus status = router.getStatus();
 			// Only check administrative state - link state will be set as result of connection
 			if (status != null && status.getAdmin().equals(AdminState.ADMIN_DOWN)) {

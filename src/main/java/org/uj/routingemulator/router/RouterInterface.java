@@ -180,18 +180,15 @@ public class RouterInterface implements NetworkInterface {
 	}
 
 	/**
-	 * Checks if the interface is disabled (either administratively or physically).
+	 * Checks if the interface is administratively disabled.
 	 * <p>
-	 * An interface is considered disabled if:
-	 * <ul>
-	 *   <li>Administrative state is ADMIN_DOWN (shutdown), or</li>
-	 *   <li>Link state is DOWN (no physical connection)</li>
-	 * </ul>
+	 * This only checks administrative state, not link state.
+	 * An interface with link DOWN but admin UP is not considered disabled.
 	 *
-	 * @return true if the interface is disabled, false if it is operational
+	 * @return true if the interface is administratively disabled, false otherwise
 	 */
 	public boolean isDisabled() {
-		return this.status.getAdmin() == AdminState.ADMIN_DOWN || this.status.getLink() == LinkState.DOWN;
+		return this.status.getAdmin() == AdminState.ADMIN_DOWN;
 	}
 
 	/**

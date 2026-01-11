@@ -3,6 +3,7 @@ module org.example.thesisuj {
 	requires javafx.fxml;
 	requires static lombok;
 	requires java.xml;
+	requires org.jline;
 
 
 	opens org.uj.routingemulator to javafx.fxml;

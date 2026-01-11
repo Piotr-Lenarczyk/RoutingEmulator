@@ -1,6 +1,7 @@
 package org.uj.routingemulator.common;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.uj.routingemulator.host.Host;
 import org.uj.routingemulator.router.AdminState;
 import org.uj.routingemulator.router.Router;
@@ -313,9 +314,7 @@ public class NetworkTopology {
 		NetworkInterface neighbor = conn.getNeighborInterface(iface);
 
 		// If neighbor is a RouterInterface, check if it's administratively up
-		if (neighbor instanceof RouterInterface) {
-			RouterInterface routerNeighbor =
-				(RouterInterface) neighbor;
+		if (neighbor instanceof RouterInterface routerNeighbor) {
 			return routerNeighbor.getStatus().getAdmin() == AdminState.UP;
 		}
 
@@ -331,9 +330,7 @@ public class NetworkTopology {
 	 * @param iface the interface to update
 	 */
 	private void updateInterfaceLinkState(NetworkInterface iface) {
-		if (iface instanceof RouterInterface) {
-			RouterInterface routerIface =
-				(RouterInterface) iface;
+		if (iface instanceof RouterInterface routerIface) {
 			routerIface.updateLinkState(this);
 		}
 	}
