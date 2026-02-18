@@ -40,6 +40,14 @@ public class Router {
 	private boolean hasUncommittedChanges = false;
 
 	/**
+	 * Stores the terminal buffer for GUI sessions to preserve history
+	 * across dialog open/close cycles.
+	 */
+	@Getter
+	@Setter
+	private StringBuilder terminalBuffer = new StringBuilder();
+
+	/**
 	 * Constructs a router with default configuration in VyOS.
 	 * Default router configuration includes 2 interfaces: eth0 and lo
 	 * @param name Name of the router

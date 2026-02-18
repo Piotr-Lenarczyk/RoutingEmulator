@@ -4,6 +4,8 @@ import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.RouterMode;
 import org.uj.routingemulator.router.exceptions.UncommittedChangesException;
 
+import java.io.PrintWriter;
+
 /**
  * Command to exit configuration mode and return to operational mode.
  * Only works when router is in configuration mode.
@@ -12,14 +14,18 @@ import org.uj.routingemulator.router.exceptions.UncommittedChangesException;
 public class ExitCommand implements RouterCommand {
 	@Override
 	public void execute(Router router) {
+		PrintWriter out = CLIContext.getWriter();
 		if (router.getMode() != RouterMode.CONFIGURATION) {
-			System.out.println("\n\tInvalid command: [exit]\n");
+			out.println("\n\tInvalid command: [exit]\n");
+			out.flush();
 		} else {
 			try {
 				router.setMode(RouterMode.OPERATIONAL);
-				System.out.println("exit");
+				out.println("exit");
+				out.flush();
 			} catch (UncommittedChangesException e) {
-				System.out.println(e.getMessage());
+				out.println(e.getMessage());
+				out.flush();
 			}
 		}
 	}

@@ -10,6 +10,7 @@ import org.uj.routingemulator.host.HostInterface;
 import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.RouterInterface;
 import org.uj.routingemulator.router.RouterMode;
+import org.uj.routingemulator.router.cli.RouterCLI;
 import org.uj.routingemulator.router.cli.RouterCLIParser;
 import org.uj.routingemulator.switching.Switch;
 import org.uj.routingemulator.switching.SwitchPort;
@@ -47,8 +48,6 @@ public class Main extends Application {
 	 * Runs the application in CLI-only mode for testing purposes.
 	 */
 	private static void runCLIMode() {
-		RouterCLIParser parser = new RouterCLIParser();
-		Scanner scanner = new Scanner(System.in);
 		NetworkTopology topology = new NetworkTopology();
 
 		Host h1 = new Host("PC1", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 1, 1), new SubnetMask(24)), new IPAddress(192, 168, 1, 254)));
@@ -81,16 +80,8 @@ public class Main extends Application {
 		System.out.println(topology.visualize());
 		topology.removeHost(h1);
 		System.out.println(topology.visualize());
-		String input = "";
-		while (!input.equals("q")) {
-			if (r1.getMode() == RouterMode.OPERATIONAL) {
-				System.out.print("vyos@vyos$ ");
-			} else if (r1.getMode() == RouterMode.CONFIGURATION) {
-				System.out.print("vyos@vyos# ");
-			}
-			input = scanner.nextLine();
-			parser.executeCommand(input, r1);
-		}
+		RouterCLI cli = new RouterCLI(r1);
+		cli.start();
 	}
 }
 

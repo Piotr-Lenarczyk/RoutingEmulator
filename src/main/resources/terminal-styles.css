@@ -1,0 +1,36 @@
+.terminal-text-area {
+    -fx-background-color: #1e1e1e;
+    -fx-text-fill: #d4d4d4;
+}
+
+.default {
+    -fx-fill: #d4d4d4;
+}
+
+.red {
+    -fx-fill: #f44747;
+}
+
+.green {
+    -fx-fill: #4ec9b0;
+}
+
+.yellow {
+    -fx-fill: #ffd700;
+}
+
+.blue {
+    -fx-fill: #569cd6;
+}
+
+.magenta {
+    -fx-fill: #c586c0;
+}
+
+.cyan {
+    -fx-fill: #4ec9b0;
+}
+
+.white {
+    -fx-fill: #ffffff;
+}

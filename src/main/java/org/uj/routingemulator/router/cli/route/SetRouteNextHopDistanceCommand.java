@@ -4,9 +4,11 @@ import org.uj.routingemulator.common.IPAddress;
 import org.uj.routingemulator.common.Subnet;
 import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.StaticRoutingEntry;
+import org.uj.routingemulator.router.cli.CLIContext;
 import org.uj.routingemulator.router.cli.CLIErrorHandler;
 import org.uj.routingemulator.router.cli.RouterCommand;
 
+import java.io.PrintWriter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,6 +32,7 @@ public class SetRouteNextHopDistanceCommand implements RouterCommand {
 
 	@Override
 	public void execute(Router router) {
+		PrintWriter out = CLIContext.getWriter();
 		try {
 			router.addRoute(
 					new StaticRoutingEntry(
@@ -38,7 +41,8 @@ public class SetRouteNextHopDistanceCommand implements RouterCommand {
 							distance
 					)
 			);
-			System.out.println("[edit]");
+			out.println("[edit]");
+			out.flush();
 		} catch (RuntimeException e) {
 			throw CLIErrorHandler.handleRouteException(e,
 				CLIErrorHandler.formatRouteNextHopDistance(destinationSubnet, nextHop, distance));

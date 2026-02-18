@@ -4,6 +4,7 @@ import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.config.ConfigurationFactory;
 import org.uj.routingemulator.router.config.ConfigurationGenerator;
 
+import java.io.PrintWriter;
 import java.util.regex.Pattern;
 
 /**
@@ -20,6 +21,7 @@ public class ShowConfigurationCommand implements RouterCommand {
 
 	@Override
 	public void execute(Router router) {
+		PrintWriter out = CLIContext.getWriter();
 		ConfigurationGenerator generator = ConfigurationFactory.getHierarchicalGenerator();
 
 		// Create a temporary router with committed state to generate configuration
@@ -28,9 +30,11 @@ public class ShowConfigurationCommand implements RouterCommand {
 
 		String output = generator.generateConfiguration(committedRouter);
 		if (output.isEmpty()) {
-			System.out.println("/* No configuration */");
+			out.println("/* No configuration */");
+			out.flush();
 		} else {
-			System.out.print(output);
+			out.print(output);
+			out.flush();
 		}
 	}
 

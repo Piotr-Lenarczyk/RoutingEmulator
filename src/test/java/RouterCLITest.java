@@ -747,7 +747,7 @@ class RouterCLITest {
 		assertTrue(output.contains("1500"), "Should show MTU");
 		// Should show MAC address in format XX:XX:XX:XX:XX:XX
 		assertTrue(output.matches("(?s).*[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}.*"),
-			"Should contain MAC address");
+				"Should contain MAC address");
 	}
 
 	@Test

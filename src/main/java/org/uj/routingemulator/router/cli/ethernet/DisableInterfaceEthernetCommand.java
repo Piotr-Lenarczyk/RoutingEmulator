@@ -1,9 +1,11 @@
 package org.uj.routingemulator.router.cli.ethernet;
 
 import org.uj.routingemulator.router.Router;
+import org.uj.routingemulator.router.cli.CLIContext;
 import org.uj.routingemulator.router.cli.CLIErrorHandler;
 import org.uj.routingemulator.router.cli.RouterCommand;
 
+import java.io.PrintWriter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,9 +32,11 @@ public class DisableInterfaceEthernetCommand implements RouterCommand {
 
 	@Override
 	public void execute(Router router) {
+		PrintWriter out = CLIContext.getWriter();
 		try {
 			router.disableInterface(routerInterfaceName);
-			System.out.println("[edit]");
+			out.println("[edit]");
+			out.flush();
 		} catch (RuntimeException e) {
 			throw CLIErrorHandler.handleInterfaceException(e,
 				CLIErrorHandler.formatDisableInterfaceEthernet(routerInterfaceName, ""));

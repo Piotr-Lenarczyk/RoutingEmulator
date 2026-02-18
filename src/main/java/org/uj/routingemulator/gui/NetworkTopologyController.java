@@ -806,7 +806,9 @@ public class NetworkTopologyController {
 	 * @param router the router to open CLI for
 	 */
 	private void openRouterCLI(Router router) {
-		CLIDialog cliDialog = new CLIDialog(router);
+		// Using SimpleCLIDialog as a fallback - it's based on standard JavaFX TextArea
+		// instead of RichTextFX, which may have compatibility issues
+		SimpleCLIDialog cliDialog = new SimpleCLIDialog(router);
 		cliDialog.showAndWait();
 	}
 

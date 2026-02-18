@@ -4,6 +4,7 @@ import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.RouterInterface;
 import org.uj.routingemulator.router.RouterMode;
 
+import java.io.PrintWriter;
 import java.util.regex.Pattern;
 
 /**
@@ -28,42 +29,45 @@ public class ShowInterfacesCommand implements RouterCommand {
 
 	@Override
 	public void execute(Router router) {
+		PrintWriter out = CLIContext.getWriter();
 		if (router.getMode() != RouterMode.OPERATIONAL) {
-			System.out.println("Invalid command: show [interfaces]");
+			out.println("Invalid command: show [interfaces]");
+			out.flush();
 			return;
 		}
 
 		StringBuilder output = new StringBuilder();
 		output.append("Codes: S - State, L - Link, u - Up, D - Down, A - Admin Down\n");
 		output.append(String.format("%-16s %-33s %-4s %-17s %-10s %-6s %s\n",
-			"Interface", "IP Address", "S/L", "MAC", "VRF", "MTU", "Description"));
+				"Interface", "IP Address", "S/L", "MAC", "VRF", "MTU", "Description"));
 		output.append(String.format("%-16s %-33s %-4s %-17s %-10s %-6s %s\n",
-			"---------", "----------", "---", "---", "---", "---", "-----------"));
+				"---------", "----------", "---", "---", "---", "---", "-----------"));
 
 		for (RouterInterface iface : router.getInterfaces()) {
 			String interfaceName = iface.getInterfaceName();
 			String ipAddress = iface.getInterfaceAddress() != null
-				? iface.getInterfaceAddress().toString()
-				: "-";
+					? iface.getInterfaceAddress().toString()
+					: "-";
 			String state = iface.getStatus().toString();
 			String macAddress = iface.getMacAddress() != null
-				? iface.getMacAddress().toString()
-				: "-";
+					? iface.getMacAddress().toString()
+					: "-";
 			String vrf = iface.getVrf() != null ? iface.getVrf() : "default";
 			String mtu = String.valueOf(iface.getMtu());
 			String description = iface.getDescription() != null ? iface.getDescription() : "";
 
 			output.append(String.format("%-16s %-33s %-4s %-17s %-10s %-6s %s\n",
-				interfaceName,
-				ipAddress,
-				state,
-				macAddress,
-				vrf,
-				mtu,
-				description));
+					interfaceName,
+					ipAddress,
+					state,
+					macAddress,
+					vrf,
+					mtu,
+					description));
 		}
 
-		System.out.print(output.toString());
+		out.print(output);
+		out.flush();
 	}
 
 	@Override

@@ -3,6 +3,7 @@ package org.uj.routingemulator.router.cli;
 import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.RouterMode;
 
+import java.io.PrintWriter;
 import java.util.regex.Pattern;
 
 /**
@@ -18,13 +19,16 @@ public class ShowIpRouteCommand implements RouterCommand {
 
 	@Override
 	public void execute(Router router) {
+		PrintWriter out = CLIContext.getWriter();
 		if (router.getMode() != RouterMode.OPERATIONAL) {
-			System.out.println("Invalid command: show [ip]");
+			out.println("Invalid command: show [ip]");
+			out.flush();
 			return;
 		}
 
 		String output = router.showIpRoute();
-		System.out.println(output);
+		out.println(output);
+		out.flush();
 	}
 
 	@Override

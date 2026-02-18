@@ -3,6 +3,8 @@ package org.uj.routingemulator.router.cli;
 import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.RouterMode;
 
+import java.io.PrintWriter;
+
 /**
  * Command to enter configuration mode.
  * Only works when router is in operational mode.
@@ -10,11 +12,14 @@ import org.uj.routingemulator.router.RouterMode;
 public class ConfigureCommand implements RouterCommand {
 	@Override
 	public void execute(Router router) {
+		PrintWriter out = CLIContext.getWriter();
 		if (router.getMode() == RouterMode.OPERATIONAL) {
 			router.setMode(RouterMode.CONFIGURATION);
-			System.out.println("[edit]");
+			out.println("[edit]");
+			out.flush();
 		} else {
-			System.out.println("\n\tInvalid command: [configure]\n\n[edit]");
+			out.println("\n\tInvalid command: [configure]\n\n[edit]");
+			out.flush();
 		}
 	}
 
