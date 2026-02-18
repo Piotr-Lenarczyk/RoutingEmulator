@@ -2,7 +2,8 @@ package org.uj.routingemulator.gui;
 
 import javafx.application.Platform;
 import javafx.geometry.Insets;
-import javafx.scene.control.*;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
 import javafx.scene.layout.VBox;
 import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.RouterMode;
@@ -144,8 +145,8 @@ public class SimpleCLIDialog extends Dialog<Void> {
 	private boolean bufferEndsWithPrompt() {
 		String text = terminal.getText();
 		return text.endsWith("vyos@vyos$ ") ||
-		       text.endsWith("vyos@vyos# ") ||
-		       text.endsWith("> ");
+				text.endsWith("vyos@vyos# ") ||
+				text.endsWith("> ");
 	}
 
 	// Helper class for ParsedLine

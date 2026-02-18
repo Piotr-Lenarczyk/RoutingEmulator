@@ -68,7 +68,7 @@ public class RouterCommandCompleter implements Completer {
 	 * Checks if the current word is a complete command at the current level AND has subcommands.
 	 * We only want to advance to the next level if the command expects more input.
 	 *
-	 * @param words All words in the command so far
+	 * @param words       All words in the command so far
 	 * @param currentWord The word being typed
 	 * @return true if currentWord is a complete valid command that expects subcommands
 	 */
@@ -85,11 +85,11 @@ public class RouterCommandCompleter implements Completer {
 			if (words.length == 1) {
 				// Only "set" and "delete" have subcommands, others are complete commands
 				return currentWord.equalsIgnoreCase("set") ||
-				       currentWord.equalsIgnoreCase("delete");
+						currentWord.equalsIgnoreCase("delete");
 			} else if (words.length == 2 && (words[0].equalsIgnoreCase("set") || words[0].equalsIgnoreCase("delete"))) {
 				// Both "interfaces" and "protocols" have subcommands
 				return currentWord.equalsIgnoreCase("interfaces") ||
-				       currentWord.equalsIgnoreCase("protocols");
+						currentWord.equalsIgnoreCase("protocols");
 			} else if (words.length == 3 && words[1].equalsIgnoreCase("interfaces")) {
 				// "ethernet" has subcommands (interface name)
 				return currentWord.equalsIgnoreCase("ethernet");
@@ -102,7 +102,7 @@ public class RouterCommandCompleter implements Completer {
 			} else if (words.length == 6 && words[3].equalsIgnoreCase("route")) {
 				// "next-hop" and "interface" expect values
 				return currentWord.equalsIgnoreCase("next-hop") ||
-				       currentWord.equalsIgnoreCase("interface");
+						currentWord.equalsIgnoreCase("interface");
 			}
 			// Note: "address", "disable", "distance" are terminal - they don't have subcommands
 		}
@@ -149,7 +149,7 @@ public class RouterCommandCompleter implements Completer {
 		} else if (words.length == 3 && words[1].equalsIgnoreCase("interfaces")) {
 			addCandidateIfMatches(candidates, "ethernet", "Configure Ethernet interface", currentWord);
 		} else if (words.length == 4 && words[1].equalsIgnoreCase("interfaces") && words[2].equalsIgnoreCase("ethernet")) {
-			for (RouterInterface iface: router.getInterfaces()) {
+			for (RouterInterface iface : router.getInterfaces()) {
 				addCandidateIfMatches(candidates, iface.getInterfaceName(), "Interface " + iface.getInterfaceName(), currentWord);
 			}
 		} else if (words.length == 5 && words[1].equalsIgnoreCase("interfaces")) {
@@ -167,7 +167,7 @@ public class RouterCommandCompleter implements Completer {
 			if (currentWord.isEmpty()) {
 				// Show hint about IP address format
 				candidates.add(new Candidate("<x.x.x.x/prefix>", "<x.x.x.x/prefix>", null,
-					"Enter IP address with prefix (e.g., 192.168.1.1/24)", null, null, false));
+						"Enter IP address with prefix (e.g., 192.168.1.1/24)", null, null, false));
 			}
 		} else if (words.length == 3 && words[1].equalsIgnoreCase("protocols")) {
 			addCandidateIfMatches(candidates, "static", "Static routing", currentWord);
@@ -178,7 +178,7 @@ public class RouterCommandCompleter implements Completer {
 			if (currentWord.isEmpty()) {
 				// Show hint about destination network format
 				candidates.add(new Candidate("<x.x.x.x/prefix>", "<x.x.x.x/prefix>", null,
-					"Enter destination network (e.g., 192.168.1.0/24)", null, null, false));
+						"Enter destination network (e.g., 192.168.1.0/24)", null, null, false));
 			}
 		} else if (words.length == 6 && words[1].equalsIgnoreCase("protocols") && words[3].equalsIgnoreCase("route")) {
 			// After destination network - show next-hop or interface options
@@ -188,11 +188,11 @@ public class RouterCommandCompleter implements Completer {
 			// After "next-hop" keyword - user needs to enter next-hop IP
 			if (currentWord.isEmpty()) {
 				candidates.add(new Candidate("<x.x.x.x>", "<x.x.x.x>", null,
-					"Enter next-hop IP address (e.g., 192.168.1.254)", null, null, false));
+						"Enter next-hop IP address (e.g., 192.168.1.254)", null, null, false));
 			}
 		} else if (words.length == 7 && words[5].equalsIgnoreCase("interface")) {
 			// After "interface" keyword - show available interfaces
-			for (RouterInterface iface: router.getInterfaces()) {
+			for (RouterInterface iface : router.getInterfaces()) {
 				addCandidateIfMatches(candidates, iface.getInterfaceName(), "Interface " + iface.getInterfaceName(), currentWord);
 			}
 		} else if (words.length == 8 && (words[5].equalsIgnoreCase("next-hop") || words[5].equalsIgnoreCase("interface"))) {
@@ -203,7 +203,7 @@ public class RouterCommandCompleter implements Completer {
 			// After "distance" keyword - user needs to enter distance value
 			if (currentWord.isEmpty()) {
 				candidates.add(new Candidate("<1-255>", "<1-255>", null,
-					"Enter administrative distance (1-255, default: 1)", null, null, false));
+						"Enter administrative distance (1-255, default: 1)", null, null, false));
 			}
 		}
 	}
@@ -211,15 +211,15 @@ public class RouterCommandCompleter implements Completer {
 	/**
 	 * Adds a candidate only if it starts with the current word (case-insensitive).
 	 *
-	 * @param candidates List to add the candidate to
-	 * @param value The completion value
+	 * @param candidates  List to add the candidate to
+	 * @param value       The completion value
 	 * @param description Description of the completion
 	 * @param currentWord The word currently being typed by the user
 	 */
 	private void addCandidateIfMatches(List<Candidate> candidates, String value, String description, String currentWord) {
 		// If currentWord is empty or value starts with currentWord (case-insensitive), add it
 		if (currentWord == null || currentWord.isEmpty() ||
-		    value.toLowerCase().startsWith(currentWord.toLowerCase())) {
+				value.toLowerCase().startsWith(currentWord.toLowerCase())) {
 			candidates.add(new Candidate(value, value, null, description, null, null, true));
 		}
 	}

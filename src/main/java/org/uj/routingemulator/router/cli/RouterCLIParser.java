@@ -68,6 +68,7 @@ public class RouterCLIParser {
 
 	/**
 	 * Reads a line of input with JLine features (history, completion, etc.).
+	 *
 	 * @param prompt Prompt to display
 	 * @return User input string
 	 */
@@ -187,7 +188,7 @@ public class RouterCLIParser {
 				} else {
 					// For multi-word commands, check if the full input matches the pattern prefix
 					String patternPrefix = extractPatternPrefix(pattern, inputWords.length);
-					if (patternPrefix != null && input.trim().equalsIgnoreCase(patternPrefix)) {
+					if (input.trim().equalsIgnoreCase(patternPrefix)) {
 						matches.add(command);
 					}
 				}
@@ -201,7 +202,7 @@ public class RouterCLIParser {
 	/**
 	 * Extracts the first N words from a pattern, stopping at placeholders.
 	 *
-	 * @param pattern Command pattern
+	 * @param pattern   Command pattern
 	 * @param wordCount Number of words to extract
 	 * @return Pattern prefix or null if it contains placeholders
 	 */

@@ -9,15 +9,12 @@ import org.uj.routingemulator.host.Host;
 import org.uj.routingemulator.host.HostInterface;
 import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.RouterInterface;
-import org.uj.routingemulator.router.RouterMode;
 import org.uj.routingemulator.router.cli.RouterCLI;
-import org.uj.routingemulator.router.cli.RouterCLIParser;
 import org.uj.routingemulator.switching.Switch;
 import org.uj.routingemulator.switching.SwitchPort;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Scanner;
 
 /**
  * Main application class for the Network Routing Emulator.

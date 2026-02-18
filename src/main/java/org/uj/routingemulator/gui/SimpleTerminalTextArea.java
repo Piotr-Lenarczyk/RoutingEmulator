@@ -16,7 +16,7 @@ import java.util.function.Consumer;
  * - Command history (arrow up/down)
  * - Tab completion
  * - Protected prompt area
- *
+ * <p>
  * Note: ANSI color codes are stripped since TextArea doesn't support rich text.
  * For color support, a more complex solution with TextFlow would be needed.
  */
@@ -182,8 +182,8 @@ public class SimpleTerminalTextArea extends TextArea {
 
 		// Extract command (without prompt)
 		final String currentInput = fullText.length() > promptStartPosition
-			? fullText.substring(promptStartPosition)
-			: "";
+				? fullText.substring(promptStartPosition)
+				: "";
 
 		if (onTabComplete != null) {
 			onTabComplete.accept(currentInput, completions -> {

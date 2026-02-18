@@ -11,14 +11,6 @@ public class CLIContext {
 	private static final ThreadLocal<PrintWriter> writer = new ThreadLocal<>();
 
 	/**
-	 * Sets the current terminal writer for this thread.
-	 * @param w PrintWriter to use for output
-	 */
-	public static void setWriter(PrintWriter w) {
-		writer.set(w);
-	}
-
-	/**
 	 * Get the current terminal writer for this thread.
 	 * If no writer is set, returns a PrintWriter wrapping System.out.
 	 *
@@ -30,6 +22,15 @@ public class CLIContext {
 			w = new PrintWriter(System.out, true);
 		}
 		return w;
+	}
+
+	/**
+	 * Sets the current terminal writer for this thread.
+	 *
+	 * @param w PrintWriter to use for output
+	 */
+	public static void setWriter(PrintWriter w) {
+		writer.set(w);
 	}
 
 	/**

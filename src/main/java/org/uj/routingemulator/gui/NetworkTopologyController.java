@@ -1,29 +1,27 @@
 package org.uj.routingemulator.gui;
 
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
-import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
-import javafx.scene.layout.*;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import org.uj.routingemulator.common.Connection;
-import org.uj.routingemulator.common.IPAddress;
-import org.uj.routingemulator.common.NetworkInterface;
-import org.uj.routingemulator.common.NetworkTopology;
-import org.uj.routingemulator.common.Subnet;
-import org.uj.routingemulator.common.SubnetMask;
+import org.uj.routingemulator.common.*;
 import org.uj.routingemulator.host.Host;
 import org.uj.routingemulator.host.HostInterface;
 import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.RouterInterface;
-import org.uj.routingemulator.router.config.*;
+import org.uj.routingemulator.router.config.ConfigurationFactory;
+import org.uj.routingemulator.router.config.ConfigurationGenerator;
+import org.uj.routingemulator.router.config.ConfigurationParseException;
+import org.uj.routingemulator.router.config.ConfigurationParser;
 import org.uj.routingemulator.switching.Switch;
 import org.uj.routingemulator.switching.SwitchPort;
 
@@ -358,16 +356,13 @@ public class NetworkTopologyController {
 	 * @return true if the device is part of the connection
 	 */
 	private boolean isDeviceInConnection(Object device, Connection connection) {
-		if (device instanceof Router) {
-			Router router = (Router) device;
+		if (device instanceof Router router) {
 			return router.getInterfaces().stream().anyMatch(iface ->
 				iface.equals(connection.getInterfaceA()) || iface.equals(connection.getInterfaceB()));
-		} else if (device instanceof Switch) {
-			Switch sw = (Switch) device;
+		} else if (device instanceof Switch sw) {
 			return sw.getPorts().stream().anyMatch(port ->
 				port.equals(connection.getInterfaceA()) || port.equals(connection.getInterfaceB()));
-		} else if (device instanceof Host) {
-			Host host = (Host) device;
+		} else if (device instanceof Host host) {
 			return host.getHostInterface().equals(connection.getInterfaceA()) ||
 				host.getHostInterface().equals(connection.getInterfaceB());
 		}
@@ -843,12 +838,10 @@ public class NetworkTopologyController {
 	 * Automatically detects the format (command-based or hierarchical).
 	 */
 	private void loadRouterConfiguration() {
-		if (selectedNode == null || !(selectedNode.device instanceof Router)) {
+		if (selectedNode == null || !(selectedNode.device instanceof Router router)) {
 			showError("Please select a router first");
 			return;
 		}
-
-		Router router = (Router) selectedNode.device;
 
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Load Router Configuration");
@@ -888,12 +881,10 @@ public class NetworkTopologyController {
 	 * Allows user to choose the format (command-based or hierarchical).
 	 */
 	private void saveRouterConfiguration() {
-		if (selectedNode == null || !(selectedNode.device instanceof Router)) {
+		if (selectedNode == null || !(selectedNode.device instanceof Router router)) {
 			showError("Please select a router first");
 			return;
 		}
-
-		Router router = (Router) selectedNode.device;
 
 		// Ask user for format
 		Alert formatAlert = new Alert(Alert.AlertType.CONFIRMATION);
