@@ -9,13 +9,13 @@ public class Packet {
 	private final PacketType type;
 	private int ttl;
 
+	public boolean decrementTTL() {
+		return --ttl > 0;
+	}
+
 	public enum PacketType {
 		ICMP_ECHO_REQUEST,
 		ICMP_ECHO_REPLY,
 		ICMP_DESTINATION_UNREACHABLE
-	}
-
-	public boolean decrementTTL() {
-		return --ttl > 0;
 	}
 }
