@@ -1,6 +1,7 @@
 package org.uj.routingemulator.host;
 
 import lombok.Data;
+import org.uj.routingemulator.common.IPAddress;
 
 /**
  * Represents an end-host device in the network.
