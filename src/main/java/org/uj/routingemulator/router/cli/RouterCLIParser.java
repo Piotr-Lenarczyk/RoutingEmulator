@@ -59,10 +59,10 @@ public class RouterCLIParser {
 		this.reader = LineReaderBuilder.builder()
 				.terminal(terminal)
 				.completer(new RouterCommandCompleter(router, commands))
-				.option(LineReader.Option.CASE_INSENSITIVE, false)
-				.option(LineReader.Option.AUTO_LIST, true)
-				.option(LineReader.Option.AUTO_MENU, true)
-				.variable(LineReader.HISTORY_FILE, historyFile)
+				.option(org.jline.reader.LineReader.Option.CASE_INSENSITIVE, false)
+				.option(org.jline.reader.LineReader.Option.AUTO_LIST, true)
+				.option(org.jline.reader.LineReader.Option.AUTO_MENU, true)
+				.variable(org.jline.reader.LineReader.HISTORY_FILE, historyFile)
 				.build();
 	}
 
@@ -165,19 +165,19 @@ public class RouterCLIParser {
 	 * @return Matching command or null
 	 */
 	private RouterCommand findUniquePrefixMatch(String input) {
-		String inputLower = input.trim().toLowerCase();
-		if (inputLower.isEmpty()) {
+		String inputTrim = input.trim();
+		if (inputTrim.isEmpty()) {
 			return null;
 		}
 
 		// Split input to get the first word (the command keyword)
-		String[] inputWords = inputLower.split("\\s+");
+		String[] inputWords = inputTrim.split("\\s+");
 		String firstWord = inputWords[0];
 
 		List<RouterCommand> matches = new ArrayList<>();
 
 		for (RouterCommand command : commands) {
-			String pattern = command.getCommandPattern().toLowerCase();
+			String pattern = command.getCommandPattern();
 			// Get the first word of the pattern
 			String[] patternWords = pattern.split("\\s+");
 			if (patternWords.length > 0 && patternWords[0].startsWith(firstWord)) {
@@ -188,7 +188,7 @@ public class RouterCLIParser {
 				} else {
 					// For multi-word commands, check if the full input matches the pattern prefix
 					String patternPrefix = extractPatternPrefix(pattern, inputWords.length);
-					if (input.trim().equalsIgnoreCase(patternPrefix)) {
+					if (inputTrim.equals(patternPrefix)) {
 						matches.add(command);
 					}
 				}

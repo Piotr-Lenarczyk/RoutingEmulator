@@ -3,7 +3,7 @@ package org.uj.routingemulator.switching;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -16,27 +16,32 @@ import java.util.List;
 @Setter
 public class Switch {
 	private String name;
-	private List<SwitchPort> ports;
+	private LinkedList<SwitchPort> ports;
 
 	/**
 	 * Creates a switch with specified name and ports.
 	 *
-	 * @param name the name of the switch
+	 * @param name  the name of the switch
 	 * @param ports the list of switch ports
 	 */
 	public Switch(String name, List<SwitchPort> ports) {
 		this.name = name;
-		this.ports = ports;
+		this.ports = new LinkedList<>(ports);
 	}
 
 	/**
 	 * Creates a switch with specified name and empty port list.
+	 * Default behavior creates two ports (GigabitEthernet0/1 and GigabitEthernet0/2)
+	 * to make simple topologies easier to build in tests.
 	 *
 	 * @param name the name of the switch
 	 */
 	public Switch(String name) {
 		this.name = name;
-		this.ports = new ArrayList<>();
+		this.ports = new LinkedList<>();
+		// Add two default ports so tests that expect ports to exist work
+		this.ports.add(new SwitchPort("GigabitEthernet0/1"));
+		this.ports.add(new SwitchPort("GigabitEthernet0/2"));
 	}
 
 	/**

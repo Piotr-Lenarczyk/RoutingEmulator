@@ -5,6 +5,7 @@ import javafx.geometry.Insets;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.layout.VBox;
+import org.jline.reader.ParsedLine;
 import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.RouterMode;
 import org.uj.routingemulator.router.cli.CLIContext;
@@ -91,8 +92,8 @@ public class SimpleCLIDialog extends Dialog<Void> {
 	}
 
 	private void handleTabCompletion(String input, java.util.function.Consumer<List<String>> callback) {
-		// Use completer to get suggestions
-		org.jline.reader.ParsedLine parsedLine = new SimpleParsedLine(input);
+		// Use completer to get suggestions (restore previous behavior)
+		ParsedLine parsedLine = new SimpleParsedLine(input);
 		List<org.jline.reader.Candidate> candidates = new ArrayList<>();
 
 		completer.complete(null, parsedLine, candidates);

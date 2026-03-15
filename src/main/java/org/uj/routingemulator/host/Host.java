@@ -1,11 +1,12 @@
 package org.uj.routingemulator.host;
 
 import lombok.Data;
+import org.uj.routingemulator.common.IPAddress;
+import org.uj.routingemulator.common.NetworkTopology;
+import org.uj.routingemulator.common.PingService;
+import org.uj.routingemulator.common.PingStatistics;
 
-/**
- * Represents an end-host device in the network.
- * <p>
- * Hosts are simplified network endpoints with a single network interface.
+/** Hosts are simplified network endpoints with a single network interface.
  * They can send and receive traffic but do not forward packets.
  */
 @Data
@@ -22,5 +23,25 @@ public class Host {
 	public Host(String hostname, HostInterface hostInterface) {
 		this.hostname = hostname;
 		this.hostInterface = hostInterface;
+	}
+
+	/**
+	 * Convenience ping method used by tests and CLI. Sends 4 probes by default.
+	 *
+	 * @param dst      destination IPv4 string (dotted)
+	 * @param topology network topology
+	 * @return PingStatistics with results
+	 */
+	public PingStatistics ping(String dst, NetworkTopology topology) {
+		PingService svc = new PingService();
+		return svc.ping(this, dst, 4, topology);
+	}
+
+	/**
+	 * Convenience ping method with explicit count.
+	 */
+	public PingStatistics ping(IPAddress dst, int count, NetworkTopology topology) {
+		PingService svc = new PingService();
+		return svc.ping(this, dst, count, topology);
 	}
 }

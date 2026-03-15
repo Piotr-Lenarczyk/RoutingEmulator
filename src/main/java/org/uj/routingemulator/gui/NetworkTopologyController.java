@@ -524,6 +524,11 @@ public class NetworkTopologyController {
 			if (selectedNode == node) {
 				openRouterCLI((Router) node.device);
 			}
+		} else if (node.device instanceof Host) {
+			// Double-click detection for host configuration
+			if (selectedNode == node) {
+				openHostDialog((Host) node.device);
+			}
 		}
 
 		selectedNode = node;
@@ -805,6 +810,16 @@ public class NetworkTopologyController {
 		// instead of RichTextFX, which may have compatibility issues
 		SimpleCLIDialog cliDialog = new SimpleCLIDialog(router);
 		cliDialog.showAndWait();
+	}
+
+	/**
+	 * Opens the configuration dialog for a host.
+	 *
+	 * @param host the host to configure
+	 */
+	private void openHostDialog(Host host) {
+		HostConfigDialog dialog = new HostConfigDialog(host, topology);
+		dialog.showAndWait();
 	}
 
 	/**

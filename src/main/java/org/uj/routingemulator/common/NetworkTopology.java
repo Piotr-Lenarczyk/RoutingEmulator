@@ -3,6 +3,7 @@ package org.uj.routingemulator.common;
 import lombok.Getter;
 import lombok.Setter;
 import org.uj.routingemulator.host.Host;
+import org.uj.routingemulator.host.HostInterface;
 import org.uj.routingemulator.router.AdminState;
 import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.RouterInterface;
@@ -349,6 +350,75 @@ public class NetworkTopology {
 			NetworkInterface neighbor = conn.getNeighborInterface(iface);
 			updateInterfaceLinkState(neighbor);
 		}
+	}
+
+	/**
+	 * Finds a host interface with exactly the given IP address that is reachable from the given starting interface using connections graph.
+	 * This performs a BFS across connections (through switches and other devices) starting at the provided interface.
+	 *
+	 * @param start the interface to start searching from (typically a router interface)
+	 * @param ip    the exact host IP to find
+	 * @return the HostInterface if found, otherwise null
+	 */
+	public HostInterface findHostInterfaceByIpConnectedToInterface(NetworkInterface start, IPAddress ip) {
+		java.util.Queue<NetworkInterface> q = new java.util.ArrayDeque<>();
+		java.util.Set<NetworkInterface> visited = new java.util.HashSet<>();
+
+		q.add(start);
+		visited.add(start);
+
+		while (!q.isEmpty()) {
+			NetworkInterface cur = q.remove();
+
+			// If current is a HostInterface, check directly
+			if (cur instanceof HostInterface hif) {
+				if (hif.getSubnet() != null && hif.getSubnet().getNetworkAddress().equals(ip)) {
+					return hif;
+				}
+			}
+
+			// If current is a switch port, treat switch as hub: add all other ports of the same switch
+			if (cur instanceof org.uj.routingemulator.switching.SwitchPort sp) {
+				for (org.uj.routingemulator.switching.Switch sw : switches) {
+					if (sw.containsPort(sp)) {
+						for (org.uj.routingemulator.switching.SwitchPort sibling : sw.getPorts()) {
+							if (!visited.contains(sibling)) {
+								visited.add(sibling);
+								q.add(sibling);
+							}
+						}
+						break;
+					}
+				}
+			}
+
+			// Process the connection for current interface (if any)
+			Connection c = getConnectionForInterface(cur);
+			if (c == null) continue;
+
+			NetworkInterface neighbor = c.getNeighborInterface(cur);
+			if (neighbor == null) continue;
+
+			if (!visited.contains(neighbor)) {
+				visited.add(neighbor);
+				// If neighbor is HostInterface, check if it has the exact IP assigned
+				if (neighbor instanceof HostInterface hif) {
+					if (hif.getSubnet() != null && hif.getSubnet().getNetworkAddress().equals(ip)) {
+						return hif;
+					}
+				}
+				q.add(neighbor);
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Convenience overload for RouterInterface start parameter.
+	 */
+	public HostInterface findHostInterfaceByIpConnectedToInterface(org.uj.routingemulator.router.RouterInterface start, IPAddress ip) {
+		return findHostInterfaceByIpConnectedToInterface((NetworkInterface) start, ip);
 	}
 
 }
