@@ -108,7 +108,7 @@ public class PingTest {
         r2.setMode(RouterMode.CONFIGURATION);
         r2.configureInterface("eth0", InterfaceAddress.fromString("192.168.2.2/24"));
         r2.configureInterface("eth1", InterfaceAddress.fromString("192.168.3.254/24"));
-        r1.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(24)), r1.findFromName("eth0")));
+        r2.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(24)), r2.findFromName("eth0")));
         r2.commitChanges();
 
         topology.addHost(h1);
