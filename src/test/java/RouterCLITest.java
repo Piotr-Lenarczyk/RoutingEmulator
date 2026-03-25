@@ -188,6 +188,7 @@ class RouterCLITest {
 	@Test
 	void testSetRouteNextHop() {
 		parser.executeCommand("configure", router);
+		parser.executeCommand("set interfaces ethernet eth0 address 10.0.0.1/24", router);
 		outputStream.reset();
 
 		parser.executeCommand("set protocols static route 192.168.1.0/24 next-hop 10.0.0.1", router);
@@ -200,6 +201,7 @@ class RouterCLITest {
 	@Test
 	void testSetRouteNextHopWithDistance() {
 		parser.executeCommand("configure", router);
+		parser.executeCommand("set interfaces ethernet eth0 address 10.0.0.1/24", router);
 		outputStream.reset();
 
 		parser.executeCommand("set protocols static route 192.168.1.0/24 next-hop 10.0.0.1 distance 50", router);

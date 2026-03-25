@@ -16,7 +16,7 @@ public class ConfigurationTest {
 		Router router = new Router("R1", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
 		RouterCLIParser cli = new RouterCLIParser();
 		cli.executeCommand("configure", router);
-		cli.executeCommand("set interfaces ethernet eth0 address 192.168.1.1/24", router);
+		cli.executeCommand("set interfaces ethernet eth0 address 192.168.1.254/24", router);
 		cli.executeCommand("set interfaces ethernet eth1 address 192.168.2.1/24", router);
 		cli.executeCommand("set protocols static route 192.168.3.0/24 next-hop 192.168.1.254", router);
 		cli.executeCommand("set protocols static route 10.0.0.0/8 interface eth1 distance 5", router);
@@ -72,7 +72,7 @@ public class ConfigurationTest {
 	public void testConfigurationWithCommentsAndEmptyLines() {
 		String config = """
 				# Interface configuration
-				set interfaces ethernet eth0 address 192.168.1.1/24
+				set interfaces ethernet eth0 address 192.168.1.254/24
 				
 				# Route configuration
 				set protocols static route 192.168.2.0/24 next-hop 192.168.1.254
@@ -127,7 +127,7 @@ public class ConfigurationTest {
 		Router router = new Router("R1", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
 		RouterCLIParser cli = new RouterCLIParser();
 		cli.executeCommand("configure", router);
-		cli.executeCommand("set interfaces ethernet eth0 address 192.168.1.1/24", router);
+		cli.executeCommand("set interfaces ethernet eth0 address 192.168.1.254/24", router);
 		cli.executeCommand("set interfaces ethernet eth1 address 192.168.2.1/24", router);
 		cli.executeCommand("set protocols static route 10.0.0.0/8 next-hop 192.168.1.254", router);
 		cli.executeCommand("commit", router);
@@ -141,7 +141,7 @@ public class ConfigurationTest {
 
 		// Now change the router's configuration completely via CLI
 		cli.executeCommand("configure", router);
-		cli.executeCommand("set interfaces ethernet eth0 address 10.10.10.1/24", router);
+		cli.executeCommand("set interfaces ethernet eth0 address 10.10.10.254/24", router);
 		cli.executeCommand("set protocols static route 172.16.0.0/16 next-hop 10.10.10.254", router);
 		cli.executeCommand("commit", router);
 
@@ -159,7 +159,7 @@ public class ConfigurationTest {
 
 		// Verify the configuration was restored to original
 		assertEquals(savedConfig, restoredConfig, "Configuration should be restored to original");
-		assertEquals("192.168.1.1", router.findFromName("eth0").getInterfaceAddress().getIpAddress().toString());
+		assertEquals("192.168.1.254", router.findFromName("eth0").getInterfaceAddress().getIpAddress().toString());
 		assertEquals("192.168.2.1", router.findFromName("eth1").getInterfaceAddress().getIpAddress().toString());
 		assertEquals(1, router.getRoutingTable().getRoutingEntries().size());
 	}

@@ -130,6 +130,28 @@ public class RouterCLIParser {
 				try {
 					command.execute(router);
 					out.flush();
+				} catch (org.uj.routingemulator.router.exceptions.InterfaceUnavailableException e) {
+					// Print message
+					out.println(e.getMessage());
+					out.flush();
+					// If we have a console reader available, ask user now
+					if (reader != null) {
+						String answer = null;
+						while (true) {
+							answer = reader.readLine("(Y/N) > ").trim();
+							if (answer.equalsIgnoreCase("y") || answer.equalsIgnoreCase("yes")) {
+								router.confirm();
+								break;
+							} else if (answer.equalsIgnoreCase("n") || answer.equalsIgnoreCase("no")) {
+								router.cancelConfirmation();
+								break;
+							} else {
+								out.println("Please answer Y or N");
+								out.flush();
+							}
+						}
+					}
+					return;
 				} catch (RuntimeException e) {
 					out.println(e.getMessage());
 					out.flush();
@@ -145,6 +167,26 @@ public class RouterCLIParser {
 			try {
 				prefixMatch.execute(router);
 				out.flush();
+			} catch (org.uj.routingemulator.router.exceptions.InterfaceUnavailableException e) {
+				out.println(e.getMessage());
+				out.flush();
+				if (reader != null) {
+					String answer = null;
+					while (true) {
+						answer = reader.readLine("(Y/N) > ").trim();
+						if (answer.equalsIgnoreCase("y") || answer.equalsIgnoreCase("yes")) {
+							router.confirm();
+							break;
+						} else if (answer.equalsIgnoreCase("n") || answer.equalsIgnoreCase("no")) {
+							router.cancelConfirmation();
+							break;
+						} else {
+							out.println("Please answer Y or N");
+							out.flush();
+						}
+					}
+				}
+				return;
 			} catch (RuntimeException e) {
 				out.println(e.getMessage());
 				out.flush();

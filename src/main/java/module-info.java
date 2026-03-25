@@ -5,6 +5,7 @@ module org.example.thesisuj {
 	requires java.xml;
 	requires org.jline;
 	requires org.fxmisc.richtext;
+	requires java.logging;
 
 
 	opens org.uj.routingemulator to javafx.fxml;

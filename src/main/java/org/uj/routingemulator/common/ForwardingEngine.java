@@ -70,6 +70,11 @@ public class ForwardingEngine {
                 // Destination is on a directly connected subnet of currentRouter
                 RouterInterface dstIf = intfToDst.get();
 
+                // If the interface itself is administratively disabled, treat as blackhole
+                if (dstIf.isDisabled()) {
+                    return new ForwardingOutcome(false, hops + 1, "Exit interface administratively down");
+                }
+
                 // If the destination equals the router's own interface address -> reached
                 if (dstIf.getInterfaceAddress() != null && dstIf.getInterfaceAddress().getIpAddress().equals(packet.getDestination())) {
                     hops++;
@@ -111,6 +116,12 @@ public class ForwardingEngine {
             // Next hop via interface
             if (route.getRouterInterface() != null) {
                 RouterInterface exitIf = route.getRouterInterface();
+
+                // If the exit interface is administratively disabled, this is a blackhole
+                if (exitIf.isDisabled()) {
+                    return new ForwardingOutcome(false, hops, "Exit interface administratively down");
+                }
+
                 // Find the connection where this interface participates
                 Connection exitConn = topology.getConnectionForInterface(exitIf);
                 if (exitConn == null) {

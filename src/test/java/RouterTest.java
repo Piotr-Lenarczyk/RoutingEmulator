@@ -40,10 +40,13 @@ class RouterTest {
 
 	@Test
 	void testAddRouteInConfigurationMode() {
+		RouterInterface iface = new RouterInterface("eth0");
 		RouterInterface iface1 = new RouterInterface("eth1");
 		RouterInterface iface2 = new RouterInterface("eth2");
-		Router router = new Router("Router", java.util.List.of(iface1, iface2));
+		Router router = new Router("Router", java.util.List.of(iface, iface1, iface2));
 		router.setMode(RouterMode.CONFIGURATION);
+		router.configureInterface("eth0", new InterfaceAddress(new IPAddress(192, 168, 1, 1), new SubnetMask(24)));
+		router.configureInterface("eth1", new InterfaceAddress(new IPAddress(192, 168, 2, 1), new SubnetMask(24)));
 		StaticRoutingEntry unicastDefaultDistance = new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(24)), new IPAddress(192, 168, 1, 1));
 		StaticRoutingEntry unicastWithDistance = new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 2, 0), new SubnetMask(24)), new IPAddress(192, 168, 2, 1), 150);
 		StaticRoutingEntry nextHopDefaultDistance = new StaticRoutingEntry(new Subnet(new IPAddress(10, 0, 0, 0), new SubnetMask(8)), iface1);
@@ -75,6 +78,7 @@ class RouterTest {
 	void testAddDuplicateRouteThrowsException() {
 		Router router = new Router("Router");
 		router.setMode(RouterMode.CONFIGURATION);
+		router.configureInterface("eth0", new InterfaceAddress(new IPAddress(192, 168, 1, 1), new SubnetMask(24)));
 		StaticRoutingEntry entry = new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(24)), new IPAddress(192, 168, 1, 1));
 		router.addRoute(entry);
 		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
@@ -87,6 +91,7 @@ class RouterTest {
 	void removeRouteInConfigurationMode() {
 		Router router = new Router("Router");
 		router.setMode(RouterMode.CONFIGURATION);
+		router.configureInterface("eth0", new InterfaceAddress(new IPAddress(192, 168, 1, 1), new SubnetMask(24)));
 		StaticRoutingEntry entry = new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(24)), new IPAddress(192, 168, 1, 1));
 		router.addRoute(entry);
 		assertTrue(router.getStagedRoutingTable().contains(entry));
@@ -156,6 +161,7 @@ class RouterTest {
 	void testCommitChanges() {
 		Router router = new Router("Router");
 		router.setMode(RouterMode.CONFIGURATION);
+		router.configureInterface("eth0", new InterfaceAddress(new IPAddress(192, 168, 1, 1), new SubnetMask(24)));
 		StaticRoutingEntry entry = new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(24)), new IPAddress(192, 168, 1, 1));
 		router.addRoute(entry);
 		assertTrue(router.hasUncommittedChanges());
@@ -178,6 +184,7 @@ class RouterTest {
 	void testDiscardChanges() {
 		Router router = new Router("Router");
 		router.setMode(RouterMode.CONFIGURATION);
+		router.configureInterface("eth0", new InterfaceAddress(new IPAddress(192, 168, 1, 1), new SubnetMask(24)));
 		StaticRoutingEntry entry = new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(24)), new IPAddress(192, 168, 1, 1));
 		router.addRoute(entry);
 		assertTrue(router.hasUncommittedChanges());
@@ -212,6 +219,7 @@ class RouterTest {
 	void setModeWithUncommittedChangesThrowsException() {
 		Router router = new Router("Router");
 		router.setMode(RouterMode.CONFIGURATION);
+		router.configureInterface("eth0", new InterfaceAddress(new IPAddress(192, 168, 1, 1), new SubnetMask(24)));
 		StaticRoutingEntry entry = new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(24)), new IPAddress(192, 168, 1, 1));
 		router.addRoute(entry);
 		assertTrue(router.hasUncommittedChanges());
@@ -226,6 +234,7 @@ class RouterTest {
 	void setModeForcedDiscardsUncommittedChanges() {
 		Router router = new Router("Router");
 		router.setMode(RouterMode.CONFIGURATION);
+		router.configureInterface("eth0", new InterfaceAddress(new IPAddress(192, 168, 1, 1), new SubnetMask(24)));
 		StaticRoutingEntry entry = new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(24)), new IPAddress(192, 168, 1, 1));
 		router.addRoute(entry);
 		assertTrue(router.hasUncommittedChanges());
@@ -239,9 +248,9 @@ class RouterTest {
 	void testResetRestoresRouterToDefaultConfiguration() {
 		Router router = new Router("Router");
 		router.setMode(RouterMode.CONFIGURATION);
-		StaticRoutingEntry entry = new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(24)), new IPAddress(192, 168, 1, 1));
-		router.addRoute(entry);
 		router.configureInterface("eth0", new InterfaceAddress(new IPAddress(10, 0, 0, 1), new SubnetMask(8)));
+		StaticRoutingEntry entry = new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(24)), new IPAddress(10, 0, 0, 1));
+		router.addRoute(entry);
 
 		router.reset();
 
@@ -264,6 +273,7 @@ class RouterTest {
 	void testDisableRouteInConfigurationMode() {
 		Router router = new Router("Router");
 		router.setMode(RouterMode.CONFIGURATION);
+		router.configureInterface("eth0", new InterfaceAddress(new IPAddress(192, 168, 1, 1), new SubnetMask(24)));
 		StaticRoutingEntry entry = new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(24)), new IPAddress(192, 168, 1, 1));
 		router.addRoute(entry);
 
@@ -289,6 +299,7 @@ class RouterTest {
 	void testDisableAlreadyDisabledRouteThrowsException() {
 		Router router = new Router("Router");
 		router.setMode(RouterMode.CONFIGURATION);
+		router.configureInterface("eth0", new InterfaceAddress(new IPAddress(192, 168, 1, 1), new SubnetMask(24)));
 		StaticRoutingEntry entry = new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(24)), new IPAddress(192, 168, 1, 1));
 		router.addRoute(entry);
 		router.disableRoute(entry);
@@ -459,6 +470,7 @@ class RouterTest {
 	void testDisableRoute() {
 		Router router = new Router("Router");
 		router.setMode(RouterMode.CONFIGURATION);
+		router.configureInterface("eth0", new InterfaceAddress(new IPAddress(192, 168, 1, 1), new SubnetMask(24)));
 		StaticRoutingEntry entry = new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(24)), new IPAddress(192, 168, 1, 1));
 		router.addRoute(entry);
 		assertFalse(entry.isDisabled());
@@ -471,6 +483,7 @@ class RouterTest {
 	void testDisableRouteInOperationalModeThrowsException() {
 		Router router = new Router("Router");
 		router.setMode(RouterMode.CONFIGURATION);
+		router.configureInterface("eth0", new InterfaceAddress(new IPAddress(192, 168, 1, 1), new SubnetMask(24)));
 		StaticRoutingEntry entry = new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(24)), new IPAddress(192, 168, 1, 1));
 		router.addRoute(entry);
 		router.commitChanges();
@@ -503,7 +516,7 @@ class RouterTest {
 	void testShowIpRouteInOperationalMode() {
 		Router router = new Router("Router");
 		router.setMode(RouterMode.CONFIGURATION);
-		router.configureInterface("eth0", new InterfaceAddress(new IPAddress(192, 168, 1, 1), new SubnetMask(24)));
+		router.configureInterface("eth0", new InterfaceAddress(new IPAddress(192, 168, 1, 254), new SubnetMask(24)));
 		router.addRoute(new StaticRoutingEntry(
 			new Subnet(new IPAddress(10, 0, 0, 0), new SubnetMask(8)),
 			new IPAddress(192, 168, 1, 254)
@@ -533,7 +546,7 @@ class RouterTest {
 	void testShowIpRouteWithDisabledRouteNotShown() {
 		Router router = new Router("Router");
 		router.setMode(RouterMode.CONFIGURATION);
-		router.configureInterface("eth0", new InterfaceAddress(new IPAddress(192, 168, 1, 1), new SubnetMask(24)));
+		router.configureInterface("eth0", new InterfaceAddress(new IPAddress(192, 168, 1, 254), new SubnetMask(24)));
 
 		StaticRoutingEntry entry = new StaticRoutingEntry(
 			new Subnet(new IPAddress(10, 0, 0, 0), new SubnetMask(8)),
@@ -597,7 +610,7 @@ class RouterTest {
 	void testCommitChangesCreatesDeepCopy() {
 		Router router = new Router("Router");
 		router.setMode(RouterMode.CONFIGURATION);
-
+		router.configureInterface("eth0", new InterfaceAddress(new IPAddress(192, 168, 1, 1), new SubnetMask(24)));
 		StaticRoutingEntry entry = new StaticRoutingEntry(
 			new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(24)),
 			new IPAddress(192, 168, 1, 1)
