@@ -120,10 +120,6 @@ public class Router {
 					.orElse(null);
 
 			if (found == null) {
-				System.err.println("DBG addRoute: nextHop=" + nh);
-				for (RouterInterface ri : stagedInterfaces) {
-					System.err.println("DBG iface=" + ri.getInterfaceName() + " addr=" + ri.getInterfaceAddress() + " subnet=" + ri.getSubnet());
-				}
 				// Determine whether next-hop lies inside any configured subnet on staged interfaces
 				boolean inLocalSubnet = false;
 				Integer inferredMask = null;
