@@ -8,6 +8,8 @@ import org.uj.routingemulator.common.*;
 import org.uj.routingemulator.router.exceptions.ConfigurationNotFoundException;
 import org.uj.routingemulator.router.exceptions.DuplicateConfigurationException;
 
+import java.util.logging.Logger;
+
 /**
  * Represents a network interface on a router device.
  * <p>
@@ -37,6 +39,7 @@ import org.uj.routingemulator.router.exceptions.DuplicateConfigurationException;
 @EqualsAndHashCode
 @ToString
 public class RouterInterface implements NetworkInterface {
+	private static final Logger logger = Logger.getLogger(RouterInterface.class.getName());
 	private String interfaceName;
 	private InterfaceAddress interfaceAddress;
 	private MacAddress macAddress;
@@ -160,9 +163,12 @@ public class RouterInterface implements NetworkInterface {
 	 */
 	public void disable() {
 		if (this.status.getAdmin() == AdminState.ADMIN_DOWN) {
+			logger.warning("Interface %s is already administratively disabled.".formatted(this.interfaceName));
 			throw new DuplicateConfigurationException("Configuration path: [interfaces ethernet %s disable] already exists".formatted(this.interfaceName));
 		}
+		logger.finer("Disabling interface %s. Previous status: %s".formatted(this.interfaceName, this.status));
 		this.status = new InterfaceStatus(AdminState.ADMIN_DOWN, this.status.getLink());
+		logger.finest("Setting interface %s admin state to %s".formatted(this.interfaceName, this.status.getAdmin()));
 	}
 
 	/**
@@ -174,9 +180,12 @@ public class RouterInterface implements NetworkInterface {
 	 */
 	public void enable() {
 		if (this.status.getAdmin() == AdminState.UP) {
+			logger.warning("Interface %s is already enabled.".formatted(this.interfaceName));
 			throw new ConfigurationNotFoundException("Nothing to delete (the specified node does not exist)");
 		}
+		logger.finer("Enabling interface %s. Previous status: %s".formatted(this.interfaceName, this.status));
 		this.status = new InterfaceStatus(AdminState.UP, this.status.getLink());
+		logger.finest("Setting interface %s admin state to %s".formatted(this.interfaceName, this.status.getAdmin()));
 	}
 
 	/**
@@ -212,6 +221,7 @@ public class RouterInterface implements NetworkInterface {
 	 */
 	public void updateLinkState(NetworkTopology topology) {
 		LinkState newLinkState = topology.hasActiveConnection(this) ? LinkState.UP : LinkState.DOWN;
+		logger.finer("Updating link state for interface %s to %s".formatted(this.interfaceName, newLinkState));
 		this.status = new InterfaceStatus(this.status.getAdmin(), newLinkState);
 	}
 }

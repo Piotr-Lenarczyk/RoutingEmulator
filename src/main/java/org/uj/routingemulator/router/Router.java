@@ -11,6 +11,7 @@ import org.uj.routingemulator.router.exceptions.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Represents a network router with VyOS-style configuration management.
@@ -29,6 +30,7 @@ import java.util.List;
 @Setter
 @EqualsAndHashCode
 public class Router {
+	private static final Logger logger = Logger.getLogger(Router.class.getName());
 	/**
 	 * Pending confirmation entries for the last command that produced warnings.
 	 * This list is cleared when confirm() or cancelConfirmation() is called.
@@ -66,6 +68,7 @@ public class Router {
 		this.mode = RouterMode.OPERATIONAL;
 		this.stagedRoutingTable = new RoutingTable(this.routingTable);
 		this.stagedInterfaces = deepCopyInterfaces(this.interfaces);
+		logger.fine("Creating new router %s with default configuration".formatted(name));
 	}
 
 	/**
@@ -82,6 +85,7 @@ public class Router {
 		this.mode = RouterMode.OPERATIONAL;
 		this.stagedRoutingTable = new RoutingTable();
 		this.stagedInterfaces = new ArrayList<>(interfaces);
+		logger.fine("Creating new router %s with custom interfaces: %s".formatted(name, interfaces));
 	}
 
 	public boolean hasUncommittedChanges() {
@@ -101,9 +105,11 @@ public class Router {
 	 */
 	public void addRoute(StaticRoutingEntry entry) {
 		if (mode != RouterMode.CONFIGURATION) {
+			logger.warning("Attempted to add route while in %s mode".formatted(mode));
 			throw new InvalidModeException("Invalid command: set [protocols]");
 		}
 		if (stagedRoutingTable.contains(entry)) {
+			logger.warning("Attempted to add duplicate route: %s".formatted(entry));
 			throw new DuplicateConfigurationException("Route already exists");
 		}
 		// Stage the route first so it can be committed after confirmation
@@ -112,7 +118,8 @@ public class Router {
 
 		// If this is a next-hop based route, validate that the next-hop corresponds to an interface on this router
 		if (entry.getNextHop() != null) {
-			org.uj.routingemulator.common.IPAddress nh = entry.getNextHop();
+			logger.finer("Validating next-hop %s for the new route".formatted(entry.getNextHop()));
+			IPAddress nh = entry.getNextHop();
 			// Look for an interface in stagedInterfaces that has this exact IP assigned
 			RouterInterface found = stagedInterfaces.stream()
 					.filter(i -> i.getInterfaceAddress() != null && i.getInterfaceAddress().getIpAddress().equals(nh))
@@ -121,9 +128,11 @@ public class Router {
 
 			if (found == null) {
 				// Determine whether next-hop lies inside any configured subnet on staged interfaces
+				logger.finer("Next-hop %s not found on any interface. Checking if it is in a directly connected subnet...".formatted(nh));
 				boolean inLocalSubnet = false;
 				Integer inferredMask = null;
 				for (RouterInterface ri : stagedInterfaces) {
+					logger.finest("Checking interface %s with subnet %s".formatted(ri.getInterfaceName(), ri.getSubnet()));
 					if (ri.getSubnet() != null && ri.getSubnet().getSubnetMask() != null) {
 						Subnet s = ri.getSubnet();
 						long ipAsLong = ((long) nh.getOctet1() << 24) | ((long) nh.getOctet2() << 16) | ((long) nh.getOctet3() << 8) | nh.getOctet4();
@@ -142,13 +151,15 @@ public class Router {
 				String msg = String.format("Next-hop interface %s not found on the router\nPackets routed through this interface will be dropped\nWould you like to proceed anyway? (Y/N)", nhFormatted);
 
 				// Create rollback to remove staged entry
-				java.lang.Runnable rollback = () -> stagedRoutingTable.getRoutingEntries().remove(entry);
+				Runnable rollback = () -> stagedRoutingTable.getRoutingEntries().remove(entry);
 				pendingConfirmations.clear();
 				pendingConfirmations.add(new ConfirmationEntry(msg, rollback));
 
 				// Always throw: next-hop not found on this router. Pending confirmation exists for interactive UIs.
-				throw new org.uj.routingemulator.router.exceptions.InterfaceNotFoundException(msg);
+				logger.warning("Next-hop interface %s not found on the router".formatted(nh));
+				throw new InterfaceNotFoundException(msg);
 			}
+			logger.info("%s: Creating static route %s".formatted(this.name, entry));
 		}
 	}
 
@@ -161,13 +172,16 @@ public class Router {
 	 */
 	public void removeRoute(StaticRoutingEntry entry) {
 		if (mode != RouterMode.CONFIGURATION) {
+			logger.warning("Attempted to remove route while in %s mode".formatted(mode));
 			throw new InvalidModeException("Invalid command: delete [protocols]");
 		}
 		if (!stagedRoutingTable.getRoutingEntries().contains(entry)) {
+			logger.warning("Attempted to remove non-existent route: %s".formatted(entry));
 			throw new ConfigurationNotFoundException("Nothing to delete");
 		}
 		this.stagedRoutingTable.getRoutingEntries().remove(entry);
 		hasUncommittedChanges = true;
+		logger.info("%s: Route %s removed from staged configuration".formatted(this.name, entry));
 	}
 
 	/**
@@ -182,21 +196,25 @@ public class Router {
 	 */
 	public void disableRoute(StaticRoutingEntry entry) {
 		if (mode != RouterMode.CONFIGURATION) {
+			logger.warning("Attempted to disable route while in %s mode".formatted(mode));
 			throw new InvalidModeException("Invalid command: set [protocols]");
 		}
 		// Find existing entry by equality (equals ignores isDisabled)
 		List<StaticRoutingEntry> entries = stagedRoutingTable.getRoutingEntries();
 		int idx = entries.indexOf(entry);
 		if (idx == -1) {
+			logger.warning("Attempted to disable non-existent route: %s".formatted(entry));
 			throw new ConfigurationNotFoundException("Route not found");
 		}
 		StaticRoutingEntry existing = entries.get(idx);
 		if (existing.isDisabled()) {
 			// disabling an already-disabled route is a duplicate configuration
+			logger.warning("Attempted to disable an already disabled route: %s".formatted(entry));
 			throw new DuplicateConfigurationException("Route already exists");
 		}
 		existing.disable();
 		hasUncommittedChanges = true;
+		logger.info("%s: Route %s disabled in staged configuration".formatted(this.name, entry));
 	}
 
 	/**
@@ -211,11 +229,13 @@ public class Router {
 	 */
 	public void configureInterface(String routerInterfaceName, InterfaceAddress interfaceAddress) {
 		if (mode != RouterMode.CONFIGURATION) {
+			logger.warning("Attempted to configure interface while in %s mode".formatted(mode));
 			throw new InvalidModeException("Invalid command: set [interfaces]");
 		}
 
 		// Provide validation with concise error messages
 		if (interfaceAddress.isNetworkAddress()) {
+			logger.warning("Attempted to assign network address %s to interface %s".formatted(interfaceAddress, routerInterfaceName));
 			throw new InvalidAddressException(
 					String.format("Cannot assign network address %s to the interface. Use a host address instead",
 							interfaceAddress)
@@ -223,6 +243,7 @@ public class Router {
 		}
 
 		if (interfaceAddress.isBroadcastAddress()) {
+			logger.warning("Attempted to assign broadcast address %s to interface %s".formatted(interfaceAddress, routerInterfaceName));
 			throw new InvalidAddressException(
 					String.format("Cannot assign broadcast address %s to the interface. Use a host address instead",
 							interfaceAddress)
@@ -230,6 +251,7 @@ public class Router {
 		}
 
 		if (!interfaceAddress.isValidHostAddress()) {
+			logger.warning("Attempted to assign invalid host address %s to interface %s".formatted(interfaceAddress, routerInterfaceName));
 			throw new InvalidAddressException(interfaceAddress + " is not a valid host IP address");
 		}
 
@@ -240,6 +262,7 @@ public class Router {
 
 		// Check duplicate first
 		if (routerInterface.getInterfaceAddress() != null && routerInterface.getInterfaceAddress().equals(interfaceAddress)) {
+			logger.warning("Attempted to assign duplicate address %s to interface %s".formatted(interfaceAddress, routerInterfaceName));
 			throw new DuplicateConfigurationException("Configuration already exists");
 		}
 
@@ -252,13 +275,15 @@ public class Router {
 
 		// If the interface is administratively disabled, prepare confirmation and throw a specific exception
 		if (routerInterface.isDisabled()) {
+			logger.warning("Interface %s is disabled. Packets routed through this interface will be dropped".formatted(routerInterfaceName));
 			String msg = String.format("Interface %s is disabled\nPackets routed through this interface will be dropped\nWould you like to proceed anyway? (Y/N)", routerInterface.getInterfaceName());
 			// create rollback runnable
-			java.lang.Runnable rollback = () -> routerInterface.setInterfaceAddress(previous);
+			Runnable rollback = () -> routerInterface.setInterfaceAddress(previous);
 			pendingConfirmations.clear(); // only keep confirmations for last command
 			pendingConfirmations.add(new ConfirmationEntry(msg, rollback));
 			throw new InterfaceUnavailableException(msg);
 		}
+		logger.info("%s: Interface %s configured with address %s in staged configuration".formatted(this.name, routerInterfaceName, interfaceAddress));
 	}
 
 	/**
@@ -270,6 +295,7 @@ public class Router {
 	 */
 	public void disableInterface(String routerInterfaceName) {
 		if (mode != RouterMode.CONFIGURATION) {
+			logger.warning("Attempted to disable interface while in %s mode".formatted(mode));
 			throw new InvalidModeException("Invalid command: set [interfaces]");
 		}
 
@@ -277,7 +303,7 @@ public class Router {
 				.filter(intf -> intf.getInterfaceName().equals(routerInterfaceName))
 				.findFirst()
 				.orElseThrow(() -> new InterfaceNotFoundException("WARN: interface %s does not exist, changes will not be commited".formatted(routerInterfaceName)));
-
+		logger.info("%s: Disabling interface %s in staged configuration".formatted(this.getName(), routerInterfaceName));
 		routerInterface.disable();
 		hasUncommittedChanges = true;
 	}
@@ -292,6 +318,7 @@ public class Router {
 	 */
 	public void deleteInterfaceAddress(String routerInterfaceName) {
 		if (mode != RouterMode.CONFIGURATION) {
+			logger.warning("Attempted to delete interface address while in %s mode".formatted(mode));
 			throw new InvalidModeException("Invalid command: delete [interfaces]");
 		}
 
@@ -301,11 +328,13 @@ public class Router {
 				.orElseThrow(() -> new InterfaceNotFoundException("WARN: interface %s does not exist, changes will not be commited".formatted(routerInterfaceName)));
 
 		if (routerInterface.getInterfaceAddress() == null) {
+			logger.warning("Attempted to delete non-existent address from interface %s".formatted(routerInterfaceName));
 			throw new ConfigurationNotFoundException("No value to delete");
 		}
 
 		routerInterface.setInterfaceAddress(null);
 		hasUncommittedChanges = true;
+		logger.info("%s: Address deleted from interface %s in staged configuration".formatted(this.name, routerInterfaceName));
 	}
 
 	/**
@@ -316,20 +345,24 @@ public class Router {
 	 */
 	public void commitChanges() {
 		if (mode != RouterMode.CONFIGURATION) {
+			logger.warning("Attempted to commit changes while in %s mode".formatted(mode));
 			throw new InvalidModeException("Invalid command: [commit]");
 		}
 		if (!hasUncommittedChanges) {
+			logger.warning("Attempted to commit with no changes in staged configuration");
 			throw new NoChangesToCommitException("No configuration changes to commit");
 		}
 
 		// Instead of replacing interface objects (which would break existing Connection references),
 		// update existing RouterInterface instances in-place to preserve identity held by NetworkTopology.
 		for (RouterInterface stagedIf : stagedInterfaces) {
+			logger.finest("Committing interface %s with address %s".formatted(stagedIf.getInterfaceName(), stagedIf.getInterfaceAddress()));
 			RouterInterface existing = this.interfaces.stream()
 					.filter(i -> i.getInterfaceName().equals(stagedIf.getInterfaceName()))
 					.findFirst()
 					.orElse(null);
 			if (existing != null) {
+				logger.finest("Updating existing interface %s in-place".formatted(existing.getInterfaceName()));
 				existing.setInterfaceAddress(stagedIf.getInterfaceAddress());
 				existing.setMacAddress(stagedIf.getMacAddress());
 				existing.setDescription(stagedIf.getDescription());
@@ -338,6 +371,7 @@ public class Router {
 				existing.setStatus(stagedIf.getStatus());
 			} else {
 				// New interface added in staged config - append a copy preserving object identity for future commits
+				logger.finest("Adding new interface %s to committed configuration".formatted(stagedIf.getInterfaceName()));
 				this.interfaces.add(new RouterInterface(stagedIf));
 			}
 		}
@@ -345,6 +379,7 @@ public class Router {
 		// Update routing table while mapping staged interface references to the committed interface objects
 		this.routingTable = copyRoutingTableWithUpdatedInterfaces(stagedRoutingTable, stagedInterfaces, interfaces);
 		hasUncommittedChanges = false;
+		logger.info("%s: Commit complete".formatted(this.name));
 	}
 
 	/**
@@ -481,34 +516,40 @@ public class Router {
 			RoutingTable routingTable,
 			List<RouterInterface> oldInterfaces,
 			List<RouterInterface> newInterfaces) {
-
+		logger.finest("Copying routing table with updated interfaces");
 		RoutingTable newTable = new RoutingTable();
 		for (StaticRoutingEntry entry : routingTable.getRoutingEntries()) {
+			logger.finest("Processing route %s for subnet %s".formatted(entry, entry.getSubnet()));
 			StaticRoutingEntry newEntry;
 			if (entry.getRouterInterface() != null) {
+				logger.finest("Route is interface-based, finding corresponding interface in new configuration");
 				// Find corresponding interface in newInterfaces
 				String interfaceName = entry.getRouterInterface().getInterfaceName();
 				RouterInterface newInterface = newInterfaces.stream()
 						.filter(intf -> intf.getInterfaceName().equals(interfaceName))
 						.findFirst()
 						.orElse(null);
-
 				// Create new entry with updated interface reference
 				if (entry.getAdministrativeDistance() == 1) {
+					logger.finest("Creating new interface-based route with default administrative distance");
 					newEntry = new StaticRoutingEntry(entry.getSubnet(), newInterface);
 				} else {
+					logger.finest("Creating new interface-based route with administrative distance %d".formatted(entry.getAdministrativeDistance()));
 					newEntry = new StaticRoutingEntry(entry.getSubnet(), newInterface, entry.getAdministrativeDistance());
 				}
 			} else {
 				// Next-hop route - just copy
 				if (entry.getAdministrativeDistance() == 1) {
+					logger.finest("Creating new next-hop route with default administrative distance");
 					newEntry = new StaticRoutingEntry(entry.getSubnet(), entry.getNextHop());
 				} else {
+					logger.finest("Creating new next-hop route with administrative distance %d".formatted(entry.getAdministrativeDistance()));
 					newEntry = new StaticRoutingEntry(entry.getSubnet(), entry.getNextHop(), entry.getAdministrativeDistance());
 				}
 			}
 			// Preserve disabled state
 			if (entry.isDisabled()) {
+				logger.finest("Preserving disabled state for route %s".formatted(entry));
 				newEntry.disable();
 			}
 			newTable.addRoute(newEntry);
@@ -526,6 +567,7 @@ public class Router {
 	 */
 	public String showIpRoute() {
 		if (mode != RouterMode.OPERATIONAL) {
+			logger.warning("Attempted to show IP route while in %s mode".formatted(mode));
 			throw new InvalidModeException("Invalid command: show [ip]");
 		}
 
@@ -669,8 +711,10 @@ public class Router {
 	 * @return A new list containing copies of all interfaces
 	 */
 	private List<RouterInterface> deepCopyInterfaces(List<RouterInterface> interfaces) {
+		logger.finest("Creating deep copy of interfaces for staged configuration");
 		List<RouterInterface> copy = new ArrayList<>();
 		for (RouterInterface iface : interfaces) {
+			logger.finest("Copying interface %s with address %s".formatted(iface.getInterfaceName(), iface.getInterfaceAddress()));
 			copy.add(new RouterInterface(iface));
 		}
 		return copy;
@@ -697,6 +741,7 @@ public class Router {
 	 * (changes were already staged) and clears the pending confirmation list.
 	 */
 	public void confirm() {
+		logger.fine("User confirmed pending changes. Keeping staged configuration as-is.");
 		pendingConfirmations.clear();
 	}
 
@@ -705,13 +750,16 @@ public class Router {
 	 * and clears the pending confirmation list.
 	 */
 	public void cancelConfirmation() {
+		logger.fine("User cancelled pending changes. Rolling back staged configuration.");
 		for (ConfirmationEntry e : pendingConfirmations) {
 			try {
+				logger.finest("Rolling back staged change: %s".formatted(e.message));
 				e.rollback.run();
 			} catch (Exception ignored) {
 				// swallow; rollback should be best-effort
 			}
 		}
+		logger.fine("Rollback complete. Clearing pending confirmations.");
 		pendingConfirmations.clear();
 		// Recompute whether there are any uncommitted changes by comparing staged vs committed
 		this.hasUncommittedChanges = !this.stagedInterfaces.equals(this.interfaces) || !this.stagedRoutingTable.equals(this.routingTable);
@@ -723,12 +771,14 @@ public class Router {
 	 * this confirmation entry.
 	 */
 	private static class ConfirmationEntry {
+		private static final Logger logger = Logger.getLogger(ConfirmationEntry.class.getName());
 		final String message;
 		final java.lang.Runnable rollback;
 
 		ConfirmationEntry(String message, java.lang.Runnable rollback) {
 			this.message = message;
 			this.rollback = rollback;
+			logger.finest("Created confirmation entry with message: %s".formatted(message));
 		}
 	}
 }

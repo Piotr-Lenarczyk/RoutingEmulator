@@ -15,6 +15,10 @@ import org.uj.routingemulator.switching.SwitchPort;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 /**
  * Main application class for the Network Routing Emulator.
@@ -32,13 +36,33 @@ public class Main extends Application {
 	}
 
 	public static void main(String[] args) {
+		configureLogging(Level.ALL);
+
+		private static final Logger logger = Logger.getLogger(Main.class.getName());
+		logger.info("Starting Network Routing Emulator...");
+
 		// Check if CLI mode is requested
 		if (args.length > 0 && args[0].equals("--cli")) {
+			logger.info("Running in CLI mode...");
 			runCLIMode();
 		} else {
 			// Launch GUI
+			logger.info("Running in GUI mode...");
 			launch();
 		}
+	}
+
+	/**
+	 * Configure java.util.logging globally by resetting the LogManager and installing a ConsoleHandler
+	 * on the root logger. Call with desired Level (e.g. Level.INFO or Level.ALL).
+	 */
+	private static void configureLogging(Level level) {
+		LogManager.getLogManager().reset();
+		Logger rootLogger = Logger.getLogger("org.uj.routingemulator");
+		rootLogger.setLevel(level);
+		ConsoleHandler consoleHandler = new ConsoleHandler();
+		consoleHandler.setLevel(level);
+		rootLogger.addHandler(consoleHandler);
 	}
 
 	/**
@@ -81,4 +105,3 @@ public class Main extends Application {
 		cli.start();
 	}
 }
-

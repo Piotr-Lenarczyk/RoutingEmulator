@@ -10,14 +10,17 @@ import org.uj.routingemulator.router.cli.ethernet.DeleteInterfaceEthernetCommand
 import org.uj.routingemulator.router.cli.ethernet.DisableInterfaceEthernetCommand;
 import org.uj.routingemulator.router.cli.ethernet.SetInterfaceEthernetCommand;
 import org.uj.routingemulator.router.cli.route.*;
+import org.uj.routingemulator.router.exceptions.InterfaceUnavailableException;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class RouterCLIParser {
+	private static final Logger logger = Logger.getLogger(RouterCLIParser.class.getName());
 	@Getter
 	private final List<RouterCommand> commands;
 	@Getter
@@ -34,7 +37,7 @@ public class RouterCLIParser {
 		} catch (IOException e) {
 			// If terminal creation fails (e.g., in GUI), writer will be null
 			// Commands should use CLIContext.getWriter() which has a fallback
-			System.err.println("Warning: Could not create system terminal: " + e.getMessage());
+			logger.warning("Could not create system terminal: %s".formatted(e.getMessage()));
 			this.terminal = null;
 			this.writer = null;
 		}
@@ -122,15 +125,18 @@ public class RouterCLIParser {
 		// In terminal mode, it's set in RouterCLI.start()
 		// In GUI mode, it's set by captureOutput() wrapper
 
+		logger.info("%s: Executing command: %s".formatted(router.getName(), input));
+
 		PrintWriter out = CLIContext.getWriter(); // This has a fallback to System.out
 
 		// First, try exact match
 		for (RouterCommand command : commands) {
 			if (command.matches(input)) {
 				try {
+					logger.info("%s: Command match found: %s for input string: %s".formatted(router.getName(), command.getCommandPattern(), input));
 					command.execute(router);
 					out.flush();
-				} catch (org.uj.routingemulator.router.exceptions.InterfaceUnavailableException e) {
+				} catch (InterfaceUnavailableException e) {
 					// Print message
 					out.println(e.getMessage());
 					out.flush();

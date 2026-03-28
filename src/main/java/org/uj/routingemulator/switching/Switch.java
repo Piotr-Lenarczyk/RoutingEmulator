@@ -5,6 +5,7 @@ import lombok.Setter;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Represents a network switch device.
@@ -15,6 +16,7 @@ import java.util.List;
 @Getter
 @Setter
 public class Switch {
+	private static final Logger logger = Logger.getLogger(Switch.class.getName());
 	private String name;
 	private LinkedList<SwitchPort> ports;
 
@@ -27,6 +29,7 @@ public class Switch {
 	public Switch(String name, List<SwitchPort> ports) {
 		this.name = name;
 		this.ports = new LinkedList<>(ports);
+		logger.fine("Creating new switch: %s with ports: %s".formatted(name, ports));
 	}
 
 	/**
@@ -42,6 +45,7 @@ public class Switch {
 		// Add two default ports so tests that expect ports to exist work
 		this.ports.add(new SwitchPort("GigabitEthernet0/1"));
 		this.ports.add(new SwitchPort("GigabitEthernet0/2"));
+		logger.fine("Creating new switch: %s with default ports: %s".formatted(name, ports));
 	}
 
 	/**

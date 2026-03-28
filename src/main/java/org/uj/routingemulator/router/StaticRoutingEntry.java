@@ -128,4 +128,15 @@ public class StaticRoutingEntry {
 			throw new RuntimeException("Administrative distance must be between 1 and 255. Provided: " + administrativeDistance);
 		}
 	}
+
+	@Override
+	public String toString() {
+		return "StaticRoutingEntry{" +
+				"subnet=" + subnet +
+				", routerInterface=" + routerInterface +
+				", nextHop=" + nextHop +
+				", administrativeDistance=" + administrativeDistance +
+				", isDisabled=" + isDisabled +
+				'}';
+	}
 }

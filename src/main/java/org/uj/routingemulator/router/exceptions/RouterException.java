@@ -9,7 +9,7 @@ import java.util.logging.Logger;
  * for exception handling.
  */
 public class RouterException extends RuntimeException {
-	Logger logger = Logger.getLogger(RouterException.class.getName());
+	private static final Logger logger = Logger.getLogger(RouterException.class.getName());
 
 	/**
 	 * Creates a new router exception with the specified message.

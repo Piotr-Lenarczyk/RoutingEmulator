@@ -6,11 +6,14 @@ import org.uj.routingemulator.common.NetworkTopology;
 import org.uj.routingemulator.common.PingService;
 import org.uj.routingemulator.common.PingStatistics;
 
+import java.util.logging.Logger;
+
 /** Hosts are simplified network endpoints with a single network interface.
  * They can send and receive traffic but do not forward packets.
  */
 @Data
 public class Host {
+	private static final Logger logger = Logger.getLogger(Host.class.getName());
 	private String hostname;
 	private HostInterface hostInterface;
 
@@ -23,6 +26,7 @@ public class Host {
 	public Host(String hostname, HostInterface hostInterface) {
 		this.hostname = hostname;
 		this.hostInterface = hostInterface;
+		logger.fine("Creating new host " + hostname + " with interface: " + hostInterface);
 	}
 
 	/**
@@ -33,7 +37,9 @@ public class Host {
 	 * @return PingStatistics with results
 	 */
 	public PingStatistics ping(String dst, NetworkTopology topology) {
+		logger.info("Initializing new PingService for host " + hostname);
 		PingService svc = new PingService();
+		logger.info("%s: Pinging %s with 4 probes...".formatted(hostname, dst));
 		return svc.ping(this, dst, 4, topology);
 	}
 

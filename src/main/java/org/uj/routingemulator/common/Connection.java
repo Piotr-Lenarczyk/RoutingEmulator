@@ -6,6 +6,8 @@ import org.uj.routingemulator.router.AdminState;
 import org.uj.routingemulator.router.InterfaceStatus;
 import org.uj.routingemulator.router.RouterInterface;
 
+import java.util.logging.Logger;
+
 /**
  * Represents a bidirectional connection between two network interfaces.
  * <p>
@@ -18,6 +20,7 @@ import org.uj.routingemulator.router.RouterInterface;
 @Getter
 @EqualsAndHashCode
 public class Connection {
+	private static final Logger logger = Logger.getLogger(Connection.class.getName());
 	private final NetworkInterface interfaceA;
 	private final NetworkInterface interfaceB;
 
@@ -32,10 +35,13 @@ public class Connection {
 		try {
 			validateConnection(interfaceA, interfaceB);
 		} catch (RuntimeException e) {
+			logger.warning("Failed to create connection between %s and %s: %s".formatted(
+					interfaceA.getInterfaceName(), interfaceB.getInterfaceName(), e.getMessage()));
 			throw new RuntimeException("Could not establish connection " + e.getMessage());
 		}
 		this.interfaceA = interfaceA;
 		this.interfaceB = interfaceB;
+		logger.fine("Setting up connection between %s and %s".formatted(interfaceA.getInterfaceName(), interfaceB.getInterfaceName()));
 	}
 
 	/**
@@ -61,6 +67,7 @@ public class Connection {
 			InterfaceStatus status = router.getStatus();
 			// Only check administrative state - link state will be set as result of connection
 			if (status != null && status.getAdmin().equals(AdminState.ADMIN_DOWN)) {
+				logger.warning("Cannot connect to interface %s: Interface is administratively down.".formatted(networkInterface.getInterfaceName()));
 				throw new RuntimeException("Interface " + networkInterface.getInterfaceName() + " is administratively down.");
 			}
 		}
@@ -79,6 +86,8 @@ public class Connection {
 		} else if (iface.equals(interfaceB)) {
 			return interfaceA;
 		} else {
+			logger.severe("Interface %s is not part of this connection between %s and %s".formatted(
+					iface.getInterfaceName(), interfaceA.getInterfaceName(), interfaceB.getInterfaceName()));
 			throw new RuntimeException("Interface not part of this connection");
 		}
 	}
