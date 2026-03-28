@@ -25,6 +25,7 @@ import java.util.logging.Logger;
  * Provides both GUI and CLI interfaces for network topology management and router configuration.
  */
 public class Main extends Application {
+	private static final Logger logger = Logger.getLogger(Main.class.getName());
 
 	@Override
 	public void start(Stage stage) throws IOException {
@@ -38,7 +39,7 @@ public class Main extends Application {
 	public static void main(String[] args) {
 		configureLogging(Level.ALL);
 
-		private static final Logger logger = Logger.getLogger(Main.class.getName());
+
 		logger.info("Starting Network Routing Emulator...");
 
 		// Check if CLI mode is requested
