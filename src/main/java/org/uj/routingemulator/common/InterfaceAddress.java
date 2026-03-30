@@ -51,6 +51,19 @@ public class InterfaceAddress {
 	 * @return Subnet representing the network this interface belongs to
 	 */
 	public Subnet getSubnet() {
+		long networkAsLong = getNetworkAsLong();
+
+		// Convert back to octets
+		int octet1 = (int) ((networkAsLong >> 24) & 0xFF);
+		int octet2 = (int) ((networkAsLong >> 16) & 0xFF);
+		int octet3 = (int) ((networkAsLong >> 8) & 0xFF);
+		int octet4 = (int) (networkAsLong & 0xFF);
+
+		IPAddress networkAddress = new IPAddress(octet1, octet2, octet3, octet4);
+		return new Subnet(networkAddress, subnetMask);
+	}
+
+	private long getNetworkAsLong() {
 		int prefixLength = subnetMask.getShortMask();
 
 		// Convert IP to long
@@ -63,16 +76,7 @@ public class InterfaceAddress {
 		long networkMask = (prefixLength == 0) ? 0 : (0xFFFFFFFFL << (32 - prefixLength));
 
 		// Apply mask to get network address
-		long networkAsLong = ipAsLong & networkMask;
-
-		// Convert back to octets
-		int octet1 = (int) ((networkAsLong >> 24) & 0xFF);
-		int octet2 = (int) ((networkAsLong >> 16) & 0xFF);
-		int octet3 = (int) ((networkAsLong >> 8) & 0xFF);
-		int octet4 = (int) (networkAsLong & 0xFF);
-
-		IPAddress networkAddress = new IPAddress(octet1, octet2, octet3, octet4);
-		return new Subnet(networkAddress, subnetMask);
+		return ipAsLong & networkMask;
 	}
 
 	/**

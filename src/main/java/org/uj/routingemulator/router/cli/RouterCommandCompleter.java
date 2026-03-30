@@ -16,11 +16,9 @@ import java.util.List;
  */
 public class RouterCommandCompleter implements Completer {
 	private final Router router;
-	private final List<RouterCommand> commands;
 
-	public RouterCommandCompleter(Router router, List<RouterCommand> commands) {
+	public RouterCommandCompleter(Router router) {
 		this.router = router;
-		this.commands = commands;
 	}
 
 	@Override
@@ -154,14 +152,8 @@ public class RouterCommandCompleter implements Completer {
 			}
 		} else if (words.length == 5 && words[1].equalsIgnoreCase("interfaces")) {
 			// After interface name (e.g., "set interfaces ethernet eth0 ...")
-			if (currentWord.isEmpty()) {
-				// Show hints for what can be configured
-				addCandidateIfMatches(candidates, "address", "Set IP address", currentWord);
-				addCandidateIfMatches(candidates, "disable", "Disable interface", currentWord);
-			} else {
-				addCandidateIfMatches(candidates, "address", "Set IP address", currentWord);
-				addCandidateIfMatches(candidates, "disable", "Disable interface", currentWord);
-			}
+			addCandidateIfMatches(candidates, "address", "Set IP address", currentWord);
+			addCandidateIfMatches(candidates, "disable", "Disable interface", currentWord);
 		} else if (words.length == 6 && words[1].equalsIgnoreCase("interfaces") && words[4].equalsIgnoreCase("address")) {
 			// After "address" keyword - user needs to enter IP address
 			if (currentWord.isEmpty()) {

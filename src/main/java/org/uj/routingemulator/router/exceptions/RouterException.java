@@ -1,7 +1,5 @@
 package org.uj.routingemulator.router.exceptions;
 
-import java.util.logging.Logger;
-
 /**
  * Base exception for all router-related errors.
  * <p>
@@ -9,7 +7,6 @@ import java.util.logging.Logger;
  * for exception handling.
  */
 public class RouterException extends RuntimeException {
-	private static final Logger logger = Logger.getLogger(RouterException.class.getName());
 
 	/**
 	 * Creates a new router exception with the specified message.

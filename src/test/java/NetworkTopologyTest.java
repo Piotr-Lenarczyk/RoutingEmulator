@@ -89,8 +89,8 @@ class NetworkTopologyTest {
 		topology.addRouter(router2);
 
 		Connection connection = new Connection(
-			router1.getInterfaces().get(0),
-			router2.getInterfaces().get(0)
+				router1.getInterfaces().getFirst(),
+				router2.getInterfaces().getFirst()
 		);
 
 		topology.addConnection(connection);
@@ -105,15 +105,13 @@ class NetworkTopologyTest {
 		topology.addRouter(router2);
 
 		Connection connection = new Connection(
-			router1.getInterfaces().get(0),
-			router2.getInterfaces().get(0)
+				router1.getInterfaces().getFirst(),
+				router2.getInterfaces().getFirst()
 		);
 
 		topology.addConnection(connection);
 
-		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-			topology.addConnection(connection);
-		});
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> topology.addConnection(connection));
 
 		assertTrue(exception.getMessage().contains("Connection already exists"));
 	}
@@ -124,20 +122,18 @@ class NetworkTopologyTest {
 		topology.addRouter(router2);
 
 		Connection connection1 = new Connection(
-			router1.getInterfaces().get(0),
-			router2.getInterfaces().get(0)
+				router1.getInterfaces().getFirst(),
+				router2.getInterfaces().getFirst()
 		);
 
 		Connection connection2 = new Connection(
-			router2.getInterfaces().get(0),
-			router1.getInterfaces().get(0)
+				router2.getInterfaces().getFirst(),
+				router1.getInterfaces().getFirst()
 		);
 
 		topology.addConnection(connection1);
 
-		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-			topology.addConnection(connection2);
-		});
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> topology.addConnection(connection2));
 
 		assertTrue(exception.getMessage().contains("Connection already exists"));
 	}
@@ -147,7 +143,7 @@ class NetworkTopologyTest {
 		topology.addRouter(router1);
 		topology.addRouter(router2);
 
-		RouterInterface eth0R1 = router1.getInterfaces().get(0);
+		RouterInterface eth0R1 = router1.getInterfaces().getFirst();
 		RouterInterface eth0R2 = router2.getInterfaces().get(0);
 		RouterInterface eth1R2 = router2.getInterfaces().get(1);
 
@@ -155,9 +151,7 @@ class NetworkTopologyTest {
 		topology.addConnection(connection1);
 
 		// Try to connect eth0R1 to another interface (it's already connected)
-		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-			topology.addConnection(new Connection(eth0R1, eth1R2));
-		});
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> topology.addConnection(new Connection(eth0R1, eth1R2)));
 
 		assertTrue(exception.getMessage().contains("is already connected"));
 	}
@@ -168,8 +162,8 @@ class NetworkTopologyTest {
 		topology.addRouter(router2);
 
 		Connection connection = new Connection(
-			router1.getInterfaces().get(0),
-			router2.getInterfaces().get(0)
+				router1.getInterfaces().getFirst(),
+				router2.getInterfaces().getFirst()
 		);
 		topology.addConnection(connection);
 
@@ -186,7 +180,7 @@ class NetworkTopologyTest {
 		topology.addHost(host1);
 
 		Connection connection = new Connection(
-			switch1.getPorts().get(0),
+				switch1.getPorts().getFirst(),
 			host1.getHostInterface()
 		);
 		topology.addConnection(connection);
@@ -205,7 +199,7 @@ class NetworkTopologyTest {
 
 		Connection connection = new Connection(
 			host1.getHostInterface(),
-			switch1.getPorts().get(0)
+				switch1.getPorts().getFirst()
 		);
 		topology.addConnection(connection);
 
@@ -222,8 +216,8 @@ class NetworkTopologyTest {
 		topology.addRouter(router2);
 
 		Connection connection = new Connection(
-			router1.getInterfaces().get(0),
-			router2.getInterfaces().get(0)
+				router1.getInterfaces().getFirst(),
+				router2.getInterfaces().getFirst()
 		);
 		topology.addConnection(connection);
 
@@ -239,7 +233,7 @@ class NetworkTopologyTest {
 		topology.addHost(host1);
 
 		Connection conn1 = new Connection(
-			router1.getInterfaces().get(0),
+				router1.getInterfaces().getFirst(),
 			switch1.getPorts().get(0)
 		);
 		Connection conn2 = new Connection(
@@ -282,12 +276,12 @@ class NetworkTopologyTest {
 		topology.addHost(host1);
 
 		topology.addConnection(new Connection(
-			router1.getInterfaces().get(0),
+				router1.getInterfaces().getFirst(),
 			switch1.getPorts().get(0)
 		));
 
 		topology.addConnection(new Connection(
-			router2.getInterfaces().get(0),
+				router2.getInterfaces().getFirst(),
 			switch1.getPorts().get(1)
 		));
 
@@ -347,15 +341,15 @@ class NetworkTopologyTest {
 		topology.addRouter(router2);
 
 		Connection connection = new Connection(
-			router1.getInterfaces().get(0),
-			router2.getInterfaces().get(0)
+				router1.getInterfaces().getFirst(),
+				router2.getInterfaces().getFirst()
 		);
 		topology.addConnection(connection);
 
 		// Create new connection with same interfaces and remove
 		Connection connectionToRemove = new Connection(
-			router1.getInterfaces().get(0),
-			router2.getInterfaces().get(0)
+				router1.getInterfaces().getFirst(),
+				router2.getInterfaces().getFirst()
 		);
 		topology.removeConnection(connectionToRemove);
 
@@ -371,11 +365,11 @@ class NetworkTopologyTest {
 		// Router1 has two connections
 		Connection conn1 = new Connection(
 			router1.getInterfaces().get(0),
-			router2.getInterfaces().get(0)
+				router2.getInterfaces().getFirst()
 		);
 		Connection conn2 = new Connection(
 			router1.getInterfaces().get(1),
-			switch1.getPorts().get(0)
+				switch1.getPorts().getFirst()
 		);
 
 		topology.addConnection(conn1);
@@ -395,8 +389,8 @@ class NetworkTopologyTest {
 		topology.addRouter(router2);
 
 		Connection connection = new Connection(
-			router1.getInterfaces().get(0),
-			router2.getInterfaces().get(0)
+				router1.getInterfaces().getFirst(),
+				router2.getInterfaces().getFirst()
 		);
 		topology.addConnection(connection);
 

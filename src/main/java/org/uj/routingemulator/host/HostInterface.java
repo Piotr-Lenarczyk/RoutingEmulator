@@ -1,8 +1,6 @@
 package org.uj.routingemulator.host;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.uj.routingemulator.common.IPAddress;
 import org.uj.routingemulator.common.MacAddress;

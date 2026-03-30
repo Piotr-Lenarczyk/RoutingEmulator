@@ -50,54 +50,59 @@ public class CLIErrorHandler {
 		String message = e.getMessage();
 
 		// Handle specific exception types
-		if (e instanceof DuplicateConfigurationException) {
-			return new RuntimeException("\tConfiguration path: [%s] already exists".formatted(configPath));
-		}
-
-		if (e instanceof InvalidAddressException) {
-			// Extract the IP address from the config path
-			String[] command = configPath.split(" ");
-			String ipWithMask = command[command.length - 1];
-
-			// Provide educational error messages
-			if (message != null && message.contains("Cannot assign network address")) {
-				// Extract just the IP (without mask) for display
-				String ip = ipWithMask.contains("/") ? ipWithMask.split("/")[0] : ipWithMask;
-				String mask = ipWithMask.contains("/") ? ipWithMask.split("/")[1] : "unknown";
-				return new RuntimeException(
-						String.format("\t%s is the network address for this subnet\n" +
-										"\tNetwork addresses cannot be assigned to interfaces\n" +
-										"\tUse a host address from this subnet (e.g., %s.1/%s)",
-								ip, ip.substring(0, ip.lastIndexOf('.')), mask)
-				);
+		switch (e) {
+			case DuplicateConfigurationException duplicateConfigurationException -> {
+				return new RuntimeException("\tConfiguration path: [%s] already exists".formatted(configPath));
 			}
+			case InvalidAddressException invalidAddressException -> {
+				// Extract the IP address from the config path
+				String[] command = configPath.split(" ");
+				String ipWithMask = command[command.length - 1];
 
-			if (message != null && message.contains("Cannot assign broadcast address")) {
-				// Extract just the IP (without mask) for display
-				String ip = ipWithMask.contains("/") ? ipWithMask.split("/")[0] : ipWithMask;
-				String mask = ipWithMask.contains("/") ? ipWithMask.split("/")[1] : "unknown";
-				// Calculate suggested IP (one less than broadcast)
-				String[] octets = ip.split("\\.");
-				int lastOctet = Integer.parseInt(octets[3]);
-				String suggestedIp = String.format("%s.%s.%s.%d", octets[0], octets[1], octets[2], lastOctet - 1);
-				return new RuntimeException(
-						String.format("\t%s is the broadcast address for this subnet\n" +
-										"\tBroadcast addresses cannot be assigned to interfaces\n" +
-										"\tUse a host address from this subnet (e.g., %s/%s)",
-								ip, suggestedIp, mask)
-				);
+				// Provide educational error messages
+				if (message != null && message.contains("Cannot assign network address")) {
+					// Extract just the IP (without mask) for display
+					String ip = ipWithMask.contains("/") ? ipWithMask.split("/")[0] : ipWithMask;
+					String mask = ipWithMask.contains("/") ? ipWithMask.split("/")[1] : "unknown";
+					return new RuntimeException(
+							String.format("""
+											\t%s is the network address for this subnet
+											\tNetwork addresses cannot be assigned to interfaces
+											\tUse a host address from this subnet (e.g., %s.1/%s)""",
+									ip, ip.substring(0, ip.lastIndexOf('.')), mask)
+					);
+				}
+
+				if (message != null && message.contains("Cannot assign broadcast address")) {
+					// Extract just the IP (without mask) for display
+					String ip = ipWithMask.contains("/") ? ipWithMask.split("/")[0] : ipWithMask;
+					String mask = ipWithMask.contains("/") ? ipWithMask.split("/")[1] : "unknown";
+					// Calculate suggested IP (one less than broadcast)
+					String[] octets = ip.split("\\.");
+					int lastOctet = Integer.parseInt(octets[3]);
+					String suggestedIp = String.format("%s.%s.%s.%d", octets[0], octets[1], octets[2], lastOctet - 1);
+					return new RuntimeException(
+							String.format("""
+											\t%s is the broadcast address for this subnet
+											\tBroadcast addresses cannot be assigned to interfaces
+											\tUse a host address from this subnet (e.g., %s/%s)""",
+									ip, suggestedIp, mask)
+					);
+				}
+
+				// Generic invalid address error
+				return new RuntimeException("\tError: Invalid IP address\n\n\n\tInvalid value\n\tValue validation failed\n\tSet failed");
+
+				// Generic invalid address error
 			}
-
-			// Generic invalid address error
-			return new RuntimeException("\tError: Invalid IP address\n\n\n\tInvalid value\n\tValue validation failed\n\tSet failed");
-		}
-
-		if (e instanceof ConfigurationNotFoundException) {
-			return new RuntimeException("\tNothing to delete (the specified value does not exist)");
-		}
-
-		if (e instanceof InterfaceNotFoundException) {
-			return new RuntimeException("\t%s".formatted(message));
+			case ConfigurationNotFoundException configurationNotFoundException -> {
+				return new RuntimeException("\tNothing to delete (the specified value does not exist)");
+			}
+			case InterfaceNotFoundException interfaceNotFoundException -> {
+				return new RuntimeException("\t%s".formatted(message));
+			}
+			default -> {
+			}
 		}
 
 		// Legacy message-based handling for backwards compatibility

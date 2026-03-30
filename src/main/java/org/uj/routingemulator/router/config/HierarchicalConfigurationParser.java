@@ -10,6 +10,7 @@ import org.uj.routingemulator.router.RouterMode;
 import org.uj.routingemulator.router.StaticRoutingEntry;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -108,9 +109,7 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 				// Start of new block
 				String[] parts = trimmed.substring(0, trimmed.length() - 1).trim().split("\\s+");
 				List<String> newPath = new ArrayList<>(path);
-				for (String part : parts) {
-					newPath.add(part);
-				}
+				Collections.addAll(newPath, parts);
 				position++;
 
 				// Special case: route block - collect all values and apply once
@@ -123,9 +122,7 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 				// Single configuration line
 				String[] parts = trimmed.split("\\s+");
 				List<String> fullPath = new ArrayList<>(path);
-				for (String part : parts) {
-					fullPath.add(part);
-				}
+				Collections.addAll(fullPath, parts);
 				applyConfiguration(router, fullPath);
 				position++;
 			}

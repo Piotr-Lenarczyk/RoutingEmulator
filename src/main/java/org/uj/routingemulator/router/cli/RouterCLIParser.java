@@ -61,7 +61,7 @@ public class RouterCLIParser {
 
 		this.reader = LineReaderBuilder.builder()
 				.terminal(terminal)
-				.completer(new RouterCommandCompleter(router, commands))
+				.completer(new RouterCommandCompleter(router))
 				.option(org.jline.reader.LineReader.Option.CASE_INSENSITIVE, false)
 				.option(org.jline.reader.LineReader.Option.AUTO_LIST, true)
 				.option(org.jline.reader.LineReader.Option.AUTO_MENU, true)
@@ -142,7 +142,7 @@ public class RouterCLIParser {
 					out.flush();
 					// If we have a console reader available, ask user now
 					if (reader != null) {
-						String answer = null;
+						String answer;
 						while (true) {
 							answer = reader.readLine("(Y/N) > ").trim();
 							if (answer.equalsIgnoreCase("y") || answer.equalsIgnoreCase("yes")) {
@@ -177,7 +177,7 @@ public class RouterCLIParser {
 				out.println(e.getMessage());
 				out.flush();
 				if (reader != null) {
-					String answer = null;
+					String answer;
 					while (true) {
 						answer = reader.readLine("(Y/N) > ").trim();
 						if (answer.equalsIgnoreCase("y") || answer.equalsIgnoreCase("yes")) {
@@ -244,7 +244,7 @@ public class RouterCLIParser {
 		}
 
 		// Return the command only if there's exactly one match
-		return matches.size() == 1 ? matches.get(0) : null;
+		return matches.size() == 1 ? matches.getFirst() : null;
 	}
 
 	/**

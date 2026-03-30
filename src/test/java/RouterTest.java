@@ -68,9 +68,7 @@ class RouterTest {
 	void testAddRouteInOperationalModeThrowsException() {
 		Router router = new Router("Router");
 		StaticRoutingEntry entry = new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(24)), new IPAddress(192, 168, 1, 1));
-		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-			router.addRoute(entry);
-		});
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> router.addRoute(entry));
 		assertEquals("Invalid command: set [protocols]", exception.getMessage());
 	}
 
@@ -81,9 +79,7 @@ class RouterTest {
 		router.configureInterface("eth0", new InterfaceAddress(new IPAddress(192, 168, 1, 1), new SubnetMask(24)));
 		StaticRoutingEntry entry = new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(24)), new IPAddress(192, 168, 1, 1));
 		router.addRoute(entry);
-		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-			router.addRoute(entry);
-		});
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> router.addRoute(entry));
 		assertEquals("Route already exists", exception.getMessage());
 	}
 
@@ -104,9 +100,7 @@ class RouterTest {
 	void testRemoveRouteInOperationalModeThrowsException() {
 		Router router = new Router("Router");
 		StaticRoutingEntry entry = new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(24)), new IPAddress(192, 168, 1, 1));
-		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-			router.removeRoute(entry);
-		});
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> router.removeRoute(entry));
 		assertEquals("Invalid command: delete [protocols]", exception.getMessage());
 	}
 
@@ -115,9 +109,7 @@ class RouterTest {
 		Router router = new Router("Router");
 		router.setMode(RouterMode.CONFIGURATION);
 		StaticRoutingEntry entry = new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(24)), new IPAddress(192, 168, 1, 1));
-		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-			router.removeRoute(entry);
-		});
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> router.removeRoute(entry));
 		assertEquals("Nothing to delete", exception.getMessage());
 	}
 
@@ -140,9 +132,7 @@ class RouterTest {
 	void testConfigureInterfaceInOperationalModeThrowsException() {
 		Router router = new Router("Router");
 		InterfaceAddress address = new InterfaceAddress(new IPAddress(192, 168, 1, 0), new SubnetMask(24));
-		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-			router.configureInterface("eth0", address);
-		});
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> router.configureInterface("eth0", address));
 		assertEquals("Invalid command: set [interfaces]", exception.getMessage());
 	}
 
@@ -151,9 +141,7 @@ class RouterTest {
 		Router router = new Router("Router");
 		router.setMode(RouterMode.CONFIGURATION);
 		InterfaceAddress address = new InterfaceAddress(new IPAddress(192, 168, 1, 1), new SubnetMask(24));
-		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-			router.configureInterface("eth99", address);
-		});
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> router.configureInterface("eth99", address));
 		assertEquals("WARN: interface eth99 does not exist, changes will not be commited", exception.getMessage());
 	}
 
@@ -224,9 +212,7 @@ class RouterTest {
 		router.addRoute(entry);
 		assertTrue(router.hasUncommittedChanges());
 
-		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-			router.setMode(RouterMode.OPERATIONAL);
-		});
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> router.setMode(RouterMode.OPERATIONAL));
 		assertEquals("Cannot exit: configuration modified.\nUse 'exit discard' to discard the changes and exit.\n[edit]", exception.getMessage());
 	}
 
@@ -279,7 +265,7 @@ class RouterTest {
 
 		router.disableRoute(entry);
 
-		assertTrue(router.getStagedRoutingTable().getRoutingEntries().get(0).isDisabled());
+		assertTrue(router.getStagedRoutingTable().getRoutingEntries().getFirst().isDisabled());
 		assertTrue(router.hasUncommittedChanges());
 	}
 
@@ -289,9 +275,7 @@ class RouterTest {
 		router.setMode(RouterMode.CONFIGURATION);
 		StaticRoutingEntry entry = new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(24)), new IPAddress(192, 168, 1, 1));
 
-		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-			router.disableRoute(entry);
-		});
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> router.disableRoute(entry));
 		assertEquals("Route not found", exception.getMessage());
 	}
 
@@ -304,9 +288,7 @@ class RouterTest {
 		router.addRoute(entry);
 		router.disableRoute(entry);
 
-		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-			router.disableRoute(entry);
-		});
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> router.disableRoute(entry));
 		assertEquals("Route already exists", exception.getMessage());
 	}
 
@@ -331,9 +313,7 @@ class RouterTest {
 	void testDisableInterfaceInOperationalModeThrowsException() {
 		Router router = new Router("Router");
 
-		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-			router.disableInterface("eth0");
-		});
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> router.disableInterface("eth0"));
 		assertEquals("Invalid command: set [interfaces]", exception.getMessage());
 	}
 
@@ -342,9 +322,7 @@ class RouterTest {
 		Router router = new Router("Router");
 		router.setMode(RouterMode.CONFIGURATION);
 
-		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-			router.disableInterface("eth99");
-		});
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> router.disableInterface("eth99"));
 		assertEquals("WARN: interface eth99 does not exist, changes will not be commited", exception.getMessage());
 	}
 
@@ -369,9 +347,7 @@ class RouterTest {
 	void testDeleteInterfaceAddressInOperationalModeThrowsException() {
 		Router router = new Router("Router");
 
-		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-			router.deleteInterfaceAddress("eth0");
-		});
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> router.deleteInterfaceAddress("eth0"));
 		assertEquals("Invalid command: delete [interfaces]", exception.getMessage());
 	}
 
@@ -380,9 +356,7 @@ class RouterTest {
 		Router router = new Router("Router");
 		router.setMode(RouterMode.CONFIGURATION);
 
-		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-			router.deleteInterfaceAddress("eth99");
-		});
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> router.deleteInterfaceAddress("eth99"));
 		assertEquals("WARN: interface eth99 does not exist, changes will not be commited", exception.getMessage());
 	}
 
@@ -391,9 +365,7 @@ class RouterTest {
 		Router router = new Router("Router");
 		router.setMode(RouterMode.CONFIGURATION);
 
-		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-			router.deleteInterfaceAddress("eth0");
-		});
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> router.deleteInterfaceAddress("eth0"));
 		assertEquals("No value to delete", exception.getMessage());
 	}
 
@@ -402,9 +374,7 @@ class RouterTest {
 		Router router = new Router("Router");
 		router.setMode(RouterMode.CONFIGURATION);
 
-		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-			router.commitChanges();
-		});
+		RuntimeException exception = assertThrows(RuntimeException.class, router::commitChanges);
 		assertEquals("No configuration changes to commit", exception.getMessage());
 	}
 
@@ -414,9 +384,7 @@ class RouterTest {
 		router.setMode(RouterMode.CONFIGURATION);
 		InterfaceAddress networkAddress = new InterfaceAddress(new IPAddress(192, 168, 1, 0), new SubnetMask(24));
 
-		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-			router.configureInterface("eth0", networkAddress);
-		});
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> router.configureInterface("eth0", networkAddress));
 		assertTrue(exception.getMessage().contains("Cannot assign network address"));
 		assertTrue(exception.getMessage().contains("Use a host address instead"));
 	}
@@ -427,9 +395,7 @@ class RouterTest {
 		router.setMode(RouterMode.CONFIGURATION);
 		InterfaceAddress broadcastAddress = new InterfaceAddress(new IPAddress(192, 168, 1, 255), new SubnetMask(24));
 
-		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-			router.configureInterface("eth0", broadcastAddress);
-		});
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> router.configureInterface("eth0", broadcastAddress));
 		assertTrue(exception.getMessage().contains("Cannot assign broadcast address"));
 		assertTrue(exception.getMessage().contains("Use a host address instead"));
 	}
@@ -441,9 +407,7 @@ class RouterTest {
 		InterfaceAddress address = new InterfaceAddress(new IPAddress(192, 168, 1, 1), new SubnetMask(24));
 		router.configureInterface("eth0", address);
 
-		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-			router.configureInterface("eth0", address);
-		});
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> router.configureInterface("eth0", address));
 		assertEquals("Configuration already exists", exception.getMessage());
 	}
 
@@ -489,9 +453,7 @@ class RouterTest {
 		router.commitChanges();
 		router.setMode(RouterMode.OPERATIONAL);
 
-		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-			router.disableRoute(entry);
-		});
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> router.disableRoute(entry));
 		assertEquals("Invalid command: set [protocols]", exception.getMessage());
 	}
 

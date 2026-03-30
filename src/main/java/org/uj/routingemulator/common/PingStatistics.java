@@ -30,16 +30,5 @@ public class PingStatistics {
         return 100.0 * (getSent() - getReceived()) / getSent();
     }
 
-    public long getMinRtt() {
-        return results.stream().filter(PingResult::isSuccess).mapToLong(PingResult::getRttMs).min().orElse(0L);
-    }
-
-    public long getMaxRtt() {
-        return results.stream().filter(PingResult::isSuccess).mapToLong(PingResult::getRttMs).max().orElse(0L);
-    }
-
-    public double getAvgRtt() {
-        return results.stream().filter(PingResult::isSuccess).mapToLong(PingResult::getRttMs).average().orElse(0.0);
-    }
 }
 

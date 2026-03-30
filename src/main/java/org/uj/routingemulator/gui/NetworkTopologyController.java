@@ -13,6 +13,7 @@ import javafx.scene.shape.Line;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.StringConverter;
 import org.uj.routingemulator.common.*;
 import org.uj.routingemulator.host.Host;
 import org.uj.routingemulator.host.HostInterface;
@@ -407,7 +408,7 @@ public class NetworkTopologyController {
 		}
 
 		// Create custom StringConverter for displaying connections
-		javafx.util.StringConverter<Connection> connectionConverter = new javafx.util.StringConverter<Connection>() {
+		javafx.util.StringConverter<Connection> connectionConverter = new StringConverter<>() {
 			@Override
 			public String toString(Connection conn) {
 				if (conn == null) return "null";
@@ -421,7 +422,7 @@ public class NetworkTopologyController {
 		};
 
 		// Create a dialog to select which connection to remove
-		ChoiceDialog<Connection> dialog = new ChoiceDialog<>(relatedConnections.get(0), relatedConnections);
+		ChoiceDialog<Connection> dialog = new ChoiceDialog<>(relatedConnections.getFirst(), relatedConnections);
 		dialog.setTitle("Remove Connection");
 		dialog.setHeaderText("Select connection to remove");
 		dialog.setContentText("Connection:");
@@ -557,7 +558,7 @@ public class NetworkTopologyController {
 		}
 
 		// Create custom StringConverter for displaying interfaces
-		javafx.util.StringConverter<NetworkInterface> interfaceConverter = new javafx.util.StringConverter<NetworkInterface>() {
+		StringConverter<NetworkInterface> interfaceConverter = new StringConverter<>() {
 			@Override
 			public String toString(NetworkInterface iface) {
 				return formatInterfaceDisplay(iface);
@@ -570,7 +571,7 @@ public class NetworkTopologyController {
 		};
 
 		// Let user select interfaces
-		ChoiceDialog<NetworkInterface> startDialog = new ChoiceDialog<>(startInterfaces.get(0), startInterfaces);
+		ChoiceDialog<NetworkInterface> startDialog = new ChoiceDialog<>(startInterfaces.getFirst(), startInterfaces);
 		startDialog.setTitle("Select Interface");
 		startDialog.setHeaderText("Select interface on " + getDeviceName(startNode.device));
 		startDialog.setContentText("Interface:");
@@ -582,11 +583,11 @@ public class NetworkTopologyController {
 		}
 
 		Optional<NetworkInterface> startResult = startDialog.showAndWait();
-		if (!startResult.isPresent()) {
+		if (startResult.isEmpty()) {
 			return;
 		}
 
-		ChoiceDialog<NetworkInterface> endDialog = new ChoiceDialog<>(endInterfaces.get(0), endInterfaces);
+		ChoiceDialog<NetworkInterface> endDialog = new ChoiceDialog<>(endInterfaces.getFirst(), endInterfaces);
 		endDialog.setTitle("Select Interface");
 		endDialog.setHeaderText("Select interface on " + getDeviceName(endNode.device));
 		endDialog.setContentText("Interface:");
@@ -598,7 +599,7 @@ public class NetworkTopologyController {
 		}
 
 		Optional<NetworkInterface> endResult = endDialog.showAndWait();
-		if (!endResult.isPresent()) {
+		if (endResult.isEmpty()) {
 			return;
 		}
 
@@ -612,7 +613,7 @@ public class NetworkTopologyController {
 			line.setStroke(Color.DARKGRAY);
 			updateConnectionLine(line, startNode, endNode);
 
-			canvasPane.getChildren().add(0, line); // Add to back
+			canvasPane.getChildren().addFirst(line); // Add to back
 			connectionLines.put(connection, line);
 
 		} catch (Exception ex) {
@@ -700,13 +701,13 @@ public class NetworkTopologyController {
 	 */
 	private Object findDevice(NetworkInterface iface) {
 		for (Router router : topology.getRouters()) {
-			if (router.getInterfaces().contains(iface)) {
+			if (iface instanceof RouterInterface && router.getInterfaces().contains(iface)) {
 				return router;
 			}
 		}
 
 		for (Switch sw : topology.getSwitches()) {
-			if (sw.getPorts().contains(iface)) {
+			if (iface instanceof SwitchPort && sw.getPorts().contains(iface)) {
 				return sw;
 			}
 		}
@@ -914,7 +915,7 @@ public class NetworkTopologyController {
 		formatAlert.getButtonTypes().setAll(commandFormatButton, hierarchicalFormatButton, cancelButton);
 
 		Optional<ButtonType> formatResult = formatAlert.showAndWait();
-		if (!formatResult.isPresent() || formatResult.get() == cancelButton) {
+		if (formatResult.isEmpty() || formatResult.get() == cancelButton) {
 			return;
 		}
 
@@ -986,23 +987,15 @@ public class NetworkTopologyController {
 	/**
 	 * Internal class representing a visual device node.
 	 */
-	private static class DeviceNode {
-		Object device;
-		VBox stackPane;
-		Circle circle;
-
-		DeviceNode(Object device, VBox stackPane, Circle circle) {
-			this.device = device;
-			this.stackPane = stackPane;
-			this.circle = circle;
-		}
+	private record DeviceNode(Object device, VBox stackPane, Circle circle) {
 	}
 
 	/**
 	 * Helper class for drag delta calculation.
 	 */
 	private static class Delta {
-		double x, y;
+		double x;
+		double y;
 	}
 }
 

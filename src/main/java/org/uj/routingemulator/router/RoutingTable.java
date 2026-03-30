@@ -15,7 +15,7 @@ import java.util.List;
 @Getter
 @EqualsAndHashCode
 public class RoutingTable {
-	private List<StaticRoutingEntry> routingEntries;
+	private final List<StaticRoutingEntry> routingEntries;
 
 	/**
 	 * Creates an empty routing table.
@@ -54,28 +54,6 @@ public class RoutingTable {
 	 */
 	public boolean contains(StaticRoutingEntry entry) {
 		return this.routingEntries.contains(entry);
-	}
-
-	/**
-	 * Removes a routing entry from the table.
-	 *
-	 * @param entry Routing entry to remove
-	 */
-	public void removeRoute(StaticRoutingEntry entry) {
-		this.routingEntries.remove(entry);
-	}
-
-	/**
-	 * Disables a routing entry in the table.
-	 * The entry remains in the table but is marked as disabled.
-	 *
-	 * @param entry the routing entry to disable
-	 */
-	public void disableRoute(StaticRoutingEntry entry) {
-		if (this.routingEntries.contains(entry)) {
-			StaticRoutingEntry route = this.routingEntries.get(this.routingEntries.indexOf(entry));
-			route.disable();
-		}
 	}
 
 	@Override

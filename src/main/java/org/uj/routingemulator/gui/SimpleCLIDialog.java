@@ -34,7 +34,7 @@ public class SimpleCLIDialog extends Dialog<Void> {
 	public SimpleCLIDialog(Router router) {
 		this.router = router;
 		this.parser = new RouterCLIParser();
-		this.completer = new RouterCommandCompleter(router, parser.getCommands());
+		this.completer = new RouterCommandCompleter(router);
 
 		setTitle("Router CLI - " + router.getName());
 		setHeaderText("VyOS Command Line Interface");
@@ -45,7 +45,7 @@ public class SimpleCLIDialog extends Dialog<Void> {
 		terminal.setPrefColumnCount(80);
 
 		// Restore previous terminal buffer
-		boolean hasExistingBuffer = router.getTerminalBuffer().length() > 0;
+		boolean hasExistingBuffer = !router.getTerminalBuffer().isEmpty();
 		if (hasExistingBuffer) {
 			terminal.restoreFromBuffer(router.getTerminalBuffer().toString());
 		}
@@ -178,12 +178,7 @@ public class SimpleCLIDialog extends Dialog<Void> {
 	}
 
 	// Helper class for ParsedLine
-	private static class SimpleParsedLine implements org.jline.reader.ParsedLine {
-		private final String line;
-
-		SimpleParsedLine(String line) {
-			this.line = line;
-		}
+	private record SimpleParsedLine(String line) implements ParsedLine {
 
 		@Override
 		public String word() {
@@ -214,10 +209,6 @@ public class SimpleCLIDialog extends Dialog<Void> {
 			return List.of(line.split("\\s+"));
 		}
 
-		@Override
-		public String line() {
-			return line;
-		}
 
 		@Override
 		public int cursor() {

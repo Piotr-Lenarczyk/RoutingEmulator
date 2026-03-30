@@ -10,9 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ConfigurationTest {
 
-	@Test
-	public void testConfigurationSaveAndLoad() {
-		// Create and configure router
+	private static Router getConfiguration() {
 		Router router = new Router("R1", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
 		RouterCLIParser cli = new RouterCLIParser();
 		cli.executeCommand("configure", router);
@@ -21,32 +19,21 @@ public class ConfigurationTest {
 		cli.executeCommand("set protocols static route 192.168.3.0/24 next-hop 192.168.1.254", router);
 		cli.executeCommand("set protocols static route 10.0.0.0/8 interface eth1 distance 5", router);
 		cli.executeCommand("commit", router);
+		return router;
+	}
 
-		// Generate configuration
-		ConfigurationGenerator generator = new CommandConfigurationGenerator();
-		String config = generator.generateConfiguration(router);
+	private static String getString() {
+		Router router = new Router("R1", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
+		RouterCLIParser cli = new RouterCLIParser();
+		cli.executeCommand("configure", router);
+		cli.executeCommand("set interfaces ethernet eth0 address 192.168.1.1/24", router);
+		cli.executeCommand("set interfaces ethernet eth1 address 192.168.2.1/24", router);
+		cli.executeCommand("set protocols static route 10.0.0.0/8 interface eth1", router);
+		cli.executeCommand("commit", router);
 
-		System.out.println("=== Generated Configuration ===");
-		System.out.println(config);
-
-		// Load configuration into new router
-		Router newRouter = new Router("R2", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
-		ConfigurationParser parser = new CommandConfigurationParser();
-		parser.loadConfiguration(newRouter, config);
-
-		// Verify by generating config from new router
-		String verifyConfig = generator.generateConfiguration(newRouter);
-		System.out.println("\n=== Verification - New Router Configuration ===");
-		System.out.println(verifyConfig);
-
-		// Assert they match
-		assertEquals(config, verifyConfig, "Configurations should match");
-
-		// Verify specific settings
-		assertEquals(2, newRouter.getInterfaces().size());
-		assertNotNull(newRouter.findFromName("eth0").getInterfaceAddress());
-		assertNotNull(newRouter.findFromName("eth1").getInterfaceAddress());
-		assertEquals(2, newRouter.getRoutingTable().getRoutingEntries().size());
+		// Generate hierarchical format
+		ConfigurationGenerator generator = ConfigurationFactory.getHierarchicalGenerator();
+		return generator.generateConfiguration(router);
 	}
 
 	@Test
@@ -87,38 +74,45 @@ public class ConfigurationTest {
 	}
 
 	@Test
+	public void testConfigurationSaveAndLoad() {
+		// Create and configure router
+		Router router = getConfiguration();
+
+		// Generate configuration
+		ConfigurationGenerator generator = new CommandConfigurationGenerator();
+		String config = generator.generateConfiguration(router);
+
+		System.out.println("=== Generated Configuration ===");
+		System.out.println(config);
+
+		// Load configuration into new router
+		Router newRouter = new Router("R2", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
+		ConfigurationParser parser = new CommandConfigurationParser();
+		parser.loadConfiguration(newRouter, config);
+
+		// Verify by generating config from new router
+		String verifyConfig = generator.generateConfiguration(newRouter);
+		System.out.println("\n=== Verification - New Router Configuration ===");
+		System.out.println(verifyConfig);
+
+		// Assert they match
+		assertEquals(config, verifyConfig, "Configurations should match");
+
+		// Verify specific settings
+		assertEquals(2, newRouter.getInterfaces().size());
+		assertNotNull(newRouter.findFromName("eth0").getInterfaceAddress());
+		assertNotNull(newRouter.findFromName("eth1").getInterfaceAddress());
+		assertEquals(2, newRouter.getRoutingTable().getRoutingEntries().size());
+	}
+
+	@Test
 	public void testInvalidConfiguration() {
 		String invalidConfig = "set protocols static route 192.168.1.0/24 invalid-option value";
 
 		Router router = new Router("R1", List.of(new RouterInterface("eth0")));
 		ConfigurationParser parser = new CommandConfigurationParser();
 
-		assertThrows(ConfigurationParseException.class, () -> {
-			parser.loadConfiguration(router, invalidConfig);
-		});
-	}
-
-	@Test
-	public void testConfigurationRollbackOnError() {
-		Router router = new Router("R1", List.of(new RouterInterface("eth0")));
-		RouterCLIParser cli = new RouterCLIParser();
-		cli.executeCommand("configure", router);
-		cli.executeCommand("set interfaces ethernet eth0 address 192.168.1.1/24", router);
-		cli.executeCommand("commit", router);
-
-		// Configuration with error in second line
-		String invalidConfig = """
-				set interfaces ethernet eth0 address 10.0.0.1/24
-				set protocols static route 192.168.1.0/24 invalid-option value
-				""";
-
-		ConfigurationParser parser = new CommandConfigurationParser();
-		assertThrows(ConfigurationParseException.class, () -> {
-			parser.loadConfiguration(router, invalidConfig);
-		});
-
-		// Verify original configuration is preserved
-		assertEquals("192.168.1.1", router.findFromName("eth0").getInterfaceAddress().getIpAddress().toString());
+		assertThrows(ConfigurationParseException.class, () -> parser.loadConfiguration(router, invalidConfig));
 	}
 
 	@Test
@@ -165,6 +159,27 @@ public class ConfigurationTest {
 	}
 
 	@Test
+	public void testConfigurationRollbackOnError() {
+		Router router = new Router("R1", List.of(new RouterInterface("eth0")));
+		RouterCLIParser cli = new RouterCLIParser();
+		cli.executeCommand("configure", router);
+		cli.executeCommand("set interfaces ethernet eth0 address 192.168.1.1/24", router);
+		cli.executeCommand("commit", router);
+
+		// Configuration with error in second line
+		String invalidConfig = """
+				set interfaces ethernet eth0 address 10.0.0.1/24
+				set protocols static route 192.168.1.0/24 invalid-option value
+				""";
+
+		ConfigurationParser parser = new CommandConfigurationParser();
+		assertThrows(ConfigurationParseException.class, () -> parser.loadConfiguration(router, invalidConfig));
+
+		// Verify original configuration is preserved
+		assertEquals("192.168.1.1", router.findFromName("eth0").getInterfaceAddress().getIpAddress().toString());
+	}
+
+	@Test
 	public void testConfigurationWithNonExistentInterface() {
 		// Router with default constructor (eth0, lo)
 		Router router = new Router("R1");
@@ -176,38 +191,12 @@ public class ConfigurationTest {
 				""";
 
 		ConfigurationParser parser = new CommandConfigurationParser();
-		ConfigurationParseException exception = assertThrows(ConfigurationParseException.class, () -> {
-			parser.loadConfiguration(router, config);
-		});
+		ConfigurationParseException exception = assertThrows(ConfigurationParseException.class, () -> parser.loadConfiguration(router, config));
 
 		assertTrue(exception.getMessage().contains("eth1") && exception.getMessage().contains("does not exist"),
 			"Exception should mention eth1 does not exist");
 
 		// Verify that first valid command was rolled back
-		assertNull(router.findFromName("eth0").getInterfaceAddress(),
-			"Configuration should be rolled back on error");
-	}
-
-	@Test
-	public void testConfigurationWithNonExistentInterfaceInRoute() {
-		// Router with default constructor (eth0, lo)
-		Router router = new Router("R1");
-
-		// Configuration tries to use eth1 in route which doesn't exist
-		String config = """
-				set interfaces ethernet eth0 address 192.168.1.1/24
-				set protocols static route 10.0.0.0/8 interface eth1
-				""";
-
-		ConfigurationParser parser = new CommandConfigurationParser();
-		ConfigurationParseException exception = assertThrows(ConfigurationParseException.class, () -> {
-			parser.loadConfiguration(router, config);
-		});
-
-		assertTrue(exception.getMessage().contains("eth1") && exception.getMessage().contains("does not exist"),
-			"Exception should mention eth1 does not exist");
-
-		// Verify configuration was rolled back
 		assertNull(router.findFromName("eth0").getInterfaceAddress(),
 			"Configuration should be rolled back on error");
 	}
@@ -232,6 +221,54 @@ public class ConfigurationTest {
 		assertEquals("192.168.1.1", router.findFromName("eth0").getInterfaceAddress().getIpAddress().toString());
 		assertEquals("192.168.2.1", router.findFromName("eth1").getInterfaceAddress().getIpAddress().toString());
 		assertEquals(1, router.getRoutingTable().getRoutingEntries().size());
+	}
+
+	@Test
+	public void testConfigurationWithNonExistentInterfaceInRoute() {
+		// Router with default constructor (eth0, lo)
+		Router router = new Router("R1");
+
+		// Configuration tries to use eth1 in route which doesn't exist
+		String config = """
+				set interfaces ethernet eth0 address 192.168.1.1/24
+				set protocols static route 10.0.0.0/8 interface eth1
+				""";
+
+		ConfigurationParser parser = new CommandConfigurationParser();
+		ConfigurationParseException exception = assertThrows(ConfigurationParseException.class, () -> parser.loadConfiguration(router, config));
+
+		assertTrue(exception.getMessage().contains("eth1") && exception.getMessage().contains("does not exist"),
+			"Exception should mention eth1 does not exist");
+
+		// Verify configuration was rolled back
+		assertNull(router.findFromName("eth0").getInterfaceAddress(),
+			"Configuration should be rolled back on error");
+	}
+
+	@Test
+	public void testAutomaticFormatDetection() {
+		Router router1 = new Router("R1", List.of(new RouterInterface("eth0")));
+		Router router2 = new Router("R2", List.of(new RouterInterface("eth0")));
+
+		// Command format
+		String commandConfig = "set interfaces ethernet eth0 address 192.168.1.1/24";
+		ConfigurationParser parser1 = ConfigurationFactory.getParser(commandConfig);
+		assertDoesNotThrow(() -> parser1.loadConfiguration(router1, commandConfig));
+
+		// Hierarchical format
+		String hierarchicalConfig = """
+				interfaces {
+				    ethernet eth0 {
+				        address 192.168.1.1/24
+				    }
+				}
+				""";
+		ConfigurationParser parser2 = ConfigurationFactory.getParser(hierarchicalConfig);
+		assertDoesNotThrow(() -> parser2.loadConfiguration(router2, hierarchicalConfig));
+
+		// Both should result in same configuration
+		assertEquals(router1.findFromName("eth0").getInterfaceAddress().toString(),
+				router2.findFromName("eth0").getInterfaceAddress().toString());
 	}
 
 	@Test
@@ -266,48 +303,12 @@ public class ConfigurationTest {
 		assertEquals("192.168.1.1", router.findFromName("eth0").getInterfaceAddress().getIpAddress().toString());
 		assertEquals("192.168.2.1", router.findFromName("eth1").getInterfaceAddress().getIpAddress().toString());
 		assertEquals(1, router.getRoutingTable().getRoutingEntries().size());
-		assertEquals(5, router.getRoutingTable().getRoutingEntries().get(0).getAdministrativeDistance());
-	}
-
-	@Test
-	public void testAutomaticFormatDetection() {
-		Router router1 = new Router("R1", List.of(new RouterInterface("eth0")));
-		Router router2 = new Router("R2", List.of(new RouterInterface("eth0")));
-
-		// Command format
-		String commandConfig = "set interfaces ethernet eth0 address 192.168.1.1/24";
-		ConfigurationParser parser1 = ConfigurationFactory.getParser(commandConfig);
-		assertDoesNotThrow(() -> parser1.loadConfiguration(router1, commandConfig));
-
-		// Hierarchical format
-		String hierarchicalConfig = """
-				interfaces {
-				    ethernet eth0 {
-				        address 192.168.1.1/24
-				    }
-				}
-				""";
-		ConfigurationParser parser2 = ConfigurationFactory.getParser(hierarchicalConfig);
-		assertDoesNotThrow(() -> parser2.loadConfiguration(router2, hierarchicalConfig));
-
-		// Both should result in same configuration
-		assertEquals(router1.findFromName("eth0").getInterfaceAddress().toString(),
-				router2.findFromName("eth0").getInterfaceAddress().toString());
+		assertEquals(5, router.getRoutingTable().getRoutingEntries().getFirst().getAdministrativeDistance());
 	}
 
 	@Test
 	public void testHierarchicalConfigurationGenerator() {
-		Router router = new Router("R1", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
-		RouterCLIParser cli = new RouterCLIParser();
-		cli.executeCommand("configure", router);
-		cli.executeCommand("set interfaces ethernet eth0 address 192.168.1.1/24", router);
-		cli.executeCommand("set interfaces ethernet eth1 address 192.168.2.1/24", router);
-		cli.executeCommand("set protocols static route 10.0.0.0/8 interface eth1", router);
-		cli.executeCommand("commit", router);
-
-		// Generate hierarchical format
-		ConfigurationGenerator generator = ConfigurationFactory.getHierarchicalGenerator();
-		String config = generator.generateConfiguration(router);
+		String config = getString();
 
 		System.out.println("=== Hierarchical Configuration ===");
 		System.out.println(config);

@@ -92,10 +92,6 @@ public class Router {
 		return hasUncommittedChanges;
 	}
 
-	public void setUncommittedChanges(boolean hasUncommittedChanges) {
-		this.hasUncommittedChanges = hasUncommittedChanges;
-	}
-
 	/**
 	 * Adds a new static route to the routing table.
 	 *
@@ -129,7 +125,6 @@ public class Router {
 			if (found == null) {
 				// Determine whether next-hop lies inside any configured subnet on staged interfaces
 				logger.finer("Next-hop %s not found on any interface. Checking if it is in a directly connected subnet...".formatted(nh));
-				boolean inLocalSubnet = false;
 				Integer inferredMask = null;
 				for (RouterInterface ri : stagedInterfaces) {
 					logger.finest("Checking interface %s with subnet %s".formatted(ri.getInterfaceName(), ri.getSubnet()));
@@ -140,7 +135,6 @@ public class Router {
 						long networkMask = (prefix == 0) ? 0 : (0xFFFFFFFFL << (32 - prefix));
 						long net = ((long) s.getNetworkAddress().getOctet1() << 24) | ((long) s.getNetworkAddress().getOctet2() << 16) | ((long) s.getNetworkAddress().getOctet3() << 8) | s.getNetworkAddress().getOctet4();
 						if ((ipAsLong & networkMask) == (net & networkMask)) {
-							inLocalSubnet = true;
 							inferredMask = prefix;
 							break;
 						}
@@ -377,7 +371,7 @@ public class Router {
 		}
 
 		// Update routing table while mapping staged interface references to the committed interface objects
-		this.routingTable = copyRoutingTableWithUpdatedInterfaces(stagedRoutingTable, stagedInterfaces, interfaces);
+		this.routingTable = copyRoutingTableWithUpdatedInterfaces(stagedRoutingTable, interfaces);
 		hasUncommittedChanges = false;
 		logger.info("%s: Commit complete".formatted(this.name));
 	}
@@ -392,7 +386,7 @@ public class Router {
 			throw new InvalidModeException("Invalid command: [discard]");
 		}
 		this.stagedInterfaces = deepCopyInterfaces(interfaces);
-		this.stagedRoutingTable = copyRoutingTableWithUpdatedInterfaces(routingTable, interfaces, stagedInterfaces);
+		this.stagedRoutingTable = copyRoutingTableWithUpdatedInterfaces(routingTable, stagedInterfaces);
 		hasUncommittedChanges = false;
 	}
 
@@ -424,23 +418,6 @@ public class Router {
 	}
 
 	/**
-	 * Saves configuration to persistent storage, ensuring it will stay after a reboot.
-	 * This operation is currently not supported.
-	 *
-	 * @throws UnsupportedOperationException always thrown as this feature is not implemented
-	 */
-	public void saveConfiguration() {
-		throw new UnsupportedOperationException("Saving configuration is not supported.");
-		//if (mode != RouterMode.CONFIGURATION) {
-		//	throw new InvalidModeException("Invalid command: [save]");
-		//}
-		//if (hasUncommittedChanges) {
-		//	throw new UncommittedChangesException("Cannot save configuration with uncommitted changes.");
-		//}
-		//System.out.println("Configuration saved.");
-	}
-
-	/**
 	 * Changes router mode. In case of leaving configuration mode, checks for uncommitted changes. Uncommitted changes
 	 * will prevent exiting configuration mode.
 	 * When entering configuration mode, resets staged configuration to current committed state.
@@ -455,7 +432,7 @@ public class Router {
 		// When entering configuration mode, reset staged configuration to current committed state
 		if (mode == RouterMode.CONFIGURATION && this.mode == RouterMode.OPERATIONAL) {
 			this.stagedInterfaces = deepCopyInterfaces(this.interfaces);
-			this.stagedRoutingTable = copyRoutingTableWithUpdatedInterfaces(this.routingTable, this.interfaces, this.stagedInterfaces);
+			this.stagedRoutingTable = copyRoutingTableWithUpdatedInterfaces(this.routingTable, this.stagedInterfaces);
 		}
 		this.mode = mode;
 	}
@@ -508,13 +485,11 @@ public class Router {
 	 * Maps interface references from oldInterfaces to corresponding interfaces in newInterfaces.
 	 *
 	 * @param routingTable Original routing table
-	 * @param oldInterfaces Original interface list
 	 * @param newInterfaces New interface list to map to
 	 * @return New routing table with updated interface references
 	 */
 	private RoutingTable copyRoutingTableWithUpdatedInterfaces(
 			RoutingTable routingTable,
-			List<RouterInterface> oldInterfaces,
 			List<RouterInterface> newInterfaces) {
 		logger.finest("Copying routing table with updated interfaces");
 		RoutingTable newTable = new RoutingTable();
@@ -582,6 +557,44 @@ public class Router {
 		output.append("       t - trapped, o - offload failure\n\n");
 
 		// Collect all routes (static + connected)
+		List<RouteDisplayEntry> displayEntries = getRouteDisplayEntries();
+
+		// Display routes
+		for (RouteDisplayEntry entry : displayEntries) {
+			if (entry.isDisabled) {
+				// Disabled routes are not shown in routing table
+				continue;
+			}
+
+			String prefix = entry.isConnected ? "C>*" : "S>*";
+			output.append(prefix).append(" ");
+			output.append(entry.subnet.getNetworkAddress()).append("/");
+			output.append(entry.subnet.getSubnetMask().getShortMask());
+
+			if (entry.isConnected) {
+				// Connected routes - actually connected to the interface
+				output.append(" is directly connected, ").append(entry.interfaceName);
+			} else {
+				// Static routes
+				output.append(" [").append(entry.distance).append("]");
+				if (entry.nextHop != null) {
+					// Static route with next-hop
+					output.append(" via ").append(entry.nextHop);
+					if (entry.interfaceName != null) {
+						output.append(", ").append(entry.interfaceName);
+					}
+				} else if (entry.interfaceName != null) {
+					// Static route via interface (not "directly connected")
+					output.append(" via ").append(entry.interfaceName);
+				}
+			}
+			output.append("\n");
+		}
+
+		return output.toString();
+	}
+
+	private List<RouteDisplayEntry> getRouteDisplayEntries() {
 		List<RouteDisplayEntry> displayEntries = new ArrayList<>();
 
 		// Add connected routes (directly connected networks from configured interfaces)
@@ -630,64 +643,16 @@ public class Router {
 				a.subnet.getSubnetMask().getShortMask()
 			);
 		});
-
-		// Display routes
-		for (RouteDisplayEntry entry : displayEntries) {
-			if (entry.isDisabled) {
-				// Disabled routes are not shown in routing table
-				continue;
-			}
-
-			String prefix = entry.isConnected ? "C>*" : "S>*";
-			output.append(prefix).append(" ");
-			output.append(entry.subnet.getNetworkAddress()).append("/");
-			output.append(entry.subnet.getSubnetMask().getShortMask());
-
-			if (entry.isConnected) {
-				// Connected routes - actually connected to the interface
-				output.append(" is directly connected, ").append(entry.interfaceName);
-			} else {
-				// Static routes
-				output.append(" [").append(entry.distance).append("]");
-				if (entry.nextHop != null) {
-					// Static route with next-hop
-					output.append(" via ").append(entry.nextHop);
-					if (entry.interfaceName != null) {
-						output.append(", ").append(entry.interfaceName);
-					}
-				} else if (entry.interfaceName != null) {
-					// Static route via interface (not "directly connected")
-					output.append(" via ").append(entry.interfaceName);
-				}
-			}
-			output.append("\n");
-		}
-
-		return output.toString();
+		return displayEntries;
 	}
 
 	/**
 	 * Helper class for displaying routing table entries.
+	 *
+	 * @param type "C" for connected, "S" for static
 	 */
-	private static class RouteDisplayEntry {
-		String type; // "C" for connected, "S" for static
-		Subnet subnet;
-		IPAddress nextHop;
-		String interfaceName;
-		int distance;
-		boolean isDisabled;
-		boolean isConnected;
-
-		RouteDisplayEntry(String type, Subnet subnet, IPAddress nextHop,
-		                  String interfaceName, int distance, boolean isDisabled, boolean isConnected) {
-			this.type = type;
-			this.subnet = subnet;
-			this.nextHop = nextHop;
-			this.interfaceName = interfaceName;
-			this.distance = distance;
-			this.isDisabled = isDisabled;
-			this.isConnected = isConnected;
-		}
+	private record RouteDisplayEntry(String type, Subnet subnet, IPAddress nextHop, String interfaceName, int distance,
+	                                 boolean isDisabled, boolean isConnected) {
 	}
 
 	@Override
@@ -770,12 +735,10 @@ public class Router {
 	 * The rollback runnable must revert any staged change created by the command that produced
 	 * this confirmation entry.
 	 */
-	private static class ConfirmationEntry {
+	private record ConfirmationEntry(String message, Runnable rollback) {
 		private static final Logger logger = Logger.getLogger(ConfirmationEntry.class.getName());
-		final String message;
-		final java.lang.Runnable rollback;
 
-		ConfirmationEntry(String message, java.lang.Runnable rollback) {
+		private ConfirmationEntry(String message, Runnable rollback) {
 			this.message = message;
 			this.rollback = rollback;
 			logger.finest("Created confirmation entry with message: %s".formatted(message));

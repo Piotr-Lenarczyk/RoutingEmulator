@@ -41,8 +41,6 @@ public class ForwardingEngine {
             return new ForwardingOutcome(false, 0, "No default gateway configured");
         }
 
-        IPAddress nextHopIp = srcHost.getHostInterface().getDefaultGateway();
-
         // Find the router interface that is connected to the host's interface (via Connection)
         logger.finer("Looking for connection from host %s to its default gateway".formatted(srcHost.getHostname()));
         Connection conn = topology.getConnectionForInterface(srcHost.getHostInterface());
@@ -94,11 +92,13 @@ public class ForwardingEngine {
                     hops++;
                     // Verify return route from destination router back to source (strict)
                     Router dstRouter = findRouterOwningInterface(topology, dstIf);
-                    if (!verifyReturnRouteFromRouter(dstRouter, dstIf, packet.getSource(), topology)) {
-                        logger.fine("Forwarding failure: no return route from destination router %s to source IP");
-                        return new ForwardingOutcome(false, hops, "No return route");
+                    if (dstRouter != null) {
+                        if (!verifyReturnRouteFromRouter(dstRouter, dstIf, packet.getSource(), topology)) {
+                            logger.fine("Forwarding failure: no return route from destination router %s to source IP");
+                            return new ForwardingOutcome(false, hops, "No return route");
+                        }
+                        logger.fine("Forwarding success: reached destination router %s interface %s".formatted(dstRouter.getName(), dstIf.getInterfaceName()));
                     }
-                    logger.fine("Forwarding success: reached destination router %s interface %s".formatted(dstRouter.getName(), dstIf.getInterfaceName()));
                     return new ForwardingOutcome(true, hops, "Reached (router interface)");
                 }
 
@@ -168,7 +168,6 @@ public class ForwardingEngine {
                         return new ForwardingOutcome(false, hops, "Neighbor router not found");
                     }
                     currentRouter = neighborRouter;
-                    currentInterface = neighborRouterIf;
                     continue;
                 }
 
@@ -191,8 +190,6 @@ public class ForwardingEngine {
                     return new ForwardingOutcome(false, hops, "Next-hop router not found");
                 }
                 currentRouter = neighborRouter;
-                currentInterface = foundIf;
-                continue;
             } else {
                 logger.fine("Forwarding failure: invalid route on router %s (no next-hop or exit interface)".formatted(currentRouter.getName()));
                 return new ForwardingOutcome(false, hops, "Invalid route");
@@ -203,22 +200,14 @@ public class ForwardingEngine {
     // Helper: verify that destination router/interface can reach source IP (strict simulation)
     private boolean verifyReturnRouteFromRouter(Router dstRouter, RouterInterface dstIf, IPAddress srcIp, NetworkTopology topology) {
         logger.finer("Verifying return route from destination router %s interface %s to source IP %s".formatted(dstRouter.getName(), dstIf.getInterfaceName(), srcIp));
-        if (dstRouter == null || dstIf == null) {
-            logger.finest("Return route verification failure: destination router or interface is null");
-            return false;
-        }
         ForwardingOutcome outcome = forwardFromRouter(dstRouter, dstIf, srcIp, topology);
         logger.finest("Return route verification result: %s".formatted(outcome.isReached() ? "reachable" : "unreachable"));
-        return outcome != null && outcome.isReached();
+        return outcome.isReached();
     }
 
     // Helper: verify that destination host can reach source IP (via its default gateway) (strict)
     private boolean verifyReturnRouteFromHost(HostInterface dstHostIf, IPAddress srcIp, NetworkTopology topology) {
         logger.finest("Verifying return route from destination host interface %s to source IP %s".formatted(dstHostIf.getInterfaceName(), srcIp));
-        if (dstHostIf == null) {
-            logger.finest("Return route verification failure: destination host interface is null");
-            return false;
-        }
         if (dstHostIf.getDefaultGateway() == null) {
             logger.finest("Return route verification failure: destination host interface has no default gateway configured");
             return false;
@@ -236,14 +225,13 @@ public class ForwardingEngine {
         }
         ForwardingOutcome outcome = forwardFromRouter(gatewayRouter, gatewayIf, srcIp, topology);
         logger.finest("Return route verification result: %s".formatted(outcome.isReached() ? "reachable" : "unreachable"));
-        return outcome != null && outcome.isReached();
+        return outcome.isReached();
     }
 
     // Simulate forwarding originating at a router/interface towards a destination IP
     private ForwardingOutcome forwardFromRouter(Router startRouter, RouterInterface startIf, IPAddress dstIp, NetworkTopology topology) {
         logger.finer("Forwarding from router %s interface %s to destination IP %s".formatted(startRouter.getName(), startIf.getInterfaceName(), dstIp));
         Router currentRouter = startRouter;
-        RouterInterface currentInterface = startIf;
         int hops = 0;
         int maxHops = 128;
 
@@ -304,7 +292,6 @@ public class ForwardingEngine {
                         return new ForwardingOutcome(false, hops, "Next-hop router not found");
                     }
                     currentRouter = neighborRouter;
-                    currentInterface = neighborRouterIf;
                     continue;
                 }
                 logger.finer("Return route verification failure: unsupported neighbor type connected to exit interface %s on router %s".formatted(exitIf.getInterfaceName(), currentRouter.getName()));
@@ -322,8 +309,6 @@ public class ForwardingEngine {
                     return new ForwardingOutcome(false, hops, "Next-hop router not found");
                 }
                 currentRouter = neighborRouter;
-                currentInterface = foundIf;
-                continue;
             } else {
                 logger.finer("Return route verification failure: invalid route on router %s (no next-hop or exit interface)".formatted(currentRouter.getName()));
                 return new ForwardingOutcome(false, hops, "Invalid route");
@@ -350,12 +335,6 @@ public class ForwardingEngine {
         long networkMask = (prefix == 0) ? 0 : (0xFFFFFFFFL << (32 - prefix));
         long net = ((long) subnet.getNetworkAddress().getOctet1() << 24) | ((long) subnet.getNetworkAddress().getOctet2() << 16) | ((long) subnet.getNetworkAddress().getOctet3() << 8) | subnet.getNetworkAddress().getOctet4();
         return (ipAsLong & networkMask) == (net & networkMask);
-    }
-
-    private boolean hostsSubnetMatches(IPAddress ip, HostInterface hostIf) {
-        Subnet subnet = hostIf.getSubnet();
-        if (subnet == null) return false;
-        return belongsToSubnet(ip, subnet);
     }
 
     private RouterInterface findInterfaceByIp(NetworkTopology topology, IPAddress ip) {

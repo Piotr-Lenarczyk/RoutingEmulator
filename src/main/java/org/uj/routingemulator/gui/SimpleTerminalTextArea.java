@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +28,17 @@ public class SimpleTerminalTextArea extends TextArea {
 	private int promptStartPosition = 0;
 	private String currentPrompt = "";
 
+	/**
+	 * -- SETTER --
+	 * Sets the command submit handler.
+	 */
+	@Setter
 	private Consumer<String> onCommandSubmit;
+	/**
+	 * -- SETTER --
+	 * Sets the tab completion handler.
+	 */
+	@Setter
 	private BiConsumer<String, Consumer<List<String>>> onTabComplete;
 
 	public SimpleTerminalTextArea() {
@@ -48,20 +59,6 @@ public class SimpleTerminalTextArea extends TextArea {
 				event.consume();
 			}
 		});
-	}
-
-	/**
-	 * Sets the command submit handler.
-	 */
-	public void setOnCommandSubmit(Consumer<String> handler) {
-		this.onCommandSubmit = handler;
-	}
-
-	/**
-	 * Sets the tab completion handler.
-	 */
-	public void setOnTabComplete(BiConsumer<String, Consumer<List<String>>> handler) {
-		this.onTabComplete = handler;
 	}
 
 	/**
@@ -190,7 +187,7 @@ public class SimpleTerminalTextArea extends TextArea {
 				if (completions != null && !completions.isEmpty()) {
 					if (completions.size() == 1) {
 						// Single completion - replace only the last word
-						String completion = completions.get(0);
+						String completion = completions.getFirst();
 
 						// Find the position where the last word starts
 						// If input ends with space, we're completing a new empty word

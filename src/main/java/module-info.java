@@ -2,9 +2,7 @@ module org.example.thesisuj {
 	requires javafx.controls;
 	requires javafx.fxml;
 	requires static lombok;
-	requires java.xml;
 	requires org.jline;
-	requires org.fxmisc.richtext;
 	requires java.logging;
 
 

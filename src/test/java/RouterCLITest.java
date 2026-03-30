@@ -135,9 +135,11 @@ class RouterCLITest {
 		parser.executeCommand("exit", router);
 		assertEquals(RouterMode.CONFIGURATION, router.getMode());
 		String output = normalizeOutput(outputStream.toString());
-		assertTrue(output.contains("Cannot exit: configuration modified.\n" +
-				"Use 'exit discard' to discard the changes and exit.\n" +
-				"[edit]\n"));
+		assertTrue(output.contains("""
+				Cannot exit: configuration modified.
+				Use 'exit discard' to discard the changes and exit.
+				[edit]
+				"""));
 	}
 
 	@Test
@@ -294,7 +296,7 @@ class RouterCLITest {
 		parser.executeCommand("set protocols static route 192.168.1.0/24 next-hop 10.0.0.1 disable", router);
 
 		assertTrue(outputStream.toString().contains("[edit]"));
-		assertTrue(router.getStagedRoutingTable().getRoutingEntries().get(0).isDisabled());
+		assertTrue(router.getStagedRoutingTable().getRoutingEntries().getFirst().isDisabled());
 	}
 
 	@Test
@@ -306,7 +308,7 @@ class RouterCLITest {
 		parser.executeCommand("set protocols static route 192.168.1.0/24 interface eth0 disable", router);
 
 		assertTrue(outputStream.toString().contains("[edit]"));
-		assertTrue(router.getStagedRoutingTable().getRoutingEntries().get(0).isDisabled());
+		assertTrue(router.getStagedRoutingTable().getRoutingEntries().getFirst().isDisabled());
 	}
 
 	@Test
@@ -332,7 +334,7 @@ class RouterCLITest {
 
 		assertTrue(router.hasUncommittedChanges());
 		assertTrue(outputStream.toString().contains("[edit]"));
-		assertNotNull(router.getStagedInterfaces().get(0).getSubnet());
+		assertNotNull(router.getStagedInterfaces().getFirst().getSubnet());
 	}
 
 	@Test
@@ -388,7 +390,7 @@ class RouterCLITest {
 		parser.executeCommand("delete interfaces ethernet eth0 address 192.168.1.1/24", router);
 
 		assertTrue(outputStream.toString().contains("[edit]"));
-		assertNull(router.getStagedInterfaces().get(0).getSubnet());
+		assertNull(router.getStagedInterfaces().getFirst().getSubnet());
 	}
 
 	@Test
@@ -446,14 +448,14 @@ class RouterCLITest {
 
 		assertTrue(router.hasUncommittedChanges());
 		assertEquals(1, router.getStagedRoutingTable().getRoutingEntries().size());
-		assertNotNull(router.getStagedInterfaces().get(0).getSubnet());
+		assertNotNull(router.getStagedInterfaces().getFirst().getSubnet());
 
 		// Commit changes
 		parser.executeCommand("commit", router);
 
 		assertFalse(router.hasUncommittedChanges());
 		assertEquals(1, router.getRoutingTable().getRoutingEntries().size());
-		assertNotNull(router.getInterfaces().get(0).getSubnet());
+		assertNotNull(router.getInterfaces().getFirst().getSubnet());
 
 		// Exit to operational mode
 		parser.executeCommand("exit", router);
@@ -478,7 +480,7 @@ class RouterCLITest {
 		assertEquals(RouterMode.OPERATIONAL, router.getMode());
 		assertFalse(router.hasUncommittedChanges());
 		assertEquals(0, router.getRoutingTable().getRoutingEntries().size());
-		assertNull(router.getInterfaces().get(0).getSubnet());
+		assertNull(router.getInterfaces().getFirst().getSubnet());
 	}
 
 	@Test
@@ -620,7 +622,7 @@ class RouterCLITest {
 		parser.executeCommand("set protocols static route 192.168.1.0/24 interface eth0 distance 100 disable", router);
 
 		assertTrue(outputStream.toString().contains("[edit]"));
-		assertTrue(router.getStagedRoutingTable().getRoutingEntries().get(0).isDisabled());
+		assertTrue(router.getStagedRoutingTable().getRoutingEntries().getFirst().isDisabled());
 	}
 
 	@Test
@@ -632,7 +634,7 @@ class RouterCLITest {
 		parser.executeCommand("set protocols static route 192.168.1.0/24 next-hop 10.0.0.1 distance 50 disable", router);
 
 		assertTrue(outputStream.toString().contains("[edit]"));
-		assertTrue(router.getStagedRoutingTable().getRoutingEntries().get(0).isDisabled());
+		assertTrue(router.getStagedRoutingTable().getRoutingEntries().getFirst().isDisabled());
 	}
 
 	@Test

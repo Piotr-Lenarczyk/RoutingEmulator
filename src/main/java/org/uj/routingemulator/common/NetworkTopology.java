@@ -381,22 +381,6 @@ public class NetworkTopology {
 	}
 
 	/**
-	 * Updates the link states of all neighboring interfaces.
-	 * <p>
-	 * Should be called when an interface's administrative state changes,
-	 * as this affects the link state of connected interfaces.
-	 *
-	 * @param iface the interface whose neighbors should be updated
-	 */
-	public void updateNeighborLinkStates(NetworkInterface iface) {
-		Connection conn = getConnectionForInterface(iface);
-		if (conn != null) {
-			NetworkInterface neighbor = conn.getNeighborInterface(iface);
-			updateInterfaceLinkState(neighbor);
-		}
-	}
-
-	/**
 	 * Finds a host interface with exactly the given IP address that is reachable from the given starting interface using connections graph.
 	 * This performs a BFS across connections (through switches and other devices) starting at the provided interface.
 	 *

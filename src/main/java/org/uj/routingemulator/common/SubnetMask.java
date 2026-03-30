@@ -19,7 +19,7 @@ import lombok.Getter;
 @Getter
 @EqualsAndHashCode
 public class SubnetMask {
-	private int shortMask;
+	private final int shortMask;
 
 	/**
 	 * Creates a subnet mask with the specified prefix length.

@@ -1,7 +1,6 @@
 package org.uj.routingemulator.host;
 
 import lombok.Data;
-import org.uj.routingemulator.common.IPAddress;
 import org.uj.routingemulator.common.NetworkTopology;
 import org.uj.routingemulator.common.PingService;
 import org.uj.routingemulator.common.PingStatistics;
@@ -43,11 +42,4 @@ public class Host {
 		return svc.ping(this, dst, 4, topology);
 	}
 
-	/**
-	 * Convenience ping method with explicit count.
-	 */
-	public PingStatistics ping(IPAddress dst, int count, NetworkTopology topology) {
-		PingService svc = new PingService();
-		return svc.ping(this, dst, count, topology);
-	}
 }
