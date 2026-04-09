@@ -10,6 +10,10 @@ import java.io.PrintWriter;
 public class CLIContext {
 	private static final ThreadLocal<PrintWriter> writer = new ThreadLocal<>();
 
+	private CLIContext() {
+		// Private constructor to prevent instantiation
+	}
+
 	/**
 	 * Get the current terminal writer for this thread.
 	 * If no writer is set, returns a PrintWriter wrapping System.out.

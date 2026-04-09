@@ -125,7 +125,7 @@ public class StaticRoutingEntry {
 	 */
 	private void validateAdministrativeDistance(int administrativeDistance) {
 		if (administrativeDistance < 1 || administrativeDistance > 255) {
-			throw new RuntimeException("Administrative distance must be between 1 and 255. Provided: " + administrativeDistance);
+			throw new IllegalArgumentException("Administrative distance must be between 1 and 255. Provided: " + administrativeDistance);
 		}
 	}
 

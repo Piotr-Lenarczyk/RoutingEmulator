@@ -1,3 +1,5 @@
+package org.uj.routingemulator;
+
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.uj.routingemulator.common.*;
@@ -17,14 +19,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class LogicalErrorTest {
+class LogicalErrorTest {
 
 	/**
 	 * This test simulates a scenario where a ping is sent to a destination that has no return route.
 	 * The expected behavior is that the ping should fail with an appropriate error message.
 	 */
 	@Test
-	public void testNoReturnRoute() {
+	void testNoReturnRoute() {
 		NetworkTopology topology = new NetworkTopology();
 
 		Host h1 = new Host("PC1", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 1, 1), new SubnetMask(24)), new IPAddress(192, 168, 1, 254)));
@@ -84,7 +86,7 @@ public class LogicalErrorTest {
 	 * The expected behavior is that the ping should fail due to the lack of a return path.
 	 */
 	@Test
-	public void testRoutingAsymmetry() {
+	void testRoutingAsymmetry() {
 		NetworkTopology topology = new NetworkTopology();
 
 		Host h1 = new Host("PC1", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 1, 1), new SubnetMask(24)), new IPAddress(192, 168, 1, 254)));
@@ -159,7 +161,7 @@ public class LogicalErrorTest {
 	 * Ping will not be successful and the router should warn the user about the issue
 	 */
 	@Test
-	public void testBlackholeRoute() {
+	void testBlackholeRoute() {
 		NetworkTopology topology = new NetworkTopology();
 
 		Host h1 = new Host("PC1", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 1, 1), new SubnetMask(24)), new IPAddress(192, 168, 1, 254)));
@@ -208,7 +210,7 @@ public class LogicalErrorTest {
 	}
 
 	@Test
-	public void testRouteViaNonexistentNextHop() {
+	void testRouteViaNonexistentNextHop() {
 		NetworkTopology topology = new NetworkTopology();
 
 		Host h1 = new Host("PC1", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 1, 1), new SubnetMask(24)), new IPAddress(192, 168, 1, 254)));
@@ -242,9 +244,9 @@ public class LogicalErrorTest {
 	 * Upon issuing a router configuration command that would create a loop, system should warn the user,
 	 * display a confirmation dialog but let them proceed if they choose to
 	 */
-	@Disabled("Not yet implemented")
+	@Disabled("Not implemented yet")
 	@Test
-	public void testRoutingLoop() {
+	void testRoutingLoop() {
 		NetworkTopology topology = new NetworkTopology();
 
 		Host h1 = new Host("PC1", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 1, 1), new SubnetMask(24)), new IPAddress(192, 168, 1, 254)));

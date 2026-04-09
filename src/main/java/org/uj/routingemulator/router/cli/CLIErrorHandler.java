@@ -102,6 +102,7 @@ public class CLIErrorHandler {
 				return new RuntimeException("\t%s".formatted(message));
 			}
 			default -> {
+				// For unknown exceptions, rethrow the original
 			}
 		}
 

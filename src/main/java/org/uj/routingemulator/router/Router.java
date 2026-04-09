@@ -142,7 +142,7 @@ public class Router {
 				}
 
 				String nhFormatted = inferredMask != null ? nh + "/" + inferredMask : nh.toString();
-				String msg = String.format("Next-hop interface %s not found on the router\nPackets routed through this interface will be dropped\nWould you like to proceed anyway? (Y/N)", nhFormatted);
+				String msg = String.format("Next-hop interface %s not found on the router%nPackets routed through this interface will be dropped%nWould you like to proceed anyway? (Y/N)", nhFormatted);
 
 				// Create rollback to remove staged entry
 				Runnable rollback = () -> stagedRoutingTable.getRoutingEntries().remove(entry);
@@ -270,7 +270,7 @@ public class Router {
 		// If the interface is administratively disabled, prepare confirmation and throw a specific exception
 		if (routerInterface.isDisabled()) {
 			logger.warning("Interface %s is disabled. Packets routed through this interface will be dropped".formatted(routerInterfaceName));
-			String msg = String.format("Interface %s is disabled\nPackets routed through this interface will be dropped\nWould you like to proceed anyway? (Y/N)", routerInterface.getInterfaceName());
+			String msg = String.format("Interface %s is disabled%nPackets routed through this interface will be dropped%nWould you like to proceed anyway? (Y/N)", routerInterface.getInterfaceName());
 			// create rollback runnable
 			Runnable rollback = () -> routerInterface.setInterfaceAddress(previous);
 			pendingConfirmations.clear(); // only keep confirmations for last command
@@ -736,12 +736,5 @@ public class Router {
 	 * this confirmation entry.
 	 */
 	private record ConfirmationEntry(String message, Runnable rollback) {
-		private static final Logger logger = Logger.getLogger(ConfirmationEntry.class.getName());
-
-		private ConfirmationEntry(String message, Runnable rollback) {
-			this.message = message;
-			this.rollback = rollback;
-			logger.finest("Created confirmation entry with message: %s".formatted(message));
-		}
 	}
 }

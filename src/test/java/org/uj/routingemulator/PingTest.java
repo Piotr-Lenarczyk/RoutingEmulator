@@ -1,3 +1,5 @@
+package org.uj.routingemulator;
+
 import org.junit.jupiter.api.Test;
 import org.uj.routingemulator.common.*;
 import org.uj.routingemulator.host.Host;
@@ -10,10 +12,10 @@ import org.uj.routingemulator.switching.Switch;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class PingTest {
+class PingTest {
 
     @Test
-    public void testPingSameSubnet() {
+    void testPingSameSubnet() {
         NetworkTopology topology = new NetworkTopology();
         Host h1 = new Host("h1", new HostInterface("eth0", new Subnet(new IPAddress(192, 168, 1, 1), new SubnetMask(24)), new IPAddress(192, 168, 1, 254)));
         Host h2 = new Host("h2", new HostInterface("eth0", new Subnet(new IPAddress(192, 168, 1, 2), new SubnetMask(24)), new IPAddress(192, 168, 1, 254)));
@@ -29,7 +31,7 @@ public class PingTest {
     }
 
     @Test
-    public void testPingViaRouter() {
+    void testPingViaRouter() {
         NetworkTopology topology = new NetworkTopology();
         Host h1 = new Host("h1", new HostInterface("eth0", new Subnet(new IPAddress(192, 168, 1, 2), new SubnetMask(24)), new IPAddress(192, 168, 1, 1)));
         Host h2 = new Host("h2", new HostInterface("eth0", new Subnet(new IPAddress(192, 168, 2, 2), new SubnetMask(24)), new IPAddress(192, 168, 2, 1)));
@@ -57,7 +59,7 @@ public class PingTest {
     }
 
     @Test
-    public void testPingViaRouterAndSwitch() {
+    void testPingViaRouterAndSwitch() {
         NetworkTopology topology = new NetworkTopology();
         Host h1 = new Host("h1", new HostInterface("eth0", new Subnet(new IPAddress(192, 168, 1, 2), new SubnetMask(24)), new IPAddress(192, 168, 1, 1)));
         Host h2 = new Host("h2", new HostInterface("eth0", new Subnet(new IPAddress(192, 168, 2, 2), new SubnetMask(24)), new IPAddress(192, 168, 2, 1)));
@@ -91,7 +93,7 @@ public class PingTest {
     }
 
     @Test
-    public void testPingBasicRouting() {
+    void testPingBasicRouting() {
         NetworkTopology topology = new NetworkTopology();
         Host h1 = new Host("h1", new HostInterface("eth0", new Subnet(new IPAddress(192, 168, 1, 1), new SubnetMask(24)), new IPAddress(192, 168, 1, 254)));
         Host h2 = new Host("h2", new HostInterface("eth0", new Subnet(new IPAddress(192, 168, 3, 1), new SubnetMask(24)), new IPAddress(192, 168, 3, 254)));
@@ -127,7 +129,7 @@ public class PingTest {
     }
 
     @Test
-    public void testPingViaRouterUnknownHost() {
+    void testPingViaRouterUnknownHost() {
         NetworkTopology topology = new NetworkTopology();
         Host h1 = new Host("h1", new HostInterface("eth0", new Subnet(new IPAddress(192, 168, 1, 2), new SubnetMask(24)), new IPAddress(192, 168, 1, 1)));
         Host h2 = new Host("h2", new HostInterface("eth0", new Subnet(new IPAddress(192, 168, 2, 2), new SubnetMask(24)), new IPAddress(192, 168, 2, 1)));
@@ -156,7 +158,7 @@ public class PingTest {
     }
 
     @Test
-    public void testPingUnreachable() {
+    void testPingUnreachable() {
         NetworkTopology topology = new NetworkTopology();
         Host h1 = new Host("h1", new HostInterface("eth0", new Subnet(new IPAddress(10, 0, 0, 1), new SubnetMask(24)), new IPAddress(10, 0, 0, 254)));
         topology.addHost(h1);

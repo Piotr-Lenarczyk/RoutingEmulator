@@ -124,12 +124,9 @@ public class RouterInterface implements NetworkInterface {
 
 	/**
 	 * Sets the subnet by converting to interface address.
-	 * This is deprecated - use setInterfaceAddress instead.
 	 *
 	 * @param subnet the subnet to set
-	 * @deprecated Use {@link #setInterfaceAddress(InterfaceAddress)} instead
 	 */
-	@Deprecated
 	public void setSubnet(Subnet subnet) {
 		// For backward compatibility - interpret as setting the interface address
 		// to the network address (though this is semantically incorrect)

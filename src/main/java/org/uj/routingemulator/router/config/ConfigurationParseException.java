@@ -22,6 +22,6 @@ public class ConfigurationParseException extends RuntimeException {
 	 * @param token the token that caused the parsing error
 	 */
 	public ConfigurationParseException(String message, Token token) {
-		super(String.format("%s\nInvalid token: %s", message, token));
+		super(String.format("%s%nInvalid token: %s", message, token));
 	}
 }

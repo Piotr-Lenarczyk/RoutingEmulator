@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
  */
 public class ShowInterfacesCommand implements RouterCommand {
 	private static final Pattern PATTERN = Pattern.compile("^show\\s+interfaces$");
+	private static final String HEADER = "%-16s %-33s %-4s %-17s %-10s %-6s %s%n";
 
 	@Override
 	public void execute(Router router) {
@@ -37,10 +38,10 @@ public class ShowInterfacesCommand implements RouterCommand {
 		}
 
 		StringBuilder output = new StringBuilder();
-		output.append("Codes: S - State, L - Link, u - Up, D - Down, A - Admin Down\n");
-		output.append(String.format("%-16s %-33s %-4s %-17s %-10s %-6s %s\n",
+		output.append("Codes: S - State, L - Link, u - Up, D - Down, A - Admin Down%n");
+		output.append(String.format(HEADER,
 				"Interface", "IP Address", "S/L", "MAC", "VRF", "MTU", "Description"));
-		output.append(String.format("%-16s %-33s %-4s %-17s %-10s %-6s %s\n",
+		output.append(String.format(HEADER,
 				"---------", "----------", "---", "---", "---", "---", "-----------"));
 
 		for (RouterInterface iface : router.getInterfaces()) {
@@ -56,7 +57,7 @@ public class ShowInterfacesCommand implements RouterCommand {
 			String mtu = String.valueOf(iface.getMtu());
 			String description = iface.getDescription() != null ? iface.getDescription() : "";
 
-			output.append(String.format("%-16s %-33s %-4s %-17s %-10s %-6s %s\n",
+			output.append(String.format(HEADER,
 					interfaceName,
 					ipAddress,
 					state,

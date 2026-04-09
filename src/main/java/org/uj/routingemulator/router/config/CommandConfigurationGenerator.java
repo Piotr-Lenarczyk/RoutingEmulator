@@ -29,12 +29,12 @@ public class CommandConfigurationGenerator implements ConfigurationGenerator {
 
 		for (RouterInterface iface: router.getInterfaces()) {
 			if (iface.getInterfaceAddress() != null) {
-				configBuilder.append(String.format("set interfaces ethernet %s address %s\n",
+				configBuilder.append(String.format("set interfaces ethernet %s address %s%n",
 						iface.getInterfaceName(),
 						iface.getInterfaceAddress()));
 			}
 			if (iface.isDisabled()) {
-				configBuilder.append(String.format("set interfaces ethernet %s disable\n",
+				configBuilder.append(String.format("set interfaces ethernet %s disable%n",
 						iface.getInterfaceName()));
 			}
 		}

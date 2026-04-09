@@ -27,6 +27,9 @@ import java.util.List;
 public class CommandConfigurationParser implements ConfigurationParser {
 	private List<Token> tokens;
 	private int position;
+	private static final String ROUTE_ALREADY_EXISTS = "Route already exists";
+	private static final String ALREADY_EXISTS = "already exists";
+	private static final String DISABLE = "disable";
 
 	/**
 	 * Loads and applies configuration from a string to the specified router.
@@ -148,13 +151,13 @@ public class CommandConfigurationParser implements ConfigurationParser {
 					throw new ConfigurationParseException("Invalid interface address: " + e.getMessage(), tokens.get(position - 1));
 				}
 				break;
-			case "disable":
+			case DISABLE:
 				advance();
 				try {
 					router.disableInterface(interfaceName);
 				} catch (RuntimeException e) {
 					// Ignore "already exists" errors for disable
-					if (e.getMessage() != null && e.getMessage().contains("already exists")) {
+					if (e.getMessage() != null && e.getMessage().contains(ALREADY_EXISTS)) {
 						return;
 					}
 					throw new ConfigurationParseException("Failed to disable interface: " + e.getMessage(), token);
@@ -206,19 +209,19 @@ public class CommandConfigurationParser implements ConfigurationParser {
 					try {
 						router.addRoute(new StaticRoutingEntry(subnet, nextHop));
 					} catch (RuntimeException e) {
-						if (e.getMessage() != null && e.getMessage().equals("Route already exists")) {
+						if (e.getMessage() != null && e.getMessage().equals(ROUTE_ALREADY_EXISTS)) {
 							return; // Ignore duplicate
 						}
 						throw e;
 					}
 				} else {
 					token = getCurrentToken();
-					if (token.getValue().equals("disable")) {
+					if (token.getValue().equals(DISABLE)) {
 						advance();
 						try {
 							router.disableRoute(new StaticRoutingEntry(subnet, nextHop));
 						} catch (RuntimeException e) {
-							if (e.getMessage() != null && e.getMessage().contains("already exists")) {
+							if (e.getMessage() != null && e.getMessage().contains(ALREADY_EXISTS)) {
 								return; // Ignore duplicate
 							}
 							throw e;
@@ -230,7 +233,7 @@ public class CommandConfigurationParser implements ConfigurationParser {
 						try {
 							router.addRoute(new StaticRoutingEntry(subnet, nextHop, administrativeDistance));
 						} catch (RuntimeException e) {
-							if (e.getMessage() != null && e.getMessage().equals("Route already exists")) {
+							if (e.getMessage() != null && e.getMessage().equals(ROUTE_ALREADY_EXISTS)) {
 								return; // Ignore duplicate
 							}
 							throw e;
@@ -259,19 +262,19 @@ public class CommandConfigurationParser implements ConfigurationParser {
 					try {
 						router.addRoute(new StaticRoutingEntry(subnet, routerInterface));
 					} catch (RuntimeException e) {
-						if (e.getMessage() != null && e.getMessage().equals("Route already exists")) {
+						if (e.getMessage() != null && e.getMessage().equals(ROUTE_ALREADY_EXISTS)) {
 							return; // Ignore duplicate
 						}
 						throw e;
 					}
 				} else {
 					token = getCurrentToken();
-					if (token.getValue().equals("disable")) {
+					if (token.getValue().equals(DISABLE)) {
 						advance();
 						try {
 							router.disableRoute(new StaticRoutingEntry(subnet, routerInterface));
 						} catch (RuntimeException e) {
-							if (e.getMessage() != null && e.getMessage().contains("already exists")) {
+							if (e.getMessage() != null && e.getMessage().contains(ALREADY_EXISTS)) {
 								return; // Ignore duplicate
 							}
 							throw e;
@@ -283,7 +286,7 @@ public class CommandConfigurationParser implements ConfigurationParser {
 						try {
 							router.addRoute(new StaticRoutingEntry(subnet, routerInterface, administrativeDistance));
 						} catch (RuntimeException e) {
-							if (e.getMessage() != null && e.getMessage().equals("Route already exists")) {
+							if (e.getMessage() != null && e.getMessage().equals(ROUTE_ALREADY_EXISTS)) {
 								return; // Ignore duplicate
 							}
 							throw e;
@@ -297,10 +300,7 @@ public class CommandConfigurationParser implements ConfigurationParser {
 			}
 		} catch (NumberFormatException e) {
 			throw new ConfigurationParseException("Invalid distance value", tokens.get(position - 1));
-		} catch (RuntimeException e) {
-			if (e instanceof ConfigurationParseException) {
-				throw e;
-			}
+		} catch (ConfigurationParseException e) {
 			throw new ConfigurationParseException("Invalid route configuration: " + e.getMessage(),
 					position > 0 ? tokens.get(position - 1) : tokens.getFirst());
 		}

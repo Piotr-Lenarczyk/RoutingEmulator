@@ -1,3 +1,5 @@
+package org.uj.routingemulator;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.uj.routingemulator.common.Connection;

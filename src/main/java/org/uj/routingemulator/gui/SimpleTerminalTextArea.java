@@ -231,7 +231,7 @@ public class SimpleTerminalTextArea extends TextArea {
 		}
 
 		historyIndex += direction;
-		historyIndex = Math.max(0, Math.min(historyIndex, commandHistory.size()));
+		historyIndex = Math.clamp(historyIndex, 0, commandHistory.size());
 
 		if (historyIndex < commandHistory.size()) {
 			replaceText(promptStartPosition, getLength(), commandHistory.get(historyIndex));

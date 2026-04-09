@@ -8,6 +8,10 @@ package org.uj.routingemulator.router.config;
  */
 public class ConfigurationFactory {
 
+	private ConfigurationFactory() {
+		// Private constructor to prevent instantiation
+	}
+
 	/**
 	 * Detects configuration format and returns appropriate parser.
 	 * <p>

@@ -25,7 +25,7 @@ public class Host {
 	public Host(String hostname, HostInterface hostInterface) {
 		this.hostname = hostname;
 		this.hostInterface = hostInterface;
-		logger.fine("Creating new host " + hostname + " with interface: " + hostInterface);
+		logger.fine("Creating new host %s with interface %s".formatted(hostname, hostInterface));
 	}
 
 	/**
@@ -36,7 +36,7 @@ public class Host {
 	 * @return PingStatistics with results
 	 */
 	public PingStatistics ping(String dst, NetworkTopology topology) {
-		logger.info("Initializing new PingService for host " + hostname);
+		logger.info("Initializing new PingService for host %s".formatted(hostname));
 		PingService svc = new PingService();
 		logger.info("%s: Pinging %s with 4 probes...".formatted(hostname, dst));
 		return svc.ping(this, dst, 4, topology);

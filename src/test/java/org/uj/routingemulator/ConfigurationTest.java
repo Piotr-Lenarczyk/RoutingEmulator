@@ -1,3 +1,5 @@
+package org.uj.routingemulator;
+
 import org.junit.jupiter.api.Test;
 import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.RouterInterface;
@@ -8,7 +10,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ConfigurationTest {
+class ConfigurationTest {
 
 	private static Router getConfiguration() {
 		Router router = new Router("R1", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
@@ -37,7 +39,7 @@ public class ConfigurationTest {
 	}
 
 	@Test
-	public void testConfigurationWithDisabledInterface() {
+	void testConfigurationWithDisabledInterface() {
 		Router router = new Router("R1", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
 		RouterCLIParser cli = new RouterCLIParser();
 		cli.executeCommand("configure", router);
@@ -56,7 +58,7 @@ public class ConfigurationTest {
 	}
 
 	@Test
-	public void testConfigurationWithCommentsAndEmptyLines() {
+	void testConfigurationWithCommentsAndEmptyLines() {
 		String config = """
 				# Interface configuration
 				set interfaces ethernet eth0 address 192.168.1.254/24
@@ -74,7 +76,7 @@ public class ConfigurationTest {
 	}
 
 	@Test
-	public void testConfigurationSaveAndLoad() {
+	void testConfigurationSaveAndLoad() {
 		// Create and configure router
 		Router router = getConfiguration();
 
@@ -106,7 +108,7 @@ public class ConfigurationTest {
 	}
 
 	@Test
-	public void testInvalidConfiguration() {
+	void testInvalidConfiguration() {
 		String invalidConfig = "set protocols static route 192.168.1.0/24 invalid-option value";
 
 		Router router = new Router("R1", List.of(new RouterInterface("eth0")));
@@ -116,7 +118,7 @@ public class ConfigurationTest {
 	}
 
 	@Test
-	public void testOverwriteExistingConfiguration() {
+	void testOverwriteExistingConfiguration() {
 		// Create router and configure it
 		Router router = new Router("R1", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
 		RouterCLIParser cli = new RouterCLIParser();
@@ -159,7 +161,7 @@ public class ConfigurationTest {
 	}
 
 	@Test
-	public void testConfigurationRollbackOnError() {
+	void testConfigurationRollbackOnError() {
 		Router router = new Router("R1", List.of(new RouterInterface("eth0")));
 		RouterCLIParser cli = new RouterCLIParser();
 		cli.executeCommand("configure", router);
@@ -180,7 +182,7 @@ public class ConfigurationTest {
 	}
 
 	@Test
-	public void testConfigurationWithNonExistentInterface() {
+	void testConfigurationWithNonExistentInterface() {
 		// Router with default constructor (eth0, lo)
 		Router router = new Router("R1");
 
@@ -202,7 +204,7 @@ public class ConfigurationTest {
 	}
 
 	@Test
-	public void testConfigurationWithCorrectInterfaces() {
+	void testConfigurationWithCorrectInterfaces() {
 		// Router with eth0, eth1
 		Router router = new Router("R1", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
 
@@ -224,7 +226,7 @@ public class ConfigurationTest {
 	}
 
 	@Test
-	public void testConfigurationWithNonExistentInterfaceInRoute() {
+	void testConfigurationWithNonExistentInterfaceInRoute() {
 		// Router with default constructor (eth0, lo)
 		Router router = new Router("R1");
 
@@ -246,7 +248,7 @@ public class ConfigurationTest {
 	}
 
 	@Test
-	public void testAutomaticFormatDetection() {
+	void testAutomaticFormatDetection() {
 		Router router1 = new Router("R1", List.of(new RouterInterface("eth0")));
 		Router router2 = new Router("R2", List.of(new RouterInterface("eth0")));
 
@@ -272,7 +274,7 @@ public class ConfigurationTest {
 	}
 
 	@Test
-	public void testHierarchicalConfigurationFormat() {
+	void testHierarchicalConfigurationFormat() {
 		// Router with eth0, eth1
 		Router router = new Router("R1", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
 
@@ -307,7 +309,7 @@ public class ConfigurationTest {
 	}
 
 	@Test
-	public void testHierarchicalConfigurationGenerator() {
+	void testHierarchicalConfigurationGenerator() {
 		String config = getString();
 
 		System.out.println("=== Hierarchical Configuration ===");

@@ -40,7 +40,7 @@ public class SubnetMask {
 	 */
 	private void validateShortMask(int shortMask) {
 		if (shortMask < 0 || shortMask > 32) {
-			throw new RuntimeException("Subnet mask must be between 0 and 32. Provided: " + shortMask);
+			throw new IllegalArgumentException("Subnet mask must be between 0 and 32. Provided: " + shortMask);
 		}
 	}
 

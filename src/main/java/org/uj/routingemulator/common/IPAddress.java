@@ -56,7 +56,7 @@ public class IPAddress {
 	 */
 	private void validateOctet(int octet) {
 		if (octet < 0 || octet > 255) {
-			throw new RuntimeException("Octet value must be between 0 and 255. Provided: " + octet);
+			throw new IllegalArgumentException("Octet value must be between 0 and 255. Provided: " + octet);
 		}
 	}
 

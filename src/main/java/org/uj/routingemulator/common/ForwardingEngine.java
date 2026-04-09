@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 public class ForwardingEngine {
     private static final Logger logger = Logger.getLogger(ForwardingEngine.class.getName());
     private static final int DEFAULT_TTL = 64;
+    private static final String NEXT_HOP_NOT_FOUND = "Next-hop router not found";
 
     /**
      * Forwards the packet starting from the source host towards destination IP using topology and routers.
@@ -187,7 +188,7 @@ public class ForwardingEngine {
                 Router neighborRouter = findRouterOwningInterface(topology, foundIf);
                 if (neighborRouter == null) {
                     logger.fine("Forwarding failure: next-hop router for IP %s on router %s not found".formatted(nh, currentRouter.getName()));
-                    return new ForwardingOutcome(false, hops, "Next-hop router not found");
+                    return new ForwardingOutcome(false, hops, NEXT_HOP_NOT_FOUND);
                 }
                 currentRouter = neighborRouter;
             } else {
@@ -289,7 +290,7 @@ public class ForwardingEngine {
                     Router neighborRouter = findRouterOwningInterface(topology, neighborRouterIf);
                     if (neighborRouter == null) {
                         logger.finer("Return route verification failure: neighbor router for exit interface %s on router %s not found".formatted(exitIf.getInterfaceName(), currentRouter.getName()));
-                        return new ForwardingOutcome(false, hops, "Next-hop router not found");
+                        return new ForwardingOutcome(false, hops, NEXT_HOP_NOT_FOUND);
                     }
                     currentRouter = neighborRouter;
                     continue;
@@ -306,7 +307,7 @@ public class ForwardingEngine {
                 Router neighborRouter = findRouterOwningInterface(topology, foundIf);
                 if (neighborRouter == null) {
                     logger.finer("Return route verification failure: next-hop router for IP %s on router %s not found".formatted(nh, currentRouter.getName()));
-                    return new ForwardingOutcome(false, hops, "Next-hop router not found");
+                    return new ForwardingOutcome(false, hops, NEXT_HOP_NOT_FOUND);
                 }
                 currentRouter = neighborRouter;
             } else {
