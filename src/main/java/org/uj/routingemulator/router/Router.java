@@ -4,9 +4,8 @@ import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import org.uj.routingemulator.common.IPAddress;
-import org.uj.routingemulator.common.InterfaceAddress;
-import org.uj.routingemulator.common.Subnet;
+import org.uj.routingemulator.common.*;
+import org.uj.routingemulator.common.exceptions.InvalidNextHopException;
 import org.uj.routingemulator.router.exceptions.*;
 
 import java.util.ArrayList;
@@ -117,11 +116,7 @@ public class Router {
 			logger.warning("Attempted to add duplicate route: %s".formatted(entry));
 			throw new DuplicateConfigurationException("Route already exists");
 		}
-		// Stage the route first so it can be committed after confirmation
-		this.stagedRoutingTable.addRoute(entry);
-		hasUncommittedChanges = true;
-
-		// If this is a next-hop based route, validate that the next-hop corresponds to an interface on this router
+		// Validate next-hop if present, but do not stage until validation completes
 		if (entry.getNextHop() != null) {
 			logger.finer("Validating next-hop %s for the new route".formatted(entry.getNextHop()));
 			IPAddress nh = entry.getNextHop();
@@ -131,39 +126,60 @@ public class Router {
 					.findFirst()
 					.orElse(null);
 
-			if (found == null) {
-				// Determine whether next-hop lies inside any configured subnet on staged interfaces
-				logger.finer("Next-hop %s not found on any interface. Checking if it is in a directly connected subnet...".formatted(nh));
-				Integer inferredMask = null;
-				for (RouterInterface ri : stagedInterfaces) {
-					logger.finest("Checking interface %s with subnet %s".formatted(ri.getInterfaceName(), ri.getSubnet()));
-					if (ri.getSubnet() != null && ri.getSubnet().getSubnetMask() != null) {
-						Subnet s = ri.getSubnet();
-						long ipAsLong = ((long) nh.getOctet1() << 24) | ((long) nh.getOctet2() << 16) | ((long) nh.getOctet3() << 8) | nh.getOctet4();
-						int prefix = s.getSubnetMask().getShortMask();
-						long networkMask = (prefix == 0) ? 0 : (0xFFFFFFFFL << (32 - prefix));
-						long net = ((long) s.getNetworkAddress().getOctet1() << 24) | ((long) s.getNetworkAddress().getOctet2() << 16) | ((long) s.getNetworkAddress().getOctet3() << 8) | s.getNetworkAddress().getOctet4();
-						if ((ipAsLong & networkMask) == (net & networkMask)) {
-							inferredMask = prefix;
-							break;
-						}
-					}
-				}
+			if (found != null) {
+				// Next-hop points to an IP assigned to this router -> invalid next-hop (local interface)
+				String nhFormatted = found.getInterfaceAddress().toString();
+				String msg = String.format("Next-hop interface %s is a local interface on the router\nPackets routed through this route will not be forwarded\nNext-hop should be an IP address of a directly connected neighbor\nWould you like to proceed anyway? (Y/N)", nhFormatted);
 
-				String nhFormatted = inferredMask != null ? nh + "/" + inferredMask : nh.toString();
-				String msg = String.format("Next-hop interface %s not found on the router%nPackets routed through this interface will be dropped%nWould you like to proceed anyway? (Y/N)", nhFormatted);
-
-				// Create rollback to remove staged entry
-				Runnable rollback = () -> stagedRoutingTable.getRoutingEntries().remove(entry);
+				Runnable rollback = () -> { /* no-op; not staged */ };
 				pendingConfirmations.clear();
 				pendingConfirmations.add(new ConfirmationEntry(msg, rollback));
-
-				// Always throw: next-hop not found on this router. Pending confirmation exists for interactive UIs.
-				logger.warning("Next-hop interface %s not found on the router".formatted(nh));
-				throw new InterfaceNotFoundException(msg);
+				logger.warning("Next-hop interface %s is a local interface on the router".formatted(nh));
+				throw new InvalidNextHopException(msg);
 			}
-			logger.info("%s: Creating static route %s".formatted(this.name, entry));
+
+			// Determine whether next-hop lies inside any configured subnet on staged interfaces
+			Integer inferredMask = null;
+			for (RouterInterface ri : stagedInterfaces) {
+				logger.finest("Checking interface %s with subnet %s".formatted(ri.getInterfaceName(), ri.getSubnet()));
+				if (ri.getSubnet() != null && ri.getSubnet().getSubnetMask() != null) {
+					Subnet s = ri.getSubnet();
+					long ipAsLong = ((long) nh.getOctet1() << 24) | ((long) nh.getOctet2() << 16) | ((long) nh.getOctet3() << 8) | nh.getOctet4();
+					int prefix = s.getSubnetMask().getShortMask();
+					long networkMask = (prefix == 0) ? 0 : (0xFFFFFFFFL << (32 - prefix));
+					long net = ((long) s.getNetworkAddress().getOctet1() << 24) | ((long) s.getNetworkAddress().getOctet2() << 16) | ((long) s.getNetworkAddress().getOctet3() << 8) | s.getNetworkAddress().getOctet4();
+					if ((ipAsLong & networkMask) == (net & networkMask)) {
+						inferredMask = prefix;
+						break;
+					}
+				}
+			}
+
+			if (inferredMask != null) {
+				String nhFormatted = nh + "/" + inferredMask;
+				String msg = String.format("Next-hop interface %s not found on the router%nPackets routed through this interface will be dropped%nWould you like to proceed anyway? (Y/N)", nhFormatted);
+
+				Runnable rollback = () -> { /* no-op; not staged */ };
+				pendingConfirmations.clear();
+				pendingConfirmations.add(new ConfirmationEntry(msg, rollback));
+				logger.warning("Next-hop interface %s not found on the router".formatted(nh));
+				throw new org.uj.routingemulator.router.exceptions.InterfaceNotFoundException(msg);
+			} else {
+				// Next-hop not found in any configured subnet -> warn user (invalid next-hop)
+				String msg = String.format("Next-hop interface %s is not a directly connected neighbor interface%nThis may be fine if configuration is not yet complete%nPackets routed through this route will be dropped until the next-hop is reachable%nWould you like to proceed anyway? (Y/N)", nh);
+				Runnable rollback = () -> { /* no-op; not staged */ };
+				pendingConfirmations.clear();
+				pendingConfirmations.add(new ConfirmationEntry(msg, rollback));
+				logger.warning("Next-hop interface %s not found on the router".formatted(nh));
+				throw new InvalidNextHopException(msg);
+			}
 		}
+
+		// Stage the route after validation
+		this.stagedRoutingTable.addRoute(entry);
+		hasUncommittedChanges = true;
+
+		logger.info("%s: Creating static route %s".formatted(this.name, entry));
 	}
 
 	/**
@@ -692,6 +708,20 @@ public class Router {
 			copy.add(new RouterInterface(iface));
 		}
 		return copy;
+	}
+
+	public PingStatistics ping(String dst, NetworkTopology topology) {
+		logger.info("Initializing new PingService for host %s".formatted(this.name));
+		PingService svc = new PingService();
+		logger.info("%s: Pinging %s with 4 probes...".formatted(this.name, dst));
+		return svc.ping(this, IPAddress.fromString(dst), 4, 64, topology);
+	}
+
+	public PingStatistics ping(String dst, int count, int ttl, NetworkTopology topology) {
+		logger.info("Initializing new PingService for host %s".formatted(this.name));
+		PingService svc = new PingService();
+		logger.info("%s: Pinging %s with 4 probes...".formatted(this.name, dst));
+		return svc.ping(this, IPAddress.fromString(dst), count, ttl, topology);
 	}
 
 	/**

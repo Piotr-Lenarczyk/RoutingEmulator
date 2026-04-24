@@ -93,6 +93,8 @@ public class RouterCLIParser {
 		commands.add(new ShowIpRouteCommand());
 		commands.add(new ShowConfigurationCommand());
 		commands.add(new ShowInterfacesCommand());
+		// Ping (operational)
+		commands.add(new PingCommand());
 		// Configuration mode commands
 		commands.add(new ConfigureCommand());
 		commands.add(new CommitCommand());
@@ -244,7 +246,7 @@ public class RouterCLIParser {
 		}
 
 		// Return the command only if there's exactly one match
-		return matches.size() == 1 ? matches.getFirst() : null;
+		return matches.size() == 1 ? matches.get(0) : null;
 	}
 
 	/**

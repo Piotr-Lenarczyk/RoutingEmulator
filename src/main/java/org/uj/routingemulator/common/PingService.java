@@ -2,9 +2,13 @@ package org.uj.routingemulator.common;
 
 import org.uj.routingemulator.host.Host;
 import org.uj.routingemulator.host.HostInterface;
+import org.uj.routingemulator.router.Router;
+import org.uj.routingemulator.router.RouterInterface;
+import org.uj.routingemulator.router.StaticRoutingEntry;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 /**
@@ -19,12 +23,6 @@ public class PingService {
 
 	/**
 	 * Ping an IP address from the given host. Destination may be given as string.
-	 *
-	 * @param src         source host
-	 * @param dstIpString destination IP in dotted format
-	 * @param count       number of probes
-	 * @param topology    network topology
-	 * @return PingStatistics with results
 	 */
 	public PingStatistics ping(Host src, String dstIpString, int count, NetworkTopology topology) {
 		logger.fine("%s: Pinging %s with %d probes...".formatted(src.getHostname(), dstIpString, count));
@@ -82,6 +80,79 @@ public class PingService {
 				results.add(new PingResult(seq, true, outcome.getHopCount(), rtt, null));
 			} else {
 				logger.finest("Probe %d failed: %s after %d hops".formatted(seq, outcome.getReason(), outcome.getHopCount()));
+				results.add(new PingResult(seq, false, outcome.getHopCount(), 0, outcome.getReason()));
+			}
+		}
+
+		return new PingStatistics(results);
+	}
+
+	/**
+	 * Ping using Router as source. This delegates to the forwarding engine similarly to host-based pings.
+	 */
+	public PingStatistics ping(Router srcRouter, IPAddress dst, int count, int ttl, NetworkTopology topology) {
+		logger.fine("%s: Router pinging %s with %d probes (ttl=%d)...".formatted(srcRouter.getName(), dst, count, ttl));
+		List<PingResult> results = new ArrayList<>();
+
+		if (count <= 0) count = 4;
+		if (ttl <= 0) ttl = 64;
+
+		// Select a source IP from router interfaces. Prefer an interface that shares subnet with destination.
+		RouterInterface ri = null;
+		for (RouterInterface candidate : srcRouter.getInterfaces()) {
+			if (candidate.getSubnet() != null && candidate.getSubnet().contains(dst)) {
+				ri = candidate;
+				break;
+			}
+		}
+		if (ri == null) {
+			// If no local interface contains the destination, consult routing table to determine exit interface
+			Optional<StaticRoutingEntry> matchedRoute = srcRouter.getRoutingTable().getRoutingEntries().stream()
+					.filter(e -> !e.isDisabled() && e.getSubnet() != null && e.getSubnet().contains(dst))
+					.findFirst();
+			if (matchedRoute.isPresent()) {
+				StaticRoutingEntry route = matchedRoute.get();
+				if (route.getRouterInterface() != null) {
+					ri = route.getRouterInterface();
+				} else if (route.getNextHop() != null) {
+					// try to infer which local interface would be used to reach next-hop (next-hop lies in one of router's subnets)
+					for (RouterInterface candidate : srcRouter.getInterfaces()) {
+						if (candidate.getSubnet() != null && candidate.getSubnet().contains(route.getNextHop())) {
+							ri = candidate;
+							break;
+						}
+					}
+				}
+			}
+			// fallback: pick first interface with a subnet
+			if (ri == null) {
+				for (RouterInterface candidate : srcRouter.getInterfaces()) {
+					if (candidate.getSubnet() != null) {
+						ri = candidate;
+						break;
+					}
+				}
+			}
+		}
+
+		IPAddress sourceIp = null;
+		if (ri != null && ri.getSubnet() != null) {
+			if (ri.getInterfaceAddress() != null && ri.getInterfaceAddress().getIpAddress() != null) {
+				sourceIp = ri.getInterfaceAddress().getIpAddress();
+			} else {
+				sourceIp = ri.getSubnet().getNetworkAddress();
+			}
+		}
+
+		for (int seq = 1; seq <= count; seq++) {
+			IPAddress srcAddr = sourceIp != null ? sourceIp : new IPAddress(0, 0, 0, 0);
+			logger.finest("Probe %d: Router %s sending ICMP Echo Request from %s to %s with ttl=%d".formatted(seq, srcRouter.getName(), srcAddr, dst, ttl));
+			Packet p = new Packet(srcAddr, dst, Packet.PacketType.ICMP_ECHO_REQUEST, ttl);
+			ForwardingOutcome outcome = engine.forward(p, srcRouter, topology);
+			if (outcome.isReached()) {
+				long rtt = BASE_MS + outcome.getHopCount() * PER_HOP_MS;
+				results.add(new PingResult(seq, true, outcome.getHopCount(), rtt, null));
+			} else {
 				results.add(new PingResult(seq, false, outcome.getHopCount(), 0, outcome.getReason()));
 			}
 		}

@@ -1,5 +1,7 @@
 package org.uj.routingemulator.router.cli;
 
+import org.uj.routingemulator.common.NetworkTopology;
+
 import java.io.PrintWriter;
 
 /**
@@ -9,6 +11,7 @@ import java.io.PrintWriter;
  */
 public class CLIContext {
 	private static final ThreadLocal<PrintWriter> writer = new ThreadLocal<>();
+	private static final ThreadLocal<NetworkTopology> topology = new ThreadLocal<>();
 
 	private CLIContext() {
 		// Private constructor to prevent instantiation
@@ -43,5 +46,26 @@ public class CLIContext {
 	 */
 	public static void clear() {
 		writer.remove();
+		topology.remove();
+	}
+
+	/**
+	 * Get the network topology for this CLI context.
+	 * May return null if not set.
+	 *
+	 * @return NetworkTopology or null
+	 */
+	public static NetworkTopology getNetworkTopology() {
+		return topology.get();
+	}
+
+	/**
+	 * Sets the current network topology for this CLI context (thread-local).
+	 * Commands that need topology (e.g., ping) can access it via this method.
+	 *
+	 * @param t NetworkTopology to set
+	 */
+	public static void setNetworkTopology(NetworkTopology t) {
+		topology.set(t);
 	}
 }

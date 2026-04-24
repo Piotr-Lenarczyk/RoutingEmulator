@@ -809,7 +809,7 @@ public class NetworkTopologyController {
 	private void openRouterCLI(Router router) {
 		// Using SimpleCLIDialog as a fallback - it's based on standard JavaFX TextArea
 		// instead of RichTextFX, which may have compatibility issues
-		SimpleCLIDialog cliDialog = new SimpleCLIDialog(router);
+		SimpleCLIDialog cliDialog = new SimpleCLIDialog(router, topology);
 		cliDialog.showAndWait();
 	}
 
