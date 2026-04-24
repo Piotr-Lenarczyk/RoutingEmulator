@@ -70,4 +70,3 @@ public class DisableRouteNextHopDistanceCommand implements RouterCommand {
 		return "Disable static route via next-hop with custom distance";
 	}
 }
-

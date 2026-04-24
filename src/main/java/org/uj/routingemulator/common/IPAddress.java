@@ -69,15 +69,27 @@ public class IPAddress {
 	 * @throws NumberFormatException if any octet cannot be parsed as an integer
 	 */
 	public static IPAddress fromString(String ipString) {
-	    String[] parts = ipString.split("\\.");
-	    if (parts.length != 4) {
-	        throw new RuntimeException("Invalid IP address format: " + ipString);
-	    }
-	    int octet1 = Integer.parseInt(parts[0]);
-	    int octet2 = Integer.parseInt(parts[1]);
-	    int octet3 = Integer.parseInt(parts[2]);
-	    int octet4 = Integer.parseInt(parts[3]);
-	    return new IPAddress(octet1, octet2, octet3, octet4);
+		try {
+			String[] parts = ipString.split("\\.");
+			if (parts.length != 4) {
+				throw new RuntimeException("Invalid IP address format: " + ipString);
+			}
+			int octet1 = Integer.parseInt(parts[0]);
+			int octet2 = Integer.parseInt(parts[1]);
+			int octet3 = Integer.parseInt(parts[2]);
+			int octet4 = Integer.parseInt(parts[3]);
+			return new IPAddress(octet1, octet2, octet3, octet4);
+		} catch (NumberFormatException e) {
+			// If the user supplied an IP that contains a mask (e.g. "2.2.2.2/8"),
+			// convert the low-level NumberFormatException into a user-friendly CLI-style error
+			// For other NumberFormatExceptions, rethrow so callers can see
+			// the original cause.
+			if (ipString.matches(".*/\\d{1,2}$")) {
+				String msg = String.format("Error: %s is not a valid IPv4 prefix\nInvalid value\nValue validation failed\nSet failed\n[edit]", ipString);
+				throw new RuntimeException(msg);
+			}
+			throw e; // preserve original behavior for other malformed inputs
+		}
 	}
 
 	/**

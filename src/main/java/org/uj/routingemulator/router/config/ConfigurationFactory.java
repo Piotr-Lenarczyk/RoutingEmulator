@@ -1,5 +1,7 @@
 package org.uj.routingemulator.router.config;
 
+import java.util.logging.Logger;
+
 /**
  * Factory for creating appropriate configuration parser and generator based on format detection.
  * <p>
@@ -7,6 +9,7 @@ package org.uj.routingemulator.router.config;
  * or hierarchical format (curly braces).
  */
 public class ConfigurationFactory {
+	private static final Logger logger = Logger.getLogger(ConfigurationFactory.class.getName());
 
 	private ConfigurationFactory() {
 		// Private constructor to prevent instantiation
@@ -30,10 +33,12 @@ public class ConfigurationFactory {
 
 		// Check for hierarchical format (contains curly braces)
 		if (trimmed.contains("{")) {
+			logger.info("Detected hierarchical configuration format");
 			return new HierarchicalConfigurationParser();
 		}
 
 		// Default to command format
+		logger.info("Detected command-based configuration format");
 		return new CommandConfigurationParser();
 	}
 

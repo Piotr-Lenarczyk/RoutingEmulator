@@ -37,10 +37,29 @@ public class DisableRouteNextHopCommand implements RouterCommand {
 	public void execute(Router router) {
 		PrintWriter out = CLIContext.getWriter();
 		try {
+			Subnet dest;
+			try {
+				dest = Subnet.fromString(destinationSubnet);
+			} catch (RuntimeException e) {
+				String msg = String.format("Error: %s is not a valid IPv4 prefix\nInvalid value\nValue validation failed\nSet failed\n[edit]", destinationSubnet);
+				throw new RuntimeException(msg);
+			}
+
+			IPAddress nh;
+			try {
+				nh = IPAddress.fromString(nextHop);
+			} catch (RuntimeException e) {
+				if (nextHop != null && nextHop.contains("/")) {
+					String msg = String.format("Error: %s is not a valid IPv4 prefix\nInvalid value\nValue validation failed\nSet failed\n[edit]", nextHop);
+					throw new RuntimeException(msg);
+				}
+				throw e;
+			}
+
 			router.disableRoute(
 					new StaticRoutingEntry(
-							Subnet.fromString(destinationSubnet),
-							IPAddress.fromString(nextHop)
+							dest,
+							nh
 					)
 			);
 			out.println("[edit]");

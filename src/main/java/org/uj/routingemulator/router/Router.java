@@ -104,6 +104,15 @@ public class Router {
 			logger.warning("Attempted to add route while in %s mode".formatted(mode));
 			throw new InvalidModeException("Invalid command: set [protocols]");
 		}
+
+		// Validate that the subnet represents a proper network address (host bits == 0)
+		Subnet routeSubnet = entry.getSubnet();
+		if (routeSubnet == null || !routeSubnet.isValidNetworkAddress()) {
+			String msg = String.format("\n\tError: %s is not a valid IPv4 prefix\n\n\n\tInvalid value\n\tValue validation failed\n\tSet failed\n\n[edit]", routeSubnet == null ? "null" : routeSubnet.toString());
+			logger.warning("Invalid subnet (not a network address) provided for route: %s".formatted(routeSubnet));
+			throw new RuntimeException(msg);
+		}
+
 		if (stagedRoutingTable.contains(entry)) {
 			logger.warning("Attempted to add duplicate route: %s".formatted(entry));
 			throw new DuplicateConfigurationException("Route already exists");

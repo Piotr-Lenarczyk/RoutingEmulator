@@ -1,5 +1,6 @@
 package org.uj.routingemulator.router.cli;
 
+import org.uj.routingemulator.common.exceptions.InvalidNextHopException;
 import org.uj.routingemulator.router.exceptions.ConfigurationNotFoundException;
 import org.uj.routingemulator.router.exceptions.DuplicateConfigurationException;
 import org.uj.routingemulator.router.exceptions.InterfaceNotFoundException;
@@ -26,6 +27,11 @@ public class CLIErrorHandler {
 		String message = e.getMessage();
 
 		// Handle specific exception types
+		if (e instanceof InvalidNextHopException) {
+			// The InvalidNextHopException already contains a user-facing message; return it as-is
+			return new RuntimeException(e.getMessage());
+		}
+
 		if (e instanceof DuplicateConfigurationException) {
 			return new RuntimeException("\tConfiguration path: [%s] already exists".formatted(configPath));
 		}
@@ -260,4 +266,3 @@ public class CLIErrorHandler {
 		return "interfaces ethernet %s address %s".formatted(routerInterfaceName, subnet);
 	}
 }
-

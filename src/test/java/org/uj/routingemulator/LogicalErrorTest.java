@@ -3,6 +3,7 @@ package org.uj.routingemulator;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.uj.routingemulator.common.*;
+import org.uj.routingemulator.common.exceptions.InvalidNextHopException;
 import org.uj.routingemulator.common.exceptions.RoutingLoopException;
 import org.uj.routingemulator.host.Host;
 import org.uj.routingemulator.host.HostInterface;
@@ -301,5 +302,124 @@ class LogicalErrorTest {
 		PingStatistics stats2 = h1.ping("192.168.3.1", topology);
 		assertEquals(4, stats2.getSent());
 		assertEquals(0, stats2.getReceived(), "Should drop packets due to routing loop");
+	}
+
+	@Test
+	void testNextHopOnLocalInterface() {
+		NetworkTopology networkTopology = new NetworkTopology();
+
+		Host h1 = new Host("PC1", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 1, 1), new SubnetMask(24)), new IPAddress(192, 168, 1, 254)));
+		Host h2 = new Host("PC2", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 2, 1), new SubnetMask(24)), new IPAddress(192, 168, 2, 254)));
+
+		Router r1 = new Router("R1", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
+		Router r2 = new Router("R2", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
+
+		networkTopology.addHost(h1);
+		networkTopology.addHost(h2);
+		networkTopology.addRouter(r1);
+		networkTopology.addRouter(r2);
+
+		networkTopology.addConnection(new Connection(h1.getHostInterface(), r1.getInterfaces().getFirst()));
+		networkTopology.addConnection(new Connection(h2.getHostInterface(), r2.getInterfaces().getFirst()));
+		networkTopology.addConnection(new Connection(r1.getInterfaces().get(1), r2.getInterfaces().get(1)));
+
+		r1.setMode(RouterMode.CONFIGURATION);
+		r1.configureInterface("eth0", InterfaceAddress.fromString("192.168.1.254/24"));
+		r1.configureInterface("eth1", InterfaceAddress.fromString("192.168.3.1/30"));
+		InvalidNextHopException ex = assertThrows(InvalidNextHopException.class, () ->
+				r1.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 2, 0), new SubnetMask(24)), new IPAddress(192, 168, 3, 1)))
+		);
+		assertThat(ex.getMessage()).contains("Next-hop interface 192.168.3.1/30 is a local interface on the router");
+		assertThat(ex.getMessage()).contains("Packets routed through this route will not be forwarded");
+		assertThat(ex.getMessage()).contains("Next-hop should be an IP address of a directly connected neighbor");
+		assertThat(ex.getMessage()).contains("Would you like to proceed anyway? (Y/N)");
+		r1.confirm();
+		r1.commitChanges();
+
+		r2.setMode(RouterMode.CONFIGURATION);
+		r2.configureInterface("eth0", InterfaceAddress.fromString("192.168.2.254/24"));
+		r2.configureInterface("eth1", InterfaceAddress.fromString("192.168.3.2/30"));
+		r2.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(24)), new IPAddress(192, 168, 3, 1)));
+		r2.commitChanges();
+
+		PingStatistics stats = h1.ping("192.168.2.1", networkTopology);
+		assertEquals(4, stats.getSent());
+		assertEquals(0, stats.getReceived(), "Should not receive a reply due to invalid next-hop configuration");
+	}
+
+	@Test
+	void testNextHopNotOnTheNeighbor() {
+		NetworkTopology networkTopology = new NetworkTopology();
+
+		Host h1 = new Host("PC1", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 1, 1), new SubnetMask(24)), new IPAddress(192, 168, 1, 254)));
+		Host h2 = new Host("PC2", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 2, 1), new SubnetMask(24)), new IPAddress(192, 168, 2, 254)));
+
+		Router r1 = new Router("R1", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
+		Router r2 = new Router("R2", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
+
+		networkTopology.addHost(h1);
+		networkTopology.addHost(h2);
+		networkTopology.addRouter(r1);
+		networkTopology.addRouter(r2);
+
+		networkTopology.addConnection(new Connection(h1.getHostInterface(), r1.getInterfaces().getFirst()));
+		networkTopology.addConnection(new Connection(h2.getHostInterface(), r2.getInterfaces().getFirst()));
+		networkTopology.addConnection(new Connection(r1.getInterfaces().get(1), r2.getInterfaces().get(1)));
+
+		r1.setMode(RouterMode.CONFIGURATION);
+		r1.configureInterface("eth0", InterfaceAddress.fromString("192.168.1.254/24"));
+		r1.configureInterface("eth1", InterfaceAddress.fromString("192.168.3.1/30"));
+		r1.commitChanges();
+
+		r2.setMode(RouterMode.CONFIGURATION);
+		r2.configureInterface("eth0", InterfaceAddress.fromString("192.168.2.254/24"));
+		r2.configureInterface("eth1", InterfaceAddress.fromString("192.168.3.2/30"));
+		r2.commitChanges();
+
+		InvalidNextHopException ex = assertThrows(InvalidNextHopException.class, () ->
+				r1.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 2, 0), new SubnetMask(24)), new IPAddress(192, 168, 4, 1)))
+		);
+		assertThat(ex.getMessage()).contains("Next-hop interface 192.168.4.1/30 is not a directly connected neighbor interface");
+		assertThat(ex.getMessage()).contains("This may be fine if configuration is not yet complete");
+		assertThat(ex.getMessage()).contains("Packets routed through this route will be dropped until the next-hop is reachable");
+		assertThat(ex.getMessage()).contains("Would you like to proceed anyway? (Y/N)");
+		r1.confirm();
+		r1.commitChanges();
+
+		r2.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(24)), new IPAddress(192, 168, 3, 1)));
+		r2.commitChanges();
+
+		PingStatistics stats = h1.ping("192.168.2.1", networkTopology);
+		assertEquals(4, stats.getSent());
+		assertEquals(0, stats.getReceived(), "Should not receive a reply due to next-hop not being on the neighbor");
+	}
+
+	@Test
+	void testNextHopNotARouter() {
+		NetworkTopology networkTopology = new NetworkTopology();
+
+		Host h1 = new Host("PC1", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 1, 1), new SubnetMask(24)), new IPAddress(192, 168, 1, 254)));
+		Host h2 = new Host("PC2", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 2, 1), new SubnetMask(24)), new IPAddress(192, 168, 2, 254)));
+
+		Router r1 = new Router("R1", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
+
+		networkTopology.addHost(h1);
+		networkTopology.addHost(h2);
+		networkTopology.addRouter(r1);
+
+		networkTopology.addConnection(new Connection(h1.getHostInterface(), r1.getInterfaces().getFirst()));
+		networkTopology.addConnection(new Connection(h2.getHostInterface(), r1.getInterfaces().get(1)));
+
+		r1.setMode(RouterMode.CONFIGURATION);
+		r1.configureInterface("eth0", InterfaceAddress.fromString("192.168.1.254/24"));
+		r1.configureInterface("eth1", InterfaceAddress.fromString("192.168.2.254/24"));
+		InvalidNextHopException ex = assertThrows(InvalidNextHopException.class, () ->
+				r1.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 3, 0), new SubnetMask(24)), new IPAddress(192, 168, 2, 254)))
+		);
+
+		assertThat(ex.getMessage()).contains("Next-hop interface 192.168.3.0/24 is not a router interface");
+		assertThat(ex.getMessage()).contains("Packets routed through this route will not be forwarded");
+		assertThat(ex.getMessage()).contains("Next-hop should be an IP address of a directly connected neighbor");
+		assertThat(ex.getMessage()).contains("Would you like to proceed anyway? (Y/N)");
 	}
 }
