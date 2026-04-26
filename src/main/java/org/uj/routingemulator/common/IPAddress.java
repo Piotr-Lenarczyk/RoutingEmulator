@@ -85,7 +85,7 @@ public class IPAddress {
 			// For other NumberFormatExceptions, rethrow so callers can see
 			// the original cause.
 			if (ipString.matches(".*/\\d{1,2}$")) {
-				String msg = String.format("Error: %s is not a valid IPv4 prefix\nInvalid value\nValue validation failed\nSet failed\n[edit]", ipString);
+				String msg = String.format("\n\tError: %s is not a valid IPv4 prefix\n\n\n\tInvalid value\n\tValue validation failed\n\tSet failed\n\n[edit]", ipString);
 				throw new RuntimeException(msg);
 			}
 			throw e; // preserve original behavior for other malformed inputs

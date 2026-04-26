@@ -83,7 +83,6 @@ public class RouterCLIParser {
 	}
 
 
-
 	/**
 	 * Registers all available CLI commands.
 	 * Order is important: more specific patterns must be registered before general ones.
@@ -139,26 +138,9 @@ public class RouterCLIParser {
 					command.execute(router);
 					out.flush();
 				} catch (InterfaceUnavailableException e) {
-					// Print message
+					// Print message and do not prompt for confirmation; warnings are logged by Router
 					out.println(e.getMessage());
 					out.flush();
-					// If we have a console reader available, ask user now
-					if (reader != null) {
-						String answer;
-						while (true) {
-							answer = reader.readLine("(Y/N) > ").trim();
-							if (answer.equalsIgnoreCase("y") || answer.equalsIgnoreCase("yes")) {
-								router.confirm();
-								break;
-							} else if (answer.equalsIgnoreCase("n") || answer.equalsIgnoreCase("no")) {
-								router.cancelConfirmation();
-								break;
-							} else {
-								out.println("Please answer Y or N");
-								out.flush();
-							}
-						}
-					}
 					return;
 				} catch (RuntimeException e) {
 					out.println(e.getMessage());
@@ -178,22 +160,6 @@ public class RouterCLIParser {
 			} catch (org.uj.routingemulator.router.exceptions.InterfaceUnavailableException e) {
 				out.println(e.getMessage());
 				out.flush();
-				if (reader != null) {
-					String answer;
-					while (true) {
-						answer = reader.readLine("(Y/N) > ").trim();
-						if (answer.equalsIgnoreCase("y") || answer.equalsIgnoreCase("yes")) {
-							router.confirm();
-							break;
-						} else if (answer.equalsIgnoreCase("n") || answer.equalsIgnoreCase("no")) {
-							router.cancelConfirmation();
-							break;
-						} else {
-							out.println("Please answer Y or N");
-							out.flush();
-						}
-					}
-				}
 				return;
 			} catch (RuntimeException e) {
 				out.println(e.getMessage());

@@ -33,7 +33,7 @@ public class DeleteRouteNextHopDistanceCommand implements RouterCommand {
 			try {
 				dest = Subnet.fromString(destinationSubnet);
 			} catch (RuntimeException e) {
-				String msg = String.format("Error: %s is not a valid IPv4 prefix\nInvalid value\nValue validation failed\nSet failed\n[edit]", destinationSubnet);
+				String msg = String.format("\n\tError: %s is not a valid IPv4 prefix\n\n\n\tInvalid value\n\tValue validation failed\n\tSet failed\n\n[edit]", destinationSubnet);
 				throw new RuntimeException(msg);
 			}
 
@@ -42,7 +42,7 @@ public class DeleteRouteNextHopDistanceCommand implements RouterCommand {
 				nh = IPAddress.fromString(nextHop);
 			} catch (RuntimeException e) {
 				if (nextHop != null && nextHop.contains("/")) {
-					String msg = String.format("Error: %s is not a valid IPv4 prefix\nInvalid value\nValue validation failed\nSet failed\n[edit]", nextHop);
+					String msg = String.format("\n\tError: %s is not a valid IPv4 prefix\n\n\n\tInvalid value\n\tValue validation failed\n\tSet failed\n\n[edit]", nextHop);
 					throw new InvalidNextHopException(msg);
 				}
 				throw e;

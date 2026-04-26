@@ -45,7 +45,7 @@ public class SetRouteNextHopCommand implements RouterCommand {
 				dest = Subnet.fromString(destinationSubnet);
 			} catch (RuntimeException e) {
 				// Provide user-friendly message for invalid prefix
-				String msg = String.format("Error: %s is not a valid IPv4 prefix\nInvalid value\nValue validation failed\nSet failed\n[edit]", destinationSubnet);
+				String msg = String.format("\n\tError: %s is not a valid IPv4 prefix\n\n\n\tInvalid value\n\tValue validation failed\n\tSet failed\n\n[edit]", destinationSubnet);
 				throw new RuntimeException(msg);
 			}
 
@@ -55,7 +55,7 @@ public class SetRouteNextHopCommand implements RouterCommand {
 			} catch (RuntimeException e) {
 				// If nextHop contains a mask, produce a clearer error message
 				if (nextHop != null && nextHop.contains("/")) {
-					String msg = String.format("Error: %s is not a valid IPv4 prefix\nInvalid value\nValue validation failed\nSet failed\n[edit]", nextHop);
+					String msg = String.format("\n\tError: %s is not a valid IPv4 prefix\n\n\n\tInvalid value\n\tValue validation failed\n\tSet failed\n\n[edit]", nextHop);
 					throw new InvalidNextHopException(msg);
 				}
 				// otherwise rethrow

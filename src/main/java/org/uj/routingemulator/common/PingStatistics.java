@@ -30,5 +30,8 @@ public class PingStatistics {
         return 100.0 * (getSent() - getReceived()) / getSent();
     }
 
+    public List<PingResult> getResults() {
+        return results;
+    }
 }
 

@@ -2,8 +2,6 @@ package org.uj.routingemulator.gui;
 
 import javafx.application.Platform;
 import javafx.geometry.Insets;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.layout.VBox;
@@ -92,30 +90,7 @@ public class SimpleCLIDialog extends Dialog<Void> {
             terminal.appendColoredText(output);
         }
 
-        // If parser or router produced a pending confirmation, show a GUI dialog to the user
-        if (router.isConfirmationPending()) {
-            List<String> msgs = router.getPendingConfirmationMessages();
-            String joined = String.join("\n", msgs);
-
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Confirmation required");
-            alert.setHeaderText("Configuration confirmation");
-            alert.setContentText(joined);
-
-            ButtonType yes = new ButtonType("Yes", ButtonBar.ButtonData.YES);
-            ButtonType no = new ButtonType("No", ButtonBar.ButtonData.NO);
-            alert.getButtonTypes().setAll(yes, no);
-
-            alert.showAndWait().ifPresent(result -> {
-                if (result == yes) {
-                    router.confirm();
-                    terminal.appendColoredText("\n[edit]\n");
-                } else {
-                    router.cancelConfirmation();
-                    terminal.appendColoredText("\n[cancel]\n");
-                }
-            });
-        }
+        // NOTE: confirmation mechanism was removed from Router; GUI confirmation dialog is no longer needed
 
         showPrompt();
         saveTerminalBuffer();

@@ -5,7 +5,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.uj.routingemulator.common.*;
-import org.uj.routingemulator.common.exceptions.InvalidNextHopException;
 import org.uj.routingemulator.router.exceptions.*;
 
 import java.util.ArrayList;
@@ -30,11 +29,7 @@ import java.util.logging.Logger;
 @EqualsAndHashCode
 public class Router {
 	private static final Logger logger = Logger.getLogger(Router.class.getName());
-	/**
-	 * Pending confirmation entries for the last command that produced warnings.
-	 * This list is cleared when confirm() or cancelConfirmation() is called.
-	 */
-	private final List<ConfirmationEntry> pendingConfirmations = new ArrayList<>();
+
 	private String name;
 	private RoutingTable routingTable;
 	private List<RouterInterface> interfaces;
@@ -129,13 +124,12 @@ public class Router {
 			if (found != null) {
 				// Next-hop points to an IP assigned to this router -> invalid next-hop (local interface)
 				String nhFormatted = found.getInterfaceAddress().toString();
-				String msg = String.format("Next-hop interface %s is a local interface on the router\nPackets routed through this route will not be forwarded\nNext-hop should be an IP address of a directly connected neighbor\nWould you like to proceed anyway? (Y/N)", nhFormatted);
+				String msg = String.format("Next-hop interface %s is a local interface on the router%nPackets routed through this route will not be forwarded%nEnsure this action is deliberate", nhFormatted);
 
-				Runnable rollback = () -> { /* no-op; not staged */ };
-				pendingConfirmations.clear();
-				pendingConfirmations.add(new ConfirmationEntry(msg, rollback));
-				logger.warning("Next-hop interface %s is a local interface on the router".formatted(nh));
-				throw new InvalidNextHopException(msg);
+				// Log developer message and user-facing warning and continue (do not throw)
+				logger.info("Next-hop interface %s is a local interface on the router".formatted(nh));
+				logger.warning(msg);
+				// continue to stage route (no confirmation mechanism)
 			}
 
 			// Determine whether next-hop lies inside any configured subnet on staged interfaces
@@ -157,21 +151,18 @@ public class Router {
 
 			if (inferredMask != null) {
 				String nhFormatted = nh + "/" + inferredMask;
-				String msg = String.format("Next-hop interface %s not found on the router%nPackets routed through this interface will be dropped%nWould you like to proceed anyway? (Y/N)", nhFormatted);
+				String msg = String.format("Next-hop interface %s not found on the router%nPackets routed through this interface will be dropped%nEnsure this action is deliberate", nhFormatted);
 
-				Runnable rollback = () -> { /* no-op; not staged */ };
-				pendingConfirmations.clear();
-				pendingConfirmations.add(new ConfirmationEntry(msg, rollback));
-				logger.warning("Next-hop interface %s not found on the router".formatted(nh));
-				throw new org.uj.routingemulator.router.exceptions.InterfaceNotFoundException(msg);
+				logger.info("Next-hop interface %s not found on the router".formatted(nh));
+				logger.warning(msg);
+				// continue to stage route
 			} else {
 				// Next-hop not found in any configured subnet -> warn user (invalid next-hop)
-				String msg = String.format("Next-hop interface %s is not a directly connected neighbor interface%nThis may be fine if configuration is not yet complete%nPackets routed through this route will be dropped until the next-hop is reachable%nWould you like to proceed anyway? (Y/N)", nh);
-				Runnable rollback = () -> { /* no-op; not staged */ };
-				pendingConfirmations.clear();
-				pendingConfirmations.add(new ConfirmationEntry(msg, rollback));
-				logger.warning("Next-hop interface %s not found on the router".formatted(nh));
-				throw new InvalidNextHopException(msg);
+				String msg = String.format("Next-hop interface %s is not a directly connected neighbor interface%nThis may be fine if configuration is not yet complete%nPackets routed through this route will be dropped until the next-hop is reachable%nEnsure this action is deliberate", nh);
+
+				logger.info("Next-hop interface %s not found on the router".formatted(nh));
+				logger.warning(msg);
+				// continue to stage route
 			}
 		}
 
@@ -285,22 +276,19 @@ public class Router {
 			throw new DuplicateConfigurationException("Configuration already exists");
 		}
 
-		// Capture previous staged value for rollback
+		// Capture previous staged value for rollback (rollback removed)
 		final InterfaceAddress previous = routerInterface.getInterfaceAddress();
 
 		// Stage the new address
 		routerInterface.setInterfaceAddress(interfaceAddress);
 		hasUncommittedChanges = true;
 
-		// If the interface is administratively disabled, prepare confirmation and throw a specific exception
+		// If the interface is administratively disabled, log and continue (no confirmation mechanism)
 		if (routerInterface.isDisabled()) {
-			logger.warning("Interface %s is disabled. Packets routed through this interface will be dropped".formatted(routerInterfaceName));
-			String msg = String.format("Interface %s is disabled%nPackets routed through this interface will be dropped%nWould you like to proceed anyway? (Y/N)", routerInterface.getInterfaceName());
-			// create rollback runnable
-			Runnable rollback = () -> routerInterface.setInterfaceAddress(previous);
-			pendingConfirmations.clear(); // only keep confirmations for last command
-			pendingConfirmations.add(new ConfirmationEntry(msg, rollback));
-			throw new InterfaceUnavailableException(msg);
+			logger.info("Interface %s is disabled. Staged change applied but packets routed through this interface will be dropped".formatted(routerInterfaceName));
+			String msg = String.format("Interface %s is disabled%nPackets routed through this interface will be dropped%nEnsure this action is deliberate", routerInterface.getInterfaceName());
+			logger.warning(msg);
+			// do not throw; staged change remains
 		}
 		logger.info("%s: Interface %s configured with address %s in staged configuration".formatted(this.name, routerInterfaceName, interfaceAddress));
 	}
@@ -509,7 +497,7 @@ public class Router {
 	 * Copies a routing table while updating RouterInterface references.
 	 * Maps interface references from oldInterfaces to corresponding interfaces in newInterfaces.
 	 *
-	 * @param routingTable Original routing table
+	 * @param routingTable  Original routing table
 	 * @param newInterfaces New interface list to map to
 	 * @return New routing table with updated interface references
 	 */
@@ -627,20 +615,20 @@ public class Router {
 			// Show connected route if interface has IP and is administratively UP
 			// (Link state doesn't matter for route table - route exists even if link is down)
 			if (iface.getSubnet() != null &&
-			    iface.getStatus() != null &&
-			    iface.getStatus().getAdmin() == AdminState.UP) {
+					iface.getStatus() != null &&
+					iface.getStatus().getAdmin() == AdminState.UP) {
 
 				// getSubnet() now returns the actual network subnet from the interface address
 				Subnet connectedNetwork = iface.getSubnet();
 
 				displayEntries.add(new RouteDisplayEntry(
-					"C",
-					connectedNetwork,
-					null,
-					iface.getInterfaceName(),
-					0,
-					false,
-					true
+						"C",
+						connectedNetwork,
+						null,
+						iface.getInterfaceName(),
+						0,
+						false,
+						true
 				));
 			}
 		}
@@ -648,36 +636,27 @@ public class Router {
 		// Add static routes
 		for (StaticRoutingEntry entry : routingTable.getRoutingEntries()) {
 			displayEntries.add(new RouteDisplayEntry(
-				"S",
-				entry.getSubnet(),
-				entry.getNextHop(),
-				entry.getRouterInterface() != null ? entry.getRouterInterface().getInterfaceName() : null,
-				entry.getAdministrativeDistance(),
-				entry.isDisabled(),
-				false
+					"S",
+					entry.getSubnet(),
+					entry.getNextHop(),
+					entry.getRouterInterface() != null ? entry.getRouterInterface().getInterfaceName() : null,
+					entry.getAdministrativeDistance(),
+					entry.isDisabled(),
+					false
 			));
 		}
 
 		// Sort routes by subnet (network address, then mask length)
 		displayEntries.sort((a, b) -> {
 			int addrCompare = a.subnet.getNetworkAddress().toString()
-				.compareTo(b.subnet.getNetworkAddress().toString());
+					.compareTo(b.subnet.getNetworkAddress().toString());
 			if (addrCompare != 0) return addrCompare;
 			return Integer.compare(
-				b.subnet.getSubnetMask().getShortMask(),
-				a.subnet.getSubnetMask().getShortMask()
+					b.subnet.getSubnetMask().getShortMask(),
+					a.subnet.getSubnetMask().getShortMask()
 			);
 		});
 		return displayEntries;
-	}
-
-	/**
-	 * Helper class for displaying routing table entries.
-	 *
-	 * @param type "C" for connected, "S" for static
-	 */
-	private record RouteDisplayEntry(String type, Subnet subnet, IPAddress nextHop, String interfaceName, int distance,
-	                                 boolean isDisabled, boolean isConnected) {
 	}
 
 	@Override
@@ -690,8 +669,6 @@ public class Router {
 				", routingTable=" + routingTable +
 				'}';
 	}
-
-	// ---- Confirmation mechanism (for dangerous/stage-but-ask commands) ----
 
 	/**
 	 * /**
@@ -710,6 +687,8 @@ public class Router {
 		return copy;
 	}
 
+	// ---- Confirmation mechanism (for dangerous/stage-but-ask commands) ----
+
 	public PingStatistics ping(String dst, NetworkTopology topology) {
 		logger.info("Initializing new PingService for host %s".formatted(this.name));
 		PingService svc = new PingService();
@@ -725,55 +704,11 @@ public class Router {
 	}
 
 	/**
-	 * Returns true if there are pending confirmations awaiting user decision.
+	 * Helper class for displaying routing table entries.
+	 *
+	 * @param type "C" for connected, "S" for static
 	 */
-	public boolean isConfirmationPending() {
-		return !pendingConfirmations.isEmpty();
-	}
-
-	/**
-	 * Returns pending confirmation messages (read-only copy) so UI/CLI can display them.
-	 */
-	public List<String> getPendingConfirmationMessages() {
-		List<String> msgs = new ArrayList<>();
-		for (ConfirmationEntry e : pendingConfirmations) msgs.add(e.message);
-		return msgs;
-	}
-
-	/**
-	 * User confirms the pending staged changes (yes path). This keeps staged configuration as-is
-	 * (changes were already staged) and clears the pending confirmation list.
-	 */
-	public void confirm() {
-		logger.fine("User confirmed pending changes. Keeping staged configuration as-is.");
-		pendingConfirmations.clear();
-	}
-
-	/**
-	 * User denies the pending staged changes (no path). Executes rollback runnables to revert staged changes
-	 * and clears the pending confirmation list.
-	 */
-	public void cancelConfirmation() {
-		logger.fine("User cancelled pending changes. Rolling back staged configuration.");
-		for (ConfirmationEntry e : pendingConfirmations) {
-			try {
-				logger.finest("Rolling back staged change: %s".formatted(e.message));
-				e.rollback.run();
-			} catch (Exception ignored) {
-				// swallow; rollback should be best-effort
-			}
-		}
-		logger.fine("Rollback complete. Clearing pending confirmations.");
-		pendingConfirmations.clear();
-		// Recompute whether there are any uncommitted changes by comparing staged vs committed
-		this.hasUncommittedChanges = !this.stagedInterfaces.equals(this.interfaces) || !this.stagedRoutingTable.equals(this.routingTable);
-	}
-
-	/**
-	 * A pending confirmation entry consisting of a user-visible message and a rollback action.
-	 * The rollback runnable must revert any staged change created by the command that produced
-	 * this confirmation entry.
-	 */
-	private record ConfirmationEntry(String message, Runnable rollback) {
+	private record RouteDisplayEntry(String type, Subnet subnet, IPAddress nextHop, String interfaceName, int distance,
+	                                 boolean isDisabled, boolean isConnected) {
 	}
 }
