@@ -378,153 +378,6 @@ class E2ETest {
 		}
 	}
 
-	@ParameterizedTest
-	@CsvFileSource(resources = "/network_configuration.csv", numLinesToSkip = 1)
-	void testSixRouterSetup(String id, String vlanid, String rb_nodex, String x_xx,String nodeXX_rc, String x,String xx) {
-         NetworkTopology topology = new NetworkTopology();
-
-         Router ra = new Router("RA", List.of(new RouterInterface("eth0"), new RouterInterface("eth1"), new RouterInterface("eth2")));
-         Router rb = new Router("RB", List.of(new RouterInterface("eth0"), new RouterInterface("eth1"), new RouterInterface("eth2")));
-         Router rc = new Router("RC", List.of(new RouterInterface("eth0"), new RouterInterface("eth1"), new RouterInterface("eth2")));
-         Router rd = new Router("RD", List.of(new RouterInterface("eth0"), new RouterInterface("eth1"), new RouterInterface("eth2")));
-         Router rx = new Router("RX", List.of(new RouterInterface("eth0"), new RouterInterface("eth1"), new RouterInterface("eth2")));
-         Router rxx = new Router("RXX", List.of(new RouterInterface("eth0"), new RouterInterface("eth1"), new RouterInterface("eth2")));
-
-         topology.addRouter(ra);
-         topology.addRouter(rb);
-         topology.addRouter(rc);
-         topology.addRouter(rd);
-         topology.addRouter(rx);
-         topology.addRouter(rxx);
-
-         topology.addConnection(new Connection(ra.getInterfaces().get(1), rb.getInterfaces().get(1)));
-         topology.addConnection(new Connection(rb.getInterfaces().getFirst(), rx.getInterfaces().getFirst()));
-         topology.addConnection(new Connection(rx.getInterfaces().get(1), rxx.getInterfaces().get(1)));
-         topology.addConnection(new Connection(rxx.getInterfaces().get(2), rc.getInterfaces().get(2)));
-         topology.addConnection(new Connection(rc.getInterfaces().getFirst(), rd.getInterfaces().get(1)));
-
-		// Helper to resolve network-derived addresses; fall back to defaults when CSV is empty
-		String rxEth1 = firstHostFromNetworkOrDefault(x_xx, "192.168.10.1/24");
-		String rxxEth1 = nthHostFromNetworkOrDefault(x_xx, 2, "192.168.10.2/24");
-
-		String rbEth0 = firstHostFromNetworkOrDefault(rb_nodex, "1.1.10.25/29");
-		String rxEth0 = nthHostFromNetworkOrDefault(rb_nodex, 2, "1.1.10.26/29");
-
-		String rxxEth2 = firstHostFromNetworkOrDefault(nodeXX_rc, "2.2.10.89/29");
-		String rcEth2 = nthHostFromNetworkOrDefault(nodeXX_rc, 2, "2.2.10.90/29");
-
-         // Configure interfaces eth1 on RX and RXX
-         rx.setMode(RouterMode.CONFIGURATION);
-         rx.configureInterface("eth1", InterfaceAddress.fromString(rxEth1));
-         rx.commitChanges();
-
-         rxx.setMode(RouterMode.CONFIGURATION);
-         rxx.configureInterface("eth1", InterfaceAddress.fromString(rxxEth1));
-         rxx.commitChanges();
-
-         // Try ping RX <-> RXX
-         PingStatistics stats = rx.ping(trimAddressMask(rxxEth1), topology);
-         assertEquals(4, stats.getSent());
-         assertEquals(4, stats.getReceived(), "Should receive a reply between directly connected interfaces");
-
-         PingStatistics stats1 = rxx.ping(trimAddressMask(rxEth1), topology);
-         assertEquals(4, stats1.getSent());
-         assertEquals(4, stats1.getReceived(), "Should receive a reply between directly connected interfaces");
-
-         // Configure interfaces eth0 (RB-RX) and eth2 (RXX-RC)
-         rb.setMode(RouterMode.CONFIGURATION);
-         rb.configureInterface("eth0", InterfaceAddress.fromString(rbEth0));
-         rb.commitChanges();
-
-         rx.setMode(RouterMode.CONFIGURATION);
-         rx.configureInterface("eth0", InterfaceAddress.fromString(rxEth0));
-         rx.commitChanges();
-
-         rxx.setMode(RouterMode.CONFIGURATION);
-         rxx.configureInterface("eth2", InterfaceAddress.fromString(rxxEth2));
-         rxx.commitChanges();
-
-         rc.setMode(RouterMode.CONFIGURATION);
-         rc.configureInterface("eth2", InterfaceAddress.fromString(rcEth2));
-         rc.commitChanges();
-
-         // Ping RX -> RB
-         PingStatistics stats2 = rx.ping(trimAddressMask(rbEth0), topology);
-         assertEquals(4, stats2.getSent());
-         assertEquals(4, stats2.getReceived(), "Should receive a reply from RB");
-
-         // Ping RXX -> RC
-         PingStatistics stats3 = rxx.ping(trimAddressMask(rcEth2), topology);
-         assertEquals(4, stats3.getSent());
-         assertEquals(4, stats3.getReceived(), "Should receive a reply from RC");
-
-         // Configure remaining interfaces
-         Host h1 = new Host("H1", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 2, 2), new SubnetMask(8)), new IPAddress(192, 168, 2, 1)));
-         Host h2 = new Host("H1", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 4, 2), new SubnetMask(8)), new IPAddress(192, 168, 4, 1)));
-
-         topology.addHost(h1);
-         topology.addHost(h2);
-
-         topology.addConnection(new Connection(h1.getHostInterface(), ra.getInterfaces().getFirst()));
-         topology.addConnection(new Connection(rd.getInterfaces().getFirst(), h2.getHostInterface()));
-
-         ra.setMode(RouterMode.CONFIGURATION);
-         ra.configureInterface("eth0", InterfaceAddress.fromString("192.168.2.1/24"));
-         ra.configureInterface("eth1", InterfaceAddress.fromString("192.168.1.1/30"));
-         ra.commitChanges();
-
-         rd.setMode(RouterMode.CONFIGURATION);
-         rd.configureInterface("eth0", InterfaceAddress.fromString("192.168.4.1/24"));
-         rd.configureInterface("eth1", InterfaceAddress.fromString("192.168.3.1/30"));
-         rd.commitChanges();
-
-         rb.configureInterface("eth1", InterfaceAddress.fromString("192.168.1.2/30"));
-         rb.commitChanges();
-
-         rc.configureInterface("eth0", InterfaceAddress.fromString("192.168.3.2/30"));
-         rc.commitChanges();
-
-         // Add static routes using next-hop addresses
-         // RX Routes
-         rx.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 2, 0), new SubnetMask(24)), IPAddress.fromString(trimAddressMask(rbEth0)))); // To RA
-         rx.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(30)), IPAddress.fromString(trimAddressMask(rbEth0)))); // To ra-rb
-         Subnet nodeXXSubnet = subnetFromCidrOrDefault(nodeXX_rc, "2.2.10.88/29");
-         rx.addRoute(new StaticRoutingEntry(new Subnet(nodeXXSubnet.getNetworkAddress(), new SubnetMask(nodeXXSubnet.getSubnetMask().getShortMask())), IPAddress.fromString(trimAddressMask(rxxEth1)))); // To nodeXX-rc
-         rx.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 3, 0), new SubnetMask(30)), IPAddress.fromString(trimAddressMask(rxxEth1)))); // To rc-rd
-         rx.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 4, 0), new SubnetMask(24)), IPAddress.fromString(trimAddressMask(rxxEth1)))); // To RD
-         rx.commitChanges();
-
-         // RXX Routes
-         rxx.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 4, 0), new SubnetMask(24)), IPAddress.fromString(trimAddressMask(rcEth2)))); // To RD
-         rxx.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 3, 0), new SubnetMask(30)), IPAddress.fromString(trimAddressMask(rcEth2)))); // To rc-rd
-         Subnet rbNodeXSubnet = subnetFromCidrOrDefault(rb_nodex, "1.1.10.24/29");
-         rxx.addRoute(new StaticRoutingEntry(new Subnet(rbNodeXSubnet.getNetworkAddress(), new SubnetMask(rbNodeXSubnet.getSubnetMask().getShortMask())), IPAddress.fromString(trimAddressMask(rxEth1)))); // To rb-nodeX
-         rxx.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(30)), IPAddress.fromString(trimAddressMask(rxEth1)))); // To ra-rb
-         rxx.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 2, 0), new SubnetMask(24)), IPAddress.fromString(trimAddressMask(rxEth1)))); // To RA
-         rxx.commitChanges();
-
-         // External routers (RA, RB, RC, RD) need return routes to the internal "core" networks
-         Subnet xXxSubnet3 = subnetFromCidrOrDefault(x_xx, "192.168.10.0/24");
-         rb.addRoute(new StaticRoutingEntry(new Subnet(xXxSubnet3.getNetworkAddress(), new SubnetMask(xXxSubnet3.getSubnetMask().getShortMask())), IPAddress.fromString(trimAddressMask(rxEth0))));
-         Subnet nodeXXSubnet3 = subnetFromCidrOrDefault(nodeXX_rc, "2.2.10.88/29");
-         rb.addRoute(new StaticRoutingEntry(new Subnet(nodeXXSubnet3.getNetworkAddress(), new SubnetMask(nodeXXSubnet3.getSubnetMask().getShortMask())), IPAddress.fromString(trimAddressMask(rxEth0))));
-         rb.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 4, 0), new SubnetMask(24)), IPAddress.fromString(trimAddressMask(rxEth0))));
-         rb.commitChanges();
-
-         Subnet xXxSubnet4 = subnetFromCidrOrDefault(x_xx, "192.168.10.0/24");
-         rc.addRoute(new StaticRoutingEntry(new Subnet(xXxSubnet4.getNetworkAddress(), new SubnetMask(xXxSubnet4.getSubnetMask().getShortMask())), IPAddress.fromString(trimAddressMask(rxxEth2))));
-         Subnet rbNodeXSubnet4 = subnetFromCidrOrDefault(rb_nodex, "1.1.10.24/29");
-         rc.addRoute(new StaticRoutingEntry(new Subnet(rbNodeXSubnet4.getNetworkAddress(), new SubnetMask(rbNodeXSubnet4.getSubnetMask().getShortMask())), IPAddress.fromString(trimAddressMask(rxxEth2))));
-         rc.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 2, 0), new SubnetMask(24)), IPAddress.fromString(trimAddressMask(rxxEth2))));
-         rc.commitChanges();
-
-         // End-of-Chain Routers (RA & RD)
-         ra.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(0, 0, 0, 0), new SubnetMask(0)), IPAddress.fromString("192.168.1.2"))); // Default via RB
-         ra.commitChanges();
-         rd.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(0, 0, 0, 0), new SubnetMask(0)), IPAddress.fromString("192.168.3.2"))); // Default via RC
-         rd.commitChanges();
-     }
-
 	// Helper methods for tests: compute Nth host address (1-based) from a CIDR network string (a.b.c.d/m)
 	private static String nthHostFromNetworkOrDefault(String cidr, int hostIndex, String defaultAddr) {
 		if (cidr == null || cidr.isBlank()) return defaultAddr;
@@ -560,10 +413,6 @@ class E2ETest {
 		return idx == -1 ? addrWithMask : addrWithMask.substring(0, idx);
 	}
 
-	// Parse network prefix and return Subnet-like helper via IPAddress.fromStringPrefixOrDefault (added below) - not available, so implement small helper
-	// We will add a small helper to create IPAddress from CIDR and expose network address and prefix
-	// For brevity inside tests we use IPAddress.fromString and SubnetMask where needed; create helper below
-
 	// Helper to extract Subnet from a CIDR or a default
 	private static Subnet subnetFromCidrOrDefault(String cidr, String defaultCidr) {
 		String use = (cidr == null || cidr.isBlank()) ? defaultCidr : cidr;
@@ -578,8 +427,159 @@ class E2ETest {
 		}
 	}
 
+	// Parse network prefix and return Subnet-like helper via IPAddress.fromStringPrefixOrDefault (added below) - not available, so implement small helper
+	// We will add a small helper to create IPAddress from CIDR and expose network address and prefix
+	// For brevity inside tests we use IPAddress.fromString and SubnetMask where needed; create helper below
+
 	// Utility to be used above in complex route creation
 	private static Subnet IPAddress_fromStringPrefixOrDefault(String cidr, String defaultCidr) {
 		return subnetFromCidrOrDefault(cidr, defaultCidr);
+	}
+
+	@ParameterizedTest
+	@CsvFileSource(resources = "/network_configuration.csv", numLinesToSkip = 1)
+	void testSixRouterSetup(String id, String vlanid, String rb_nodex, String x_xx, String nodeXX_rc, String x, String xx) {
+		NetworkTopology topology = new NetworkTopology();
+
+		Router ra = new Router("RA", List.of(new RouterInterface("eth0"), new RouterInterface("eth1"), new RouterInterface("eth2")));
+		Router rb = new Router("RB", List.of(new RouterInterface("eth0"), new RouterInterface("eth1"), new RouterInterface("eth2")));
+		Router rc = new Router("RC", List.of(new RouterInterface("eth0"), new RouterInterface("eth1"), new RouterInterface("eth2")));
+		Router rd = new Router("RD", List.of(new RouterInterface("eth0"), new RouterInterface("eth1"), new RouterInterface("eth2")));
+		Router rx = new Router("RX", List.of(new RouterInterface("eth0"), new RouterInterface("eth1"), new RouterInterface("eth2")));
+		Router rxx = new Router("RXX", List.of(new RouterInterface("eth0"), new RouterInterface("eth1"), new RouterInterface("eth2")));
+
+		topology.addRouter(ra);
+		topology.addRouter(rb);
+		topology.addRouter(rc);
+		topology.addRouter(rd);
+		topology.addRouter(rx);
+		topology.addRouter(rxx);
+
+		topology.addConnection(new Connection(ra.getInterfaces().get(1), rb.getInterfaces().get(1)));
+		topology.addConnection(new Connection(rb.getInterfaces().getFirst(), rx.getInterfaces().getFirst()));
+		topology.addConnection(new Connection(rx.getInterfaces().get(1), rxx.getInterfaces().get(1)));
+		topology.addConnection(new Connection(rxx.getInterfaces().get(2), rc.getInterfaces().get(2)));
+		topology.addConnection(new Connection(rc.getInterfaces().getFirst(), rd.getInterfaces().get(1)));
+
+		// Helper to resolve network-derived addresses; fall back to defaults when CSV is empty
+		String rxEth1 = firstHostFromNetworkOrDefault(x_xx, "192.168.10.1/24");
+		String rxxEth1 = nthHostFromNetworkOrDefault(x_xx, 2, "192.168.10.2/24");
+
+		String rbEth0 = firstHostFromNetworkOrDefault(rb_nodex, "1.1.10.25/29");
+		String rxEth0 = nthHostFromNetworkOrDefault(rb_nodex, 2, "1.1.10.26/29");
+
+		String rxxEth2 = firstHostFromNetworkOrDefault(nodeXX_rc, "2.2.10.89/29");
+		String rcEth2 = nthHostFromNetworkOrDefault(nodeXX_rc, 2, "2.2.10.90/29");
+
+		// Configure interfaces eth1 on RX and RXX
+		rx.setMode(RouterMode.CONFIGURATION);
+		rx.configureInterface("eth1", InterfaceAddress.fromString(rxEth1));
+		rx.commitChanges();
+
+		rxx.setMode(RouterMode.CONFIGURATION);
+		rxx.configureInterface("eth1", InterfaceAddress.fromString(rxxEth1));
+		rxx.commitChanges();
+
+		// Try ping RX <-> RXX
+		PingStatistics stats = rx.ping(trimAddressMask(rxxEth1), topology);
+		assertEquals(4, stats.getSent());
+		assertEquals(4, stats.getReceived(), "Should receive a reply between directly connected interfaces");
+
+		PingStatistics stats1 = rxx.ping(trimAddressMask(rxEth1), topology);
+		assertEquals(4, stats1.getSent());
+		assertEquals(4, stats1.getReceived(), "Should receive a reply between directly connected interfaces");
+
+		// Configure interfaces eth0 (RB-RX) and eth2 (RXX-RC)
+		rb.setMode(RouterMode.CONFIGURATION);
+		rb.configureInterface("eth0", InterfaceAddress.fromString(rbEth0));
+		rb.commitChanges();
+
+		rx.setMode(RouterMode.CONFIGURATION);
+		rx.configureInterface("eth0", InterfaceAddress.fromString(rxEth0));
+		rx.commitChanges();
+
+		rxx.setMode(RouterMode.CONFIGURATION);
+		rxx.configureInterface("eth2", InterfaceAddress.fromString(rxxEth2));
+		rxx.commitChanges();
+
+		rc.setMode(RouterMode.CONFIGURATION);
+		rc.configureInterface("eth2", InterfaceAddress.fromString(rcEth2));
+		rc.commitChanges();
+
+		// Ping RX -> RB
+		PingStatistics stats2 = rx.ping(trimAddressMask(rbEth0), topology);
+		assertEquals(4, stats2.getSent());
+		assertEquals(4, stats2.getReceived(), "Should receive a reply from RB");
+
+		// Ping RXX -> RC
+		PingStatistics stats3 = rxx.ping(trimAddressMask(rcEth2), topology);
+		assertEquals(4, stats3.getSent());
+		assertEquals(4, stats3.getReceived(), "Should receive a reply from RC");
+
+		// Configure remaining interfaces
+		Host h1 = new Host("H1", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 2, 2), new SubnetMask(8)), new IPAddress(192, 168, 2, 1)));
+		Host h2 = new Host("H1", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 4, 2), new SubnetMask(8)), new IPAddress(192, 168, 4, 1)));
+
+		topology.addHost(h1);
+		topology.addHost(h2);
+
+		topology.addConnection(new Connection(h1.getHostInterface(), ra.getInterfaces().getFirst()));
+		topology.addConnection(new Connection(rd.getInterfaces().getFirst(), h2.getHostInterface()));
+
+		ra.setMode(RouterMode.CONFIGURATION);
+		ra.configureInterface("eth0", InterfaceAddress.fromString("192.168.2.1/24"));
+		ra.configureInterface("eth1", InterfaceAddress.fromString("192.168.1.1/30"));
+		ra.commitChanges();
+
+		rd.setMode(RouterMode.CONFIGURATION);
+		rd.configureInterface("eth0", InterfaceAddress.fromString("192.168.4.1/24"));
+		rd.configureInterface("eth1", InterfaceAddress.fromString("192.168.3.1/30"));
+		rd.commitChanges();
+
+		rb.configureInterface("eth1", InterfaceAddress.fromString("192.168.1.2/30"));
+		rb.commitChanges();
+
+		rc.configureInterface("eth0", InterfaceAddress.fromString("192.168.3.2/30"));
+		rc.commitChanges();
+
+		// Add static routes using next-hop addresses
+		// RX Routes
+		rx.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 2, 0), new SubnetMask(24)), IPAddress.fromString(trimAddressMask(rbEth0)))); // To RA
+		rx.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(30)), IPAddress.fromString(trimAddressMask(rbEth0)))); // To ra-rb
+		Subnet nodeXXSubnet = subnetFromCidrOrDefault(nodeXX_rc, "2.2.10.88/29");
+		rx.addRoute(new StaticRoutingEntry(new Subnet(nodeXXSubnet.getNetworkAddress(), new SubnetMask(nodeXXSubnet.getSubnetMask().getShortMask())), IPAddress.fromString(trimAddressMask(rxxEth1)))); // To nodeXX-rc
+		rx.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 3, 0), new SubnetMask(30)), IPAddress.fromString(trimAddressMask(rxxEth1)))); // To rc-rd
+		rx.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 4, 0), new SubnetMask(24)), IPAddress.fromString(trimAddressMask(rxxEth1)))); // To RD
+		rx.commitChanges();
+
+		// RXX Routes
+		rxx.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 4, 0), new SubnetMask(24)), IPAddress.fromString(trimAddressMask(rcEth2)))); // To RD
+		rxx.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 3, 0), new SubnetMask(30)), IPAddress.fromString(trimAddressMask(rcEth2)))); // To rc-rd
+		Subnet rbNodeXSubnet = subnetFromCidrOrDefault(rb_nodex, "1.1.10.24/29");
+		rxx.addRoute(new StaticRoutingEntry(new Subnet(rbNodeXSubnet.getNetworkAddress(), new SubnetMask(rbNodeXSubnet.getSubnetMask().getShortMask())), IPAddress.fromString(trimAddressMask(rxEth1)))); // To rb-nodeX
+		rxx.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(30)), IPAddress.fromString(trimAddressMask(rxEth1)))); // To ra-rb
+		rxx.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 2, 0), new SubnetMask(24)), IPAddress.fromString(trimAddressMask(rxEth1)))); // To RA
+		rxx.commitChanges();
+
+		// External routers (RA, RB, RC, RD) need return routes to the internal "core" networks
+		Subnet xXxSubnet3 = subnetFromCidrOrDefault(x_xx, "192.168.10.0/24");
+		rb.addRoute(new StaticRoutingEntry(new Subnet(xXxSubnet3.getNetworkAddress(), new SubnetMask(xXxSubnet3.getSubnetMask().getShortMask())), IPAddress.fromString(trimAddressMask(rxEth0))));
+		Subnet nodeXXSubnet3 = subnetFromCidrOrDefault(nodeXX_rc, "2.2.10.88/29");
+		rb.addRoute(new StaticRoutingEntry(new Subnet(nodeXXSubnet3.getNetworkAddress(), new SubnetMask(nodeXXSubnet3.getSubnetMask().getShortMask())), IPAddress.fromString(trimAddressMask(rxEth0))));
+		rb.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 4, 0), new SubnetMask(24)), IPAddress.fromString(trimAddressMask(rxEth0))));
+		rb.commitChanges();
+
+		Subnet xXxSubnet4 = subnetFromCidrOrDefault(x_xx, "192.168.10.0/24");
+		rc.addRoute(new StaticRoutingEntry(new Subnet(xXxSubnet4.getNetworkAddress(), new SubnetMask(xXxSubnet4.getSubnetMask().getShortMask())), IPAddress.fromString(trimAddressMask(rxxEth2))));
+		Subnet rbNodeXSubnet4 = subnetFromCidrOrDefault(rb_nodex, "1.1.10.24/29");
+		rc.addRoute(new StaticRoutingEntry(new Subnet(rbNodeXSubnet4.getNetworkAddress(), new SubnetMask(rbNodeXSubnet4.getSubnetMask().getShortMask())), IPAddress.fromString(trimAddressMask(rxxEth2))));
+		rc.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 2, 0), new SubnetMask(24)), IPAddress.fromString(trimAddressMask(rxxEth2))));
+		rc.commitChanges();
+
+		// End-of-Chain Routers (RA & RD)
+		ra.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(0, 0, 0, 0), new SubnetMask(0)), IPAddress.fromString("192.168.1.2"))); // Default via RB
+		ra.commitChanges();
+		rd.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(0, 0, 0, 0), new SubnetMask(0)), IPAddress.fromString("192.168.3.2"))); // Default via RC
+		rd.commitChanges();
 	}
 }
