@@ -53,23 +53,19 @@ class LogicalErrorTest {
 		PingStatistics stats = h1.ping("192.168.1.254", topology);
 		assertEquals(4, stats.getSent());
 		assertEquals(4, stats.getReceived(), "Should be able to ping default gateway");
-
 		// Different subnet but router can respond locally without forwarding
 		PingStatistics stats1 = h1.ping("192.168.3.1", topology);
 		assertEquals(4, stats1.getSent());
 		assertEquals(4, stats1.getReceived(), "Should be able to ping connected router interface");
-
 		// No return route from R2 to R1
 		PingStatistics stats2 = h1.ping("192.168.3.2", topology);
 		assertEquals(4, stats2.getSent());
 		assertEquals(0, stats2.getReceived(), "Should not be able to ping indirectly connected router interface");
-
 		// No return route from R2 to R1
 		PingStatistics stats3 = h1.ping("192.168.2.254", topology);
 		assertEquals(4, stats3.getSent());
 		assertEquals(0, stats3.getReceived(), "Should not be able to ping indirectly connected router interface");
-
-		// PC2 will respond but ping will fail on R2
+		// Ping will fail on R2
 		PingStatistics stats4 = h1.ping("192.168.2.1", topology);
 		assertEquals(4, stats4.getSent());
 		assertEquals(0, stats4.getReceived(), "Should not receive a reply without return route");
@@ -139,12 +135,10 @@ class LogicalErrorTest {
 		r4.commitChanges();
 
 
-		// Same subnet - should work
 		PingStatistics stats1 = h1.ping("192.168.1.254", topology);
 		assertEquals(4, stats1.getSent());
 		assertEquals(4, stats1.getReceived(), "Should reach default gateway");
 
-		// Asymmetric routing - should fail
 		PingStatistics stats2 = h1.ping("192.168.2.1", topology);
 		assertEquals(4, stats2.getSent());
 		assertEquals(0, stats2.getReceived(), "Reply lost due to broken return path at R4");

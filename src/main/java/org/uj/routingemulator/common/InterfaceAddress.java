@@ -78,88 +78,63 @@ public class InterfaceAddress {
 		// Apply mask to get network address
 		return ipAsLong & networkMask;
 	}
-
-	/**
-	 * Checks if the IP address is a valid host address (not network or broadcast).
-	 * For example, 192.168.1.0/24 is not a valid host address (network address),
-	 * and 192.168.1.255/24 is not valid (broadcast address).
-	 *
-	 * @return true if this is a valid host address, false otherwise
-	 */
 	public boolean isValidHostAddress() {
 		int prefixLength = subnetMask.getShortMask();
-		if (prefixLength == 32) {
-			// /32 is always valid (single host)
-			return true;
-		}
-		if (prefixLength == 31) {
-			// /31 point-to-point links - both addresses are valid
+		if (prefixLength == 32 || prefixLength == 31) {
 			return true;
 		}
 
-		// Convert IP to long
-		long ipAsLong = ((long) ipAddress.getOctet1() << 24) |
-		                ((long) ipAddress.getOctet2() << 16) |
-		                ((long) ipAddress.getOctet3() << 8) |
-		                (ipAddress.getOctet4());
+		long hostMask = getHostMask(prefixLength);
+		long hostPortion = getHostPortion(hostMask);
 
-		// Calculate host bits
-		int hostBits = 32 - prefixLength;
-		long hostMask = (1L << hostBits) - 1;
-
-		// Get host portion
-		long hostPortion = ipAsLong & hostMask;
-
-		// Check if it's network address (all 0s) or broadcast (all 1s)
 		return hostPortion != 0 && hostPortion != hostMask;
 	}
-
-	/**
-	 * Checks if this IP address is a network address (all host bits are 0).
-	 * For example, 192.168.1.0/24 is a network address.
-	 *
-	 * @return true if this is a network address
-	 */
 	public boolean isNetworkAddress() {
 		int prefixLength = subnetMask.getShortMask();
 		if (prefixLength == 32 || prefixLength == 31) {
 			return false;
 		}
 
-		long ipAsLong = ((long) ipAddress.getOctet1() << 24) |
-		                ((long) ipAddress.getOctet2() << 16) |
-		                ((long) ipAddress.getOctet3() << 8) |
-		                (ipAddress.getOctet4());
-
-		int hostBits = 32 - prefixLength;
-		long hostMask = (1L << hostBits) - 1;
-		long hostPortion = ipAsLong & hostMask;
+		long hostMask = getHostMask(prefixLength);
+		long hostPortion = getHostPortion(hostMask);
 
 		return hostPortion == 0;
 	}
-
-	/**
-	 * Checks if this IP address is a broadcast address (all host bits are 1).
-	 * For example, 192.168.1.255/24 is a broadcast address.
-	 *
-	 * @return true if this is a broadcast address
-	 */
 	public boolean isBroadcastAddress() {
 		int prefixLength = subnetMask.getShortMask();
 		if (prefixLength == 32 || prefixLength == 31) {
 			return false;
 		}
 
-		long ipAsLong = ((long) ipAddress.getOctet1() << 24) |
-		                ((long) ipAddress.getOctet2() << 16) |
-		                ((long) ipAddress.getOctet3() << 8) |
-		                (ipAddress.getOctet4());
-
-		int hostBits = 32 - prefixLength;
-		long hostMask = (1L << hostBits) - 1;
-		long hostPortion = ipAsLong & hostMask;
+		long hostMask = getHostMask(prefixLength);
+		long hostPortion = getHostPortion(hostMask);
 
 		return hostPortion == hostMask;
+	}
+
+	/**
+	 * Converts the 4 octets of the IP address into a single 32-bit unsigned long.
+	 */
+	private long getIpAsLong() {
+		return ((long) ipAddress.getOctet1() << 24) |
+				((long) ipAddress.getOctet2() << 16) |
+				((long) ipAddress.getOctet3() << 8) |
+				(ipAddress.getOctet4());
+	}
+
+	/**
+	 * Calculates the bitmask for the host portion based on the prefix length.
+	 */
+	private long getHostMask(int prefixLength) {
+		int hostBits = 32 - prefixLength;
+		return (1L << hostBits) - 1;
+	}
+
+	/**
+	 * Applies the host mask to the IP address to isolate the host portion.
+	 */
+	private long getHostPortion(long hostMask) {
+		return getIpAsLong() & hostMask;
 	}
 
 	@Override

@@ -42,12 +42,7 @@ class RouterCLITest {
 	 */
 	@Test
 	void testConfigureCommandFromOperationalMode() {
-		
-
-		
 		parser.executeCommand("configure", router);
-
-		
 		assertEquals(RouterMode.CONFIGURATION, router.getMode());
 		assertTrue(outputStream.toString().contains("[edit]"));
 	}
