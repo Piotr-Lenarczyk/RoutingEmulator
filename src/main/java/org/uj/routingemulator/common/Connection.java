@@ -1,7 +1,5 @@
 package org.uj.routingemulator.common;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import org.uj.routingemulator.router.AdminState;
 import org.uj.routingemulator.router.InterfaceStatus;
 import org.uj.routingemulator.router.RouterInterface;

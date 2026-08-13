@@ -359,13 +359,13 @@ public class NetworkTopologyController {
 	private boolean isDeviceInConnection(Object device, Connection connection) {
 		if (device instanceof Router router) {
 			return router.getInterfaces().stream().anyMatch(iface ->
-				iface.equals(connection.interfaceA()) || iface.equals(connection.interfaceB()));
+					iface.equals(connection.interfaceA()) || iface.equals(connection.interfaceB()));
 		} else if (device instanceof Switch sw) {
 			return sw.getPorts().stream().anyMatch(port ->
-				port.equals(connection.interfaceA()) || port.equals(connection.interfaceB()));
+					port.equals(connection.interfaceA()) || port.equals(connection.interfaceB()));
 		} else if (device instanceof Host host) {
 			return host.getHostInterface().equals(connection.interfaceA()) ||
-				host.getHostInterface().equals(connection.interfaceB());
+					host.getHostInterface().equals(connection.interfaceB());
 		}
 		return false;
 	}
@@ -642,7 +642,7 @@ public class NetworkTopologyController {
 		List<NetworkInterface> availableInterfaces = new ArrayList<>();
 		for (NetworkInterface iface : allInterfaces) {
 			boolean isConnected = topology.getConnections().stream().anyMatch(conn ->
-				conn.interfaceA().equals(iface) || conn.interfaceB().equals(iface));
+					conn.interfaceA().equals(iface) || conn.interfaceB().equals(iface));
 			if (!isConnected) {
 				availableInterfaces.add(iface);
 			}

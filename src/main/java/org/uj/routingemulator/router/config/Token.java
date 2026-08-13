@@ -1,8 +1,5 @@
 package org.uj.routingemulator.router.config;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
 /**
  * Represents a token in the configuration file with its position information.
  * Used by the configuration parser to identify and report errors with precise location.

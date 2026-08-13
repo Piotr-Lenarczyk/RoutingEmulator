@@ -123,7 +123,7 @@ public class NetworkTopology {
 					existingConnection.interfaceA().getInterfaceName(),
 					existingConnection.interfaceB().getInterfaceName()));
 			if (existingConnection.interfaceA().equals(connection.interfaceA()) ||
-				existingConnection.interfaceB().equals(connection.interfaceA())) {
+					existingConnection.interfaceB().equals(connection.interfaceA())) {
 				logger.warning("Interface %s is already connected in connection between %s and %s".formatted(
 						connection.interfaceA().getInterfaceName(),
 						existingConnection.interfaceA().getInterfaceName(),
@@ -132,7 +132,7 @@ public class NetworkTopology {
 					" is already connected");
 			}
 			if (existingConnection.interfaceA().equals(connection.interfaceB()) ||
-				existingConnection.interfaceB().equals(connection.interfaceB())) {
+					existingConnection.interfaceB().equals(connection.interfaceB())) {
 				logger.warning("Interface %s is already connected in connection between %s and %s".formatted(
 						connection.interfaceB().getInterfaceName(),
 						existingConnection.interfaceA().getInterfaceName(),
@@ -163,7 +163,7 @@ public class NetworkTopology {
 		logger.finer("Removing host %s connections".formatted(host.getHostname()));
 		connections.removeIf(conn ->
 				conn.interfaceA().equals(host.getHostInterface()) ||
-				conn.interfaceB().equals(host.getHostInterface())
+						conn.interfaceB().equals(host.getHostInterface())
 		);
 		logger.info("Removing host %s from topology".formatted(host.getHostname()));
 		this.hosts.remove(host);
@@ -178,8 +178,8 @@ public class NetworkTopology {
 	public void removeSwitch(Switch sw) {
 		logger.finer("Removing switch %s connections".formatted(sw.getName()));
 		connections.removeIf(conn ->
-			sw.getPorts().stream().anyMatch(port -> port.equals(conn.interfaceA())) ||
-			sw.getPorts().stream().anyMatch(port -> port.equals(conn.interfaceB()))
+				sw.getPorts().stream().anyMatch(port -> port.equals(conn.interfaceA())) ||
+						sw.getPorts().stream().anyMatch(port -> port.equals(conn.interfaceB()))
 		);
 		logger.info("Removing switch %s from topology".formatted(sw.getName()));
 		this.switches.remove(sw);
@@ -194,8 +194,8 @@ public class NetworkTopology {
 	public void removeRouter(Router router) {
 		logger.finer("Removing router %s connections".formatted(router.getName()));
 		connections.removeIf(conn ->
-			router.getInterfaces().stream().anyMatch(iface -> iface.equals(conn.interfaceA())) ||
-			router.getInterfaces().stream().anyMatch(iface -> iface.equals(conn.interfaceB()))
+				router.getInterfaces().stream().anyMatch(iface -> iface.equals(conn.interfaceA())) ||
+						router.getInterfaces().stream().anyMatch(iface -> iface.equals(conn.interfaceB()))
 		);
 		logger.info("Removing router %s from topology".formatted(router.getName()));
 		this.routers.remove(router);

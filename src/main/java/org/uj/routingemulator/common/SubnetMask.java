@@ -1,8 +1,5 @@
 package org.uj.routingemulator.common;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-
 /**
  * Represents a subnet mask in CIDR notation (prefix length).
  * <p>

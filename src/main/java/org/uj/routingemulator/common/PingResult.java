@@ -1,9 +1,5 @@
 package org.uj.routingemulator.common;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.ToString;
-
 /**
  * Result of a single ping probe.
  */

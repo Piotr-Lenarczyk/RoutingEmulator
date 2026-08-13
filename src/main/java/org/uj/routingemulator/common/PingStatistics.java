@@ -1,8 +1,5 @@
 package org.uj.routingemulator.common;
 
-import lombok.Getter;
-import lombok.ToString;
-
 import java.util.List;
 
 /**
