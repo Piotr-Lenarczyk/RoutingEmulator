@@ -399,10 +399,8 @@ public class NetworkTopology {
 			NetworkInterface cur = q.remove();
 
 			// If current is a HostInterface, check directly
-			if (cur instanceof HostInterface hif) {
-				if (hif.getSubnet() != null && hif.getSubnet().networkAddress().equals(ip)) {
-					return hif;
-				}
+			if (cur instanceof HostInterface hif && hif.getSubnet() != null && hif.getSubnet().networkAddress().equals(ip)) {
+				return hif;
 			}
 
 			// If current is a switch port, treat switch as hub: add all other ports of the same switch
@@ -430,10 +428,8 @@ public class NetworkTopology {
 			if (!visited.contains(neighbor)) {
 				visited.add(neighbor);
 				// If neighbor is HostInterface, check if it has the exact IP assigned
-				if (neighbor instanceof HostInterface hif) {
-					if (hif.getSubnet() != null && hif.getSubnet().networkAddress().equals(ip)) {
-						return hif;
-					}
+				if (neighbor instanceof HostInterface hif && hif.getSubnet() != null && hif.getSubnet().networkAddress().equals(ip)) {
+					return hif;
 				}
 				q.add(neighbor);
 			}

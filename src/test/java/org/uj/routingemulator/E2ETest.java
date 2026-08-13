@@ -38,11 +38,7 @@ class E2ETest {
 
 		String out = sw.toString();
 		StaticRoutingEntry entry = new StaticRoutingEntry(new Subnet(new IPAddress(1, 1, 1, 1), new SubnetMask(8)), new IPAddress(2, 2, 2, 2));
-		assertThat(out).contains("Error: 1.1.1.1/8 is not a valid IPv4 prefix");
-		assertThat(out).contains("Invalid value");
-		assertThat(out).contains("Value validation failed");
-		assertThat(out).contains("Set failed");
-		assertThat(out).contains("[edit]");
+		assertThat(out).contains("Error: 1.1.1.1/8 is not a valid IPv4 prefix").contains("Invalid value").contains("Value validation failed").contains("Set failed").contains("[edit]");
 		assertFalse(router.getRoutingTable().contains(entry));
 	}
 
@@ -61,11 +57,7 @@ class E2ETest {
 		parser.executeCommand("set protocols static route 1.1.1.0/8 next-hop 2.2.2.2/8", router);
 
 		String out = sw.toString();
-		assertThat(out).contains("Error: 2.2.2.2/8 is not a valid IPv4 prefix");
-		assertThat(out).contains("Invalid value");
-		assertThat(out).contains("Value validation failed");
-		assertThat(out).contains("Set failed");
-		assertThat(out).contains("[edit]");
+		assertThat(out).contains("Error: 2.2.2.2/8 is not a valid IPv4 prefix").contains("Invalid value").contains("Value validation failed").contains("Set failed").contains("[edit]");
 		CLIContext.clear();
 	}
 

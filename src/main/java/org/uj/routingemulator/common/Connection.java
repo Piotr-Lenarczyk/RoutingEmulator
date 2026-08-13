@@ -29,8 +29,6 @@ public record Connection(NetworkInterface interfaceA, NetworkInterface interface
 		try {
 			validateConnection(interfaceA, interfaceB);
 		} catch (RuntimeException e) {
-			logger.warning("Failed to create connection between %s and %s: %s".formatted(
-					interfaceA.getInterfaceName(), interfaceB.getInterfaceName(), e.getMessage()));
 			throw new RuntimeException("Could not establish connection " + e.getMessage());
 		}
 		this.interfaceA = interfaceA;

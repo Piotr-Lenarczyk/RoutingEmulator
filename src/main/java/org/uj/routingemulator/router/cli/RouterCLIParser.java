@@ -141,7 +141,6 @@ public class RouterCLIParser {
 					// Print message and do not prompt for confirmation; warnings are logged by Router
 					out.println(e.getMessage());
 					out.flush();
-					return;
 				} catch (RuntimeException e) {
 					out.println(e.getMessage());
 					out.flush();
@@ -157,10 +156,6 @@ public class RouterCLIParser {
 			try {
 				prefixMatch.execute(router);
 				out.flush();
-			} catch (org.uj.routingemulator.router.exceptions.InterfaceUnavailableException e) {
-				out.println(e.getMessage());
-				out.flush();
-				return;
 			} catch (RuntimeException e) {
 				out.println(e.getMessage());
 				out.flush();

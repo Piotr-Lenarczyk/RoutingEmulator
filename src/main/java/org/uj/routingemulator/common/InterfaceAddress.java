@@ -9,15 +9,6 @@ package org.uj.routingemulator.common;
  */
 public record InterfaceAddress(IPAddress ipAddress, SubnetMask subnetMask) {
 	/**
-	 * Creates an interface address configuration.
-	 *
-	 * @param ipAddress  the IP address assigned to the interface (e.g., 192.168.1.1)
-	 * @param subnetMask the subnet mask (e.g., /24)
-	 */
-	public InterfaceAddress {
-	}
-
-	/**
 	 * Parses an interface address from CIDR notation (e.g., "192.168.1.1/24").
 	 *
 	 * @param addressString String in CIDR format

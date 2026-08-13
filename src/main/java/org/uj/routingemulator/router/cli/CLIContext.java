@@ -23,6 +23,7 @@ public class CLIContext {
 	 *
 	 * @return PrintWriter for terminal output
 	 */
+	@SuppressWarnings("java:S106") // False positive: CLI tool, not logger
 	public static PrintWriter getWriter() {
 		PrintWriter w = writer.get();
 		if (w == null) {

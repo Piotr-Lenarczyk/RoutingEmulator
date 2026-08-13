@@ -42,17 +42,14 @@ public class RouterCommandCompleter implements Completer {
 			System.arraycopy(words, 0, newWords, 0, words.length);
 			newWords[words.length] = "";
 			words = newWords;
-		} else if (!currentWord.isEmpty()) {
+		} else if (!currentWord.isEmpty() && isCompleteCommand(words, currentWord)) {
 			// Check if current word is a complete match for any command at this level
 			// If so, treat it as if we're completing the next level
-			if (isCompleteCommand(words, currentWord)) {
-				// Current word is complete, move to next level
 				currentWord = "";
 				String[] newWords = new String[words.length + 1];
 				System.arraycopy(words, 0, newWords, 0, words.length);
 				newWords[words.length] = "";
 				words = newWords;
-			}
 		}
 
 		if (router.getMode() == RouterMode.OPERATIONAL) {
@@ -133,10 +130,8 @@ public class RouterCommandCompleter implements Completer {
 			addCandidateIfMatches(candidates, "exit", "Exit configuration mode", currentWord);
 		} else if (words[0].equalsIgnoreCase("set") || words[0].equalsIgnoreCase("delete")) {
 			completeSetDeleteCommand(words, currentWord, candidates);
-		} else if (words[0].equalsIgnoreCase("show")) {
-			if (words.length == 2) {
-				addCandidateIfMatches(candidates, "configuration", "Show current configuration", currentWord);
-			}
+		} else if (words[0].equalsIgnoreCase("show") && words.length == 2) {
+			addCandidateIfMatches(candidates, "configuration", "Show current configuration", currentWord);
 		}
 	}
 
@@ -191,12 +186,10 @@ public class RouterCommandCompleter implements Completer {
 			// After next-hop IP or interface name - show optional parameters
 			addCandidateIfMatches(candidates, "distance", "Set administrative distance", currentWord);
 			addCandidateIfMatches(candidates, "disable", "Disable route", currentWord);
-		} else if (words.length == 9 && words[7].equalsIgnoreCase("distance")) {
+		} else if (words.length == 9 && words[7].equalsIgnoreCase("distance") && currentWord.isEmpty()) {
 			// After "distance" keyword - user needs to enter distance value
-			if (currentWord.isEmpty()) {
-				candidates.add(new Candidate("<1-255>", "<1-255>", null,
-						"Enter administrative distance (1-255, default: 1)", null, null, false));
-			}
+			candidates.add(new Candidate("<1-255>", "<1-255>", null,
+					"Enter administrative distance (1-255, default: 1)", null, null, false));
 		}
 	}
 

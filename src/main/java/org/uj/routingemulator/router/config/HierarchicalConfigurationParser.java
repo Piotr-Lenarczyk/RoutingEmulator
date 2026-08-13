@@ -220,10 +220,7 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 					}
 				}
 			}
-		} catch (Exception e) {
-			if (e instanceof ConfigurationParseException) {
-				throw e;
-			}
+		} catch (ConfigurationParseException e) {
 			throw new ConfigurationParseException("Error parsing route: " + e.getMessage());
 		}
 	}
@@ -245,8 +242,7 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 
 		try {
 			// interfaces ethernet eth0 address 192.168.1.1/24
-			if (path.get(0).equals("interfaces") && path.size() >= 4) {
-				if (path.get(1).equals("ethernet")) {
+			if (path.get(0).equals("interfaces") && path.size() >= 4 && path.get(1).equals("ethernet")) {
 					String interfaceName = path.get(2);
 
 					// Check if interface exists
@@ -285,7 +281,7 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 							throw e;
 						}
 					}
-				}
+
 			}
 		} catch (ConfigurationParseException e) {
 			throw e;

@@ -7,6 +7,9 @@ import java.util.List;
  * Formats PingStatistics into VyOS-like textual output.
  */
 public class PingFormatter {
+    private PingFormatter() {
+        // Prevent instantiation
+    }
     /**
      * Formats ping results into human-readable VyOS-style output.
      *
@@ -40,7 +43,7 @@ public class PingFormatter {
         sb.append("\n--- ").append(dstStr).append(" ping statistics ---\n");
         int transmitted = stats.getSent();
         int received = stats.getReceived();
-        long errors = transmitted - received; // simple
+        long errors = (long) transmitted - received; // simple
         double loss = transmitted == 0 ? 100.0 : (100.0 * (transmitted - received) / transmitted);
         sb.append(String.format("%d packets transmitted, %d received, %s errors, %.0f%% packet loss, time %dms\n",
                 transmitted, received, (errors > 0 ? "+" + errors : "0"), loss, 0));

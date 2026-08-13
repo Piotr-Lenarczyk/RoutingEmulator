@@ -332,12 +332,12 @@ public class NetworkTopologyController {
 			}
 
 			// Remove device from topology
-			if (device instanceof Router) {
-				topology.removeRouter((Router) device);
-			} else if (device instanceof Switch) {
-				topology.removeSwitch((Switch) device);
-			} else if (device instanceof Host) {
-				topology.removeHost((Host) device);
+			if (device instanceof Router router) {
+				topology.removeRouter(router);
+			} else if (device instanceof Switch sw) {
+				topology.removeSwitch(sw);
+			} else if (device instanceof Host host) {
+				topology.removeHost(host);
 			}
 
 			// Remove visual node
@@ -520,15 +520,15 @@ public class NetworkTopologyController {
 			// Complete connection
 			createConnection(connectionStartNode, node);
 			connectionStartNode = null;
-		} else if (node.device instanceof Router) {
+		} else if (node.device instanceof Router router) {
 			// Double-click detection for router CLI
 			if (selectedNode == node) {
-				openRouterCLI((Router) node.device);
+				openRouterCLI(router);
 			}
-		} else if (node.device instanceof Host) {
+		} else if (node.device instanceof Host host) {
 			// Double-click detection for host configuration
 			if (selectedNode == node) {
-				openHostDialog((Host) node.device);
+				openHostDialog(host);
 			}
 		}
 
@@ -630,12 +630,12 @@ public class NetworkTopologyController {
 	private List<NetworkInterface> getAvailableInterfaces(Object device) {
 		List<NetworkInterface> allInterfaces = new ArrayList<>();
 
-		if (device instanceof Router) {
-			allInterfaces.addAll(((Router) device).getInterfaces());
-		} else if (device instanceof Switch) {
-			allInterfaces.addAll(((Switch) device).getPorts());
-		} else if (device instanceof Host) {
-			allInterfaces.add(((Host) device).getHostInterface());
+		if (device instanceof Router router) {
+			allInterfaces.addAll(router.getInterfaces());
+		} else if (device instanceof Switch sw) {
+			allInterfaces.addAll(sw.getPorts());
+		} else if (device instanceof Host host) {
+			allInterfaces.add(host.getHostInterface());
 		}
 
 		// Filter out already connected interfaces
@@ -728,12 +728,12 @@ public class NetworkTopologyController {
 	 * @return the device name
 	 */
 	private String getDeviceName(Object device) {
-		if (device instanceof Router) {
-			return ((Router) device).getName();
-		} else if (device instanceof Switch) {
-			return ((Switch) device).getName();
-		} else if (device instanceof Host) {
-			return ((Host) device).getHostname();
+		if (device instanceof Router router) {
+			return router.getName();
+		} else if (device instanceof Switch sw) {
+			return sw.getName();
+		} else if (device instanceof Host host) {
+			return host.getHostname();
 		}
 		return "Unknown";
 	}

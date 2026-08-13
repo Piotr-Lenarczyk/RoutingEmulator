@@ -10,15 +10,6 @@ package org.uj.routingemulator.common;
  */
 public record Subnet(IPAddress networkAddress, SubnetMask subnetMask) {
 	/**
-	 * Creates a subnet with the given network address and mask.
-	 *
-	 * @param networkAddress the network address (should have host bits = 0)
-	 * @param subnetMask     the subnet mask
-	 */
-	public Subnet {
-	}
-
-	/**
 	 * Parses a subnet from CIDR notation (e.g., "192.168.1.0/24").
 	 *
 	 * @param subnetString String in CIDR format

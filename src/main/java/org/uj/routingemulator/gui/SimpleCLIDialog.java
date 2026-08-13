@@ -5,6 +5,7 @@ import javafx.geometry.Insets;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.layout.VBox;
+import org.jline.reader.Candidate;
 import org.jline.reader.ParsedLine;
 import org.uj.routingemulator.common.NetworkTopology;
 import org.uj.routingemulator.router.Router;
@@ -104,8 +105,8 @@ public class SimpleCLIDialog extends Dialog<Void> {
         completer.complete(null, parsedLine, candidates);
 
         List<String> completions = candidates.stream()
-                .map(org.jline.reader.Candidate::value)
-                .collect(Collectors.toList());
+                .map(Candidate::value)
+                .toList();
 
         callback.accept(completions);
     }
