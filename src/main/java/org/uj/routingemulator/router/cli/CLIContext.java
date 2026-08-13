@@ -42,7 +42,7 @@ public class CLIContext {
 
 	/**
 	 * Clears the terminal writer for this thread.
-	 * Should be called whtn CLI session ends to avoid memory leaks.
+	 * Should be called within CLI session ends to avoid memory leaks.
 	 */
 	public static void clear() {
 		writer.remove();

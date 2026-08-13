@@ -1,0 +1,1668 @@
+kwi 25, 2026 8:17:35 PM org.uj.routingemulator.Main main
+INFO: Starting Network Routing Emulator...
+kwi 25, 2026 8:17:35 PM org.uj.routingemulator.Main main
+INFO: Running in GUI mode...
+kwi 25, 2026 8:17:36 PM org.uj.routingemulator.common.NetworkTopology <init>
+CONFIG: Initialized new empty network topology
+kwi 25, 2026 8:18:31 PM org.uj.routingemulator.host.Host <init>
+FINE: Creating new host PC1 with interface HostInterface(interfaceName=Ethernet0, subnet=10.0.0.2/8, macAddress=9E:7F:CB:BD:2E:92, defaultGateway=10.0.0.1)
+kwi 25, 2026 8:18:31 PM org.uj.routingemulator.common.NetworkTopology addHost
+INFO: Host PC1 added to topology
+kwi 25, 2026 8:18:55 PM org.uj.routingemulator.host.Host <init>
+FINE: Creating new host PC2 with interface HostInterface(interfaceName=Ethernet0, subnet=20.0.0.2/8, macAddress=AE:15:94:25:C9:56, defaultGateway=20.0.0.1)
+kwi 25, 2026 8:18:55 PM org.uj.routingemulator.common.NetworkTopology addHost
+INFO: Host PC2 added to topology
+kwi 25, 2026 8:19:16 PM org.uj.routingemulator.router.Router <init>
+FINE: Creating new router R1 with custom interfaces: [RouterInterface(interfaceName=eth0, interfaceAddress=null, macAddress=FA:E8:21:CF:9E:F0, description=null, vrf=default, mtu=1500, status=u/D), RouterInterface(interfaceName=eth1, interfaceAddress=null, macAddress=66:F2:97:67:12:65, description=null, vrf=default, mtu=1500, status=u/D), RouterInterface(interfaceName=eth2, interfaceAddress=null, macAddress=46:2E:AF:BF:44:07, description=null, vrf=default, mtu=1500, status=u/D)]
+kwi 25, 2026 8:19:16 PM org.uj.routingemulator.common.NetworkTopology addRouter
+INFO: Router R1 added to topology
+kwi 25, 2026 8:19:21 PM org.uj.routingemulator.router.Router <init>
+FINE: Creating new router R2 with custom interfaces: [RouterInterface(interfaceName=eth0, interfaceAddress=null, macAddress=4E:E7:56:4A:44:78, description=null, vrf=default, mtu=1500, status=u/D), RouterInterface(interfaceName=eth1, interfaceAddress=null, macAddress=82:DF:CA:EF:25:BB, description=null, vrf=default, mtu=1500, status=u/D), RouterInterface(interfaceName=eth2, interfaceAddress=null, macAddress=C6:69:02:D4:F0:84, description=null, vrf=default, mtu=1500, status=u/D)]
+kwi 25, 2026 8:19:21 PM org.uj.routingemulator.common.NetworkTopology addRouter
+INFO: Router R2 added to topology
+kwi 25, 2026 8:19:26 PM org.uj.routingemulator.router.Router <init>
+FINE: Creating new router R3 with custom interfaces: [RouterInterface(interfaceName=eth0, interfaceAddress=null, macAddress=02:0D:D8:50:0E:2F, description=null, vrf=default, mtu=1500, status=u/D), RouterInterface(interfaceName=eth1, interfaceAddress=null, macAddress=96:52:28:B4:CC:63, description=null, vrf=default, mtu=1500, status=u/D), RouterInterface(interfaceName=eth2, interfaceAddress=null, macAddress=86:9E:38:A4:47:CB, description=null, vrf=default, mtu=1500, status=u/D)]
+kwi 25, 2026 8:19:26 PM org.uj.routingemulator.common.NetworkTopology addRouter
+INFO: Router R3 added to topology
+kwi 25, 2026 8:19:48 PM org.uj.routingemulator.common.Connection <init>
+FINE: Setting up connection between Ethernet0 and eth0
+kwi 25, 2026 8:19:48 PM org.uj.routingemulator.common.Connection <init>
+FINE: Setting up connection between eth0 and Ethernet0
+kwi 25, 2026 8:19:48 PM org.uj.routingemulator.common.NetworkTopology addConnection
+INFO: Adding connection between Ethernet0 and eth0
+kwi 25, 2026 8:19:48 PM org.uj.routingemulator.common.NetworkTopology addConnection
+FINER: Updating link states for interface Ethernet0
+kwi 25, 2026 8:19:48 PM org.uj.routingemulator.common.NetworkTopology addConnection
+FINER: Updating link states for interface eth0
+kwi 25, 2026 8:19:48 PM org.uj.routingemulator.common.NetworkTopology updateInterfaceLinkState
+FINEST: Updating link state for router interface eth0
+kwi 25, 2026 8:19:48 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:19:48 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:19:48 PM org.uj.routingemulator.router.RouterInterface updateLinkState
+FINER: Updating link state for interface eth0 to UP
+kwi 25, 2026 8:19:59 PM org.uj.routingemulator.common.Connection <init>
+FINE: Setting up connection between eth1 and eth0
+kwi 25, 2026 8:19:59 PM org.uj.routingemulator.common.Connection <init>
+FINE: Setting up connection between eth0 and eth1
+kwi 25, 2026 8:19:59 PM org.uj.routingemulator.common.NetworkTopology addConnection
+FINEST: Checking connection Ethernet0 <-> eth0
+kwi 25, 2026 8:19:59 PM org.uj.routingemulator.common.NetworkTopology addConnection
+INFO: Adding connection between eth1 and eth0
+kwi 25, 2026 8:19:59 PM org.uj.routingemulator.common.NetworkTopology addConnection
+FINER: Updating link states for interface eth1
+kwi 25, 2026 8:19:59 PM org.uj.routingemulator.common.NetworkTopology updateInterfaceLinkState
+FINEST: Updating link state for router interface eth1
+kwi 25, 2026 8:19:59 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:19:59 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:19:59 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:19:59 PM org.uj.routingemulator.common.NetworkTopology hasActiveConnection
+FINEST: Checking if interface eth1 neighbor eth0 is administratively up
+kwi 25, 2026 8:19:59 PM org.uj.routingemulator.router.RouterInterface updateLinkState
+FINER: Updating link state for interface eth1 to UP
+kwi 25, 2026 8:19:59 PM org.uj.routingemulator.common.NetworkTopology addConnection
+FINER: Updating link states for interface eth0
+kwi 25, 2026 8:19:59 PM org.uj.routingemulator.common.NetworkTopology updateInterfaceLinkState
+FINEST: Updating link state for router interface eth0
+kwi 25, 2026 8:19:59 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:19:59 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:19:59 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:19:59 PM org.uj.routingemulator.common.NetworkTopology hasActiveConnection
+FINEST: Checking if interface eth0 neighbor eth1 is administratively up
+kwi 25, 2026 8:19:59 PM org.uj.routingemulator.router.RouterInterface updateLinkState
+FINER: Updating link state for interface eth0 to UP
+kwi 25, 2026 8:20:06 PM org.uj.routingemulator.common.Connection <init>
+FINE: Setting up connection between eth1 and eth0
+kwi 25, 2026 8:20:06 PM org.uj.routingemulator.common.Connection <init>
+FINE: Setting up connection between eth0 and eth1
+kwi 25, 2026 8:20:06 PM org.uj.routingemulator.common.NetworkTopology addConnection
+FINEST: Checking connection Ethernet0 <-> eth0
+kwi 25, 2026 8:20:06 PM org.uj.routingemulator.common.NetworkTopology addConnection
+FINEST: Checking connection eth1 <-> eth0
+kwi 25, 2026 8:20:06 PM org.uj.routingemulator.common.NetworkTopology addConnection
+INFO: Adding connection between eth1 and eth0
+kwi 25, 2026 8:20:06 PM org.uj.routingemulator.common.NetworkTopology addConnection
+FINER: Updating link states for interface eth1
+kwi 25, 2026 8:20:06 PM org.uj.routingemulator.common.NetworkTopology updateInterfaceLinkState
+FINEST: Updating link state for router interface eth1
+kwi 25, 2026 8:20:06 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:20:06 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:20:06 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:20:06 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:20:06 PM org.uj.routingemulator.common.NetworkTopology hasActiveConnection
+FINEST: Checking if interface eth1 neighbor eth0 is administratively up
+kwi 25, 2026 8:20:06 PM org.uj.routingemulator.router.RouterInterface updateLinkState
+FINER: Updating link state for interface eth1 to UP
+kwi 25, 2026 8:20:06 PM org.uj.routingemulator.common.NetworkTopology addConnection
+FINER: Updating link states for interface eth0
+kwi 25, 2026 8:20:06 PM org.uj.routingemulator.common.NetworkTopology updateInterfaceLinkState
+FINEST: Updating link state for router interface eth0
+kwi 25, 2026 8:20:06 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:20:06 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:20:06 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:20:06 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:20:06 PM org.uj.routingemulator.common.NetworkTopology hasActiveConnection
+FINEST: Checking if interface eth0 neighbor eth1 is administratively up
+kwi 25, 2026 8:20:06 PM org.uj.routingemulator.router.RouterInterface updateLinkState
+FINER: Updating link state for interface eth0 to UP
+kwi 25, 2026 8:20:12 PM org.uj.routingemulator.common.Connection <init>
+FINE: Setting up connection between eth1 and Ethernet0
+kwi 25, 2026 8:20:12 PM org.uj.routingemulator.common.Connection <init>
+FINE: Setting up connection between Ethernet0 and eth1
+kwi 25, 2026 8:20:12 PM org.uj.routingemulator.common.NetworkTopology addConnection
+FINEST: Checking connection Ethernet0 <-> eth0
+kwi 25, 2026 8:20:12 PM org.uj.routingemulator.common.NetworkTopology addConnection
+FINEST: Checking connection eth1 <-> eth0
+kwi 25, 2026 8:20:12 PM org.uj.routingemulator.common.NetworkTopology addConnection
+FINEST: Checking connection eth1 <-> eth0
+kwi 25, 2026 8:20:12 PM org.uj.routingemulator.common.NetworkTopology addConnection
+INFO: Adding connection between eth1 and Ethernet0
+kwi 25, 2026 8:20:12 PM org.uj.routingemulator.common.NetworkTopology addConnection
+FINER: Updating link states for interface eth1
+kwi 25, 2026 8:20:12 PM org.uj.routingemulator.common.NetworkTopology updateInterfaceLinkState
+FINEST: Updating link state for router interface eth1
+kwi 25, 2026 8:20:12 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:20:12 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:20:12 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:20:12 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:20:12 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and Ethernet0
+kwi 25, 2026 8:20:12 PM org.uj.routingemulator.router.RouterInterface updateLinkState
+FINER: Updating link state for interface eth1 to UP
+kwi 25, 2026 8:20:12 PM org.uj.routingemulator.common.NetworkTopology addConnection
+FINER: Updating link states for interface Ethernet0
+kwi 25, 2026 8:20:38 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: conf
+kwi 25, 2026 8:20:38 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Creating deep copy of interfaces for staged configuration
+kwi 25, 2026 8:20:38 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Copying interface eth0 with address null
+kwi 25, 2026 8:20:38 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Copying interface eth1 with address null
+kwi 25, 2026 8:20:38 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Copying interface eth2 with address null
+kwi 25, 2026 8:20:38 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Copying routing table with updated interfaces
+kwi 25, 2026 8:20:51 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: set interfaces ethernet eth0 address 10.0.0.1/8
+kwi 25, 2026 8:20:51 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: set interfaces ethernet <interface> address <address> for input string: set interfaces ethernet eth0 address 10.0.0.1/8
+kwi 25, 2026 8:20:51 PM org.uj.routingemulator.router.Router configureInterface
+INFO: R1: Interface eth0 configured with address 10.0.0.1/8 in staged configuration
+kwi 25, 2026 8:21:16 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: set interfaces ethernet eth1 address 192.168.0.1/25
+kwi 25, 2026 8:21:16 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: set interfaces ethernet <interface> address <address> for input string: set interfaces ethernet eth1 address 192.168.0.1/25
+kwi 25, 2026 8:21:16 PM org.uj.routingemulator.router.Router configureInterface
+INFO: R1: Interface eth1 configured with address 192.168.0.1/25 in staged configuration
+kwi 25, 2026 8:21:26 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: commit
+kwi 25, 2026 8:21:26 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: commit for input string: commit
+kwi 25, 2026 8:21:26 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth0 with address 10.0.0.1/8
+kwi 25, 2026 8:21:26 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth0 in-place
+kwi 25, 2026 8:21:26 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth1 with address 192.168.0.1/25
+kwi 25, 2026 8:21:26 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth1 in-place
+kwi 25, 2026 8:21:26 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth2 with address null
+kwi 25, 2026 8:21:26 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth2 in-place
+kwi 25, 2026 8:21:26 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Copying routing table with updated interfaces
+kwi 25, 2026 8:21:26 PM org.uj.routingemulator.router.Router commitChanges
+INFO: R1: Commit complete
+kwi 25, 2026 8:21:39 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Executing command: conf
+kwi 25, 2026 8:21:39 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Creating deep copy of interfaces for staged configuration
+kwi 25, 2026 8:21:39 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Copying interface eth0 with address null
+kwi 25, 2026 8:21:39 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Copying interface eth1 with address null
+kwi 25, 2026 8:21:39 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Copying interface eth2 with address null
+kwi 25, 2026 8:21:39 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Copying routing table with updated interfaces
+kwi 25, 2026 8:22:03 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Executing command: set interfaces ethernet eth0 address 192.168.0.2/25
+kwi 25, 2026 8:22:03 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Command match found: set interfaces ethernet <interface> address <address> for input string: set interfaces ethernet eth0 address 192.168.0.2/25
+kwi 25, 2026 8:22:03 PM org.uj.routingemulator.router.Router configureInterface
+INFO: R2: Interface eth0 configured with address 192.168.0.2/25 in staged configuration
+kwi 25, 2026 8:22:16 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Executing command: set interfaces ethernet eth1 address 192.168.0.129/26
+kwi 25, 2026 8:22:16 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Command match found: set interfaces ethernet <interface> address <address> for input string: set interfaces ethernet eth1 address 192.168.0.129/26
+kwi 25, 2026 8:22:16 PM org.uj.routingemulator.router.Router configureInterface
+INFO: R2: Interface eth1 configured with address 192.168.0.129/26 in staged configuration
+kwi 25, 2026 8:22:19 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Executing command: commit
+kwi 25, 2026 8:22:19 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Command match found: commit for input string: commit
+kwi 25, 2026 8:22:19 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth0 with address 192.168.0.2/25
+kwi 25, 2026 8:22:19 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth0 in-place
+kwi 25, 2026 8:22:19 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth1 with address 192.168.0.129/26
+kwi 25, 2026 8:22:19 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth1 in-place
+kwi 25, 2026 8:22:19 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth2 with address null
+kwi 25, 2026 8:22:19 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth2 in-place
+kwi 25, 2026 8:22:19 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Copying routing table with updated interfaces
+kwi 25, 2026 8:22:19 PM org.uj.routingemulator.router.Router commitChanges
+INFO: R2: Commit complete
+kwi 25, 2026 8:22:32 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R3: Executing command: conf
+kwi 25, 2026 8:22:32 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Creating deep copy of interfaces for staged configuration
+kwi 25, 2026 8:22:32 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Copying interface eth0 with address null
+kwi 25, 2026 8:22:32 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Copying interface eth1 with address null
+kwi 25, 2026 8:22:32 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Copying interface eth2 with address null
+kwi 25, 2026 8:22:32 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Copying routing table with updated interfaces
+kwi 25, 2026 8:22:51 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R3: Executing command: set interfaces ethernet eth0 address 192.168.0.130/26
+kwi 25, 2026 8:22:51 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R3: Command match found: set interfaces ethernet <interface> address <address> for input string: set interfaces ethernet eth0 address 192.168.0.130/26
+kwi 25, 2026 8:22:51 PM org.uj.routingemulator.router.Router configureInterface
+INFO: R3: Interface eth0 configured with address 192.168.0.130/26 in staged configuration
+kwi 25, 2026 8:23:06 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R3: Executing command: set interfaces ethernet eth1 address 20.0.0.1/8
+kwi 25, 2026 8:23:06 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R3: Command match found: set interfaces ethernet <interface> address <address> for input string: set interfaces ethernet eth1 address 20.0.0.1/8
+kwi 25, 2026 8:23:06 PM org.uj.routingemulator.router.Router configureInterface
+INFO: R3: Interface eth1 configured with address 20.0.0.1/8 in staged configuration
+kwi 25, 2026 8:23:13 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R3: Executing command: commit
+kwi 25, 2026 8:23:13 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R3: Command match found: commit for input string: commit
+kwi 25, 2026 8:23:13 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth0 with address 192.168.0.130/26
+kwi 25, 2026 8:23:13 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth0 in-place
+kwi 25, 2026 8:23:13 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth1 with address 20.0.0.1/8
+kwi 25, 2026 8:23:13 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth1 in-place
+kwi 25, 2026 8:23:13 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth2 with address null
+kwi 25, 2026 8:23:13 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth2 in-place
+kwi 25, 2026 8:23:13 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Copying routing table with updated interfaces
+kwi 25, 2026 8:23:13 PM org.uj.routingemulator.router.Router commitChanges
+INFO: R3: Commit complete
+kwi 25, 2026 8:23:26 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: exit
+kwi 25, 2026 8:23:26 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: exit for input string: exit
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: ping 192.168.0.2
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: ping [-c <count>] [-t <ttl>] <ip> for input string: ping 192.168.0.2
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.PingService ping
+FINE: R1: Router pinging 192.168.0.2 with 4 probes (ttl=64)...
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.PingService ping
+FINEST: Probe 1: Router R1 sending ICMP Echo Request from 192.168.0.1 to 192.168.0.2 with ttl=64
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.1 to 192.168.0.2
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: Checking interfaces of router R1 for destination 192.168.0.2
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINEST: Destination directly connected to router R1 via interface eth1
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINEST: Looking for host with IP 192.168.0.2 reachable from router R1 interface eth1
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINER: Verifying return route from destination router R2 interface eth0 to source IP 192.168.0.1
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Forwarding from router R2 interface eth0 to destination IP 192.168.0.1
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Return route verification success: destination IP 192.168.0.1 matches neighbor router interface eth1 on router R2
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINEST: Return route verification result: reachable
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Forwarding success: reached destination router R2 interface eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.PingService ping
+FINEST: Probe 2: Router R1 sending ICMP Echo Request from 192.168.0.1 to 192.168.0.2 with ttl=64
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.1 to 192.168.0.2
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: Checking interfaces of router R1 for destination 192.168.0.2
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINEST: Destination directly connected to router R1 via interface eth1
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINEST: Looking for host with IP 192.168.0.2 reachable from router R1 interface eth1
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINER: Verifying return route from destination router R2 interface eth0 to source IP 192.168.0.1
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Forwarding from router R2 interface eth0 to destination IP 192.168.0.1
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Return route verification success: destination IP 192.168.0.1 matches neighbor router interface eth1 on router R2
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINEST: Return route verification result: reachable
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Forwarding success: reached destination router R2 interface eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.PingService ping
+FINEST: Probe 3: Router R1 sending ICMP Echo Request from 192.168.0.1 to 192.168.0.2 with ttl=64
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.1 to 192.168.0.2
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: Checking interfaces of router R1 for destination 192.168.0.2
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINEST: Destination directly connected to router R1 via interface eth1
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINEST: Looking for host with IP 192.168.0.2 reachable from router R1 interface eth1
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINER: Verifying return route from destination router R2 interface eth0 to source IP 192.168.0.1
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Forwarding from router R2 interface eth0 to destination IP 192.168.0.1
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Return route verification success: destination IP 192.168.0.1 matches neighbor router interface eth1 on router R2
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINEST: Return route verification result: reachable
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Forwarding success: reached destination router R2 interface eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.PingService ping
+FINEST: Probe 4: Router R1 sending ICMP Echo Request from 192.168.0.1 to 192.168.0.2 with ttl=64
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.1 to 192.168.0.2
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: Checking interfaces of router R1 for destination 192.168.0.2
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINEST: Destination directly connected to router R1 via interface eth1
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINEST: Looking for host with IP 192.168.0.2 reachable from router R1 interface eth1
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINER: Verifying return route from destination router R2 interface eth0 to source IP 192.168.0.1
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Forwarding from router R2 interface eth0 to destination IP 192.168.0.1
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Return route verification success: destination IP 192.168.0.1 matches neighbor router interface eth1 on router R2
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINEST: Return route verification result: reachable
+kwi 25, 2026 8:23:38 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Forwarding success: reached destination router R2 interface eth0
+kwi 25, 2026 8:24:01 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Executing command: exit
+kwi 25, 2026 8:24:01 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Command match found: exit for input string: exit
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Executing command: ping 192.168.0.130
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Command match found: ping [-c <count>] [-t <ttl>] <ip> for input string: ping 192.168.0.130
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.PingService ping
+FINE: R2: Router pinging 192.168.0.130 with 4 probes (ttl=64)...
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.PingService ping
+FINEST: Probe 1: Router R2 sending ICMP Echo Request from 192.168.0.129 to 192.168.0.130 with ttl=64
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.129 to 192.168.0.130
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: Checking interfaces of router R2 for destination 192.168.0.130
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINEST: Destination directly connected to router R2 via interface eth1
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINEST: Looking for host with IP 192.168.0.130 reachable from router R2 interface eth1
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINER: Verifying return route from destination router R3 interface eth0 to source IP 192.168.0.129
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Forwarding from router R3 interface eth0 to destination IP 192.168.0.129
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Return route verification success: destination IP 192.168.0.129 matches neighbor router interface eth1 on router R3
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINEST: Return route verification result: reachable
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Forwarding success: reached destination router R3 interface eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.PingService ping
+FINEST: Probe 2: Router R2 sending ICMP Echo Request from 192.168.0.129 to 192.168.0.130 with ttl=64
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.129 to 192.168.0.130
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: Checking interfaces of router R2 for destination 192.168.0.130
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINEST: Destination directly connected to router R2 via interface eth1
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINEST: Looking for host with IP 192.168.0.130 reachable from router R2 interface eth1
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINER: Verifying return route from destination router R3 interface eth0 to source IP 192.168.0.129
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Forwarding from router R3 interface eth0 to destination IP 192.168.0.129
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Return route verification success: destination IP 192.168.0.129 matches neighbor router interface eth1 on router R3
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINEST: Return route verification result: reachable
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Forwarding success: reached destination router R3 interface eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.PingService ping
+FINEST: Probe 3: Router R2 sending ICMP Echo Request from 192.168.0.129 to 192.168.0.130 with ttl=64
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.129 to 192.168.0.130
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: Checking interfaces of router R2 for destination 192.168.0.130
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINEST: Destination directly connected to router R2 via interface eth1
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINEST: Looking for host with IP 192.168.0.130 reachable from router R2 interface eth1
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINER: Verifying return route from destination router R3 interface eth0 to source IP 192.168.0.129
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Forwarding from router R3 interface eth0 to destination IP 192.168.0.129
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Return route verification success: destination IP 192.168.0.129 matches neighbor router interface eth1 on router R3
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINEST: Return route verification result: reachable
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Forwarding success: reached destination router R3 interface eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.PingService ping
+FINEST: Probe 4: Router R2 sending ICMP Echo Request from 192.168.0.129 to 192.168.0.130 with ttl=64
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.129 to 192.168.0.130
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: Checking interfaces of router R2 for destination 192.168.0.130
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINEST: Destination directly connected to router R2 via interface eth1
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINEST: Looking for host with IP 192.168.0.130 reachable from router R2 interface eth1
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINER: Verifying return route from destination router R3 interface eth0 to source IP 192.168.0.129
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Forwarding from router R3 interface eth0 to destination IP 192.168.0.129
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Return route verification success: destination IP 192.168.0.129 matches neighbor router interface eth1 on router R3
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINEST: Return route verification result: reachable
+kwi 25, 2026 8:24:11 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Forwarding success: reached destination router R3 interface eth0
+kwi 25, 2026 8:24:35 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: ping 192.168.0.130
+kwi 25, 2026 8:24:35 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: ping [-c <count>] [-t <ttl>] <ip> for input string: ping 192.168.0.130
+kwi 25, 2026 8:24:35 PM org.uj.routingemulator.common.PingService ping
+FINE: R1: Router pinging 192.168.0.130 with 4 probes (ttl=64)...
+kwi 25, 2026 8:24:35 PM org.uj.routingemulator.common.PingService ping
+FINEST: Probe 1: Router R1 sending ICMP Echo Request from 10.0.0.1 to 192.168.0.130 with ttl=64
+kwi 25, 2026 8:24:35 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 10.0.0.1 to 192.168.0.130
+kwi 25, 2026 8:24:35 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: Checking interfaces of router R1 for destination 192.168.0.130
+kwi 25, 2026 8:24:35 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: No directly connected subnet matches destination. Looking for static routes on router R1
+kwi 25, 2026 8:24:35 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Forwarding failure: no route to destination 192.168.0.130 on router R1
+kwi 25, 2026 8:24:35 PM org.uj.routingemulator.common.PingService ping
+FINEST: Probe 2: Router R1 sending ICMP Echo Request from 10.0.0.1 to 192.168.0.130 with ttl=64
+kwi 25, 2026 8:24:35 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 10.0.0.1 to 192.168.0.130
+kwi 25, 2026 8:24:35 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: Checking interfaces of router R1 for destination 192.168.0.130
+kwi 25, 2026 8:24:35 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: No directly connected subnet matches destination. Looking for static routes on router R1
+kwi 25, 2026 8:24:35 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Forwarding failure: no route to destination 192.168.0.130 on router R1
+kwi 25, 2026 8:24:35 PM org.uj.routingemulator.common.PingService ping
+FINEST: Probe 3: Router R1 sending ICMP Echo Request from 10.0.0.1 to 192.168.0.130 with ttl=64
+kwi 25, 2026 8:24:35 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 10.0.0.1 to 192.168.0.130
+kwi 25, 2026 8:24:35 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: Checking interfaces of router R1 for destination 192.168.0.130
+kwi 25, 2026 8:24:35 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: No directly connected subnet matches destination. Looking for static routes on router R1
+kwi 25, 2026 8:24:35 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Forwarding failure: no route to destination 192.168.0.130 on router R1
+kwi 25, 2026 8:24:35 PM org.uj.routingemulator.common.PingService ping
+FINEST: Probe 4: Router R1 sending ICMP Echo Request from 10.0.0.1 to 192.168.0.130 with ttl=64
+kwi 25, 2026 8:24:35 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 10.0.0.1 to 192.168.0.130
+kwi 25, 2026 8:24:35 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: Checking interfaces of router R1 for destination 192.168.0.130
+kwi 25, 2026 8:24:35 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: No directly connected subnet matches destination. Looking for static routes on router R1
+kwi 25, 2026 8:24:35 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Forwarding failure: no route to destination 192.168.0.130 on router R1
+kwi 25, 2026 8:25:06 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: onf
+kwi 25, 2026 8:25:09 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: conf
+kwi 25, 2026 8:25:09 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Creating deep copy of interfaces for staged configuration
+kwi 25, 2026 8:25:09 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Copying interface eth0 with address 10.0.0.1/8
+kwi 25, 2026 8:25:09 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Copying interface eth1 with address 192.168.0.1/25
+kwi 25, 2026 8:25:09 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Copying interface eth2 with address null
+kwi 25, 2026 8:25:09 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Copying routing table with updated interfaces
+kwi 25, 2026 8:25:55 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: set protocols static route 192.168.0.128/26 interface eth1
+kwi 25, 2026 8:25:55 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: set protocols static route <destination> interface <interface> for input string: set protocols static route 192.168.0.128/26 interface eth1
+kwi 25, 2026 8:25:55 PM org.uj.routingemulator.router.Router addRoute
+INFO: R1: Creating static route StaticRoutingEntry{subnet=192.168.0.128/26, routerInterface=RouterInterface(interfaceName=eth1, interfaceAddress=192.168.0.1/25, macAddress=66:F2:97:67:12:65, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false}
+kwi 25, 2026 8:26:06 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: commit
+kwi 25, 2026 8:26:06 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: commit for input string: commit
+kwi 25, 2026 8:26:06 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth0 with address 10.0.0.1/8
+kwi 25, 2026 8:26:06 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth0 in-place
+kwi 25, 2026 8:26:06 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth1 with address 192.168.0.1/25
+kwi 25, 2026 8:26:06 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth1 in-place
+kwi 25, 2026 8:26:06 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth2 with address null
+kwi 25, 2026 8:26:06 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth2 in-place
+kwi 25, 2026 8:26:06 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Copying routing table with updated interfaces
+kwi 25, 2026 8:26:06 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Processing route StaticRoutingEntry{subnet=192.168.0.128/26, routerInterface=RouterInterface(interfaceName=eth1, interfaceAddress=192.168.0.1/25, macAddress=66:F2:97:67:12:65, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false} for subnet 192.168.0.128/26
+kwi 25, 2026 8:26:06 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Route is interface-based, finding corresponding interface in new configuration
+kwi 25, 2026 8:26:06 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Creating new interface-based route with default administrative distance
+kwi 25, 2026 8:26:06 PM org.uj.routingemulator.router.Router commitChanges
+INFO: R1: Commit complete
+kwi 25, 2026 8:26:21 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: exit
+kwi 25, 2026 8:26:21 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: exit for input string: exit
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: ping 192.168.0.130
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: ping [-c <count>] [-t <ttl>] <ip> for input string: ping 192.168.0.130
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.PingService ping
+FINE: R1: Router pinging 192.168.0.130 with 4 probes (ttl=64)...
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.PingService ping
+FINEST: Probe 1: Router R1 sending ICMP Echo Request from 192.168.0.1 to 192.168.0.130 with ttl=64
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.1 to 192.168.0.130
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: Checking interfaces of router R1 for destination 192.168.0.130
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: No directly connected subnet matches destination. Looking for static routes on router R1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: Checking interfaces of router R2 for destination 192.168.0.130
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINEST: Destination directly connected to router R2 via interface eth1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINEST: Looking for host with IP 192.168.0.130 reachable from router R2 interface eth1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINER: Verifying return route from destination router R3 interface eth0 to source IP 192.168.0.1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Forwarding from router R3 interface eth0 to destination IP 192.168.0.1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Return route verification failure: no route to destination IP 192.168.0.1 on router R3
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINEST: Return route verification result: unreachable
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Forwarding failure: no return route from destination router R3 to source IP
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.PingService ping
+FINEST: Probe 2: Router R1 sending ICMP Echo Request from 192.168.0.1 to 192.168.0.130 with ttl=64
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.1 to 192.168.0.130
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: Checking interfaces of router R1 for destination 192.168.0.130
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: No directly connected subnet matches destination. Looking for static routes on router R1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: Checking interfaces of router R2 for destination 192.168.0.130
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINEST: Destination directly connected to router R2 via interface eth1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINEST: Looking for host with IP 192.168.0.130 reachable from router R2 interface eth1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINER: Verifying return route from destination router R3 interface eth0 to source IP 192.168.0.1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Forwarding from router R3 interface eth0 to destination IP 192.168.0.1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Return route verification failure: no route to destination IP 192.168.0.1 on router R3
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINEST: Return route verification result: unreachable
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Forwarding failure: no return route from destination router R3 to source IP
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.PingService ping
+FINEST: Probe 3: Router R1 sending ICMP Echo Request from 192.168.0.1 to 192.168.0.130 with ttl=64
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.1 to 192.168.0.130
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: Checking interfaces of router R1 for destination 192.168.0.130
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: No directly connected subnet matches destination. Looking for static routes on router R1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: Checking interfaces of router R2 for destination 192.168.0.130
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINEST: Destination directly connected to router R2 via interface eth1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINEST: Looking for host with IP 192.168.0.130 reachable from router R2 interface eth1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINER: Verifying return route from destination router R3 interface eth0 to source IP 192.168.0.1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Forwarding from router R3 interface eth0 to destination IP 192.168.0.1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Return route verification failure: no route to destination IP 192.168.0.1 on router R3
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINEST: Return route verification result: unreachable
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Forwarding failure: no return route from destination router R3 to source IP
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.PingService ping
+FINEST: Probe 4: Router R1 sending ICMP Echo Request from 192.168.0.1 to 192.168.0.130 with ttl=64
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.1 to 192.168.0.130
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: Checking interfaces of router R1 for destination 192.168.0.130
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: No directly connected subnet matches destination. Looking for static routes on router R1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: Checking interfaces of router R2 for destination 192.168.0.130
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINEST: Destination directly connected to router R2 via interface eth1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINEST: Looking for host with IP 192.168.0.130 reachable from router R2 interface eth1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINER: Verifying return route from destination router R3 interface eth0 to source IP 192.168.0.1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Forwarding from router R3 interface eth0 to destination IP 192.168.0.1
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Return route verification failure: no route to destination IP 192.168.0.1 on router R3
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINEST: Return route verification result: unreachable
+kwi 25, 2026 8:26:32 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Forwarding failure: no return route from destination router R3 to source IP
+kwi 25, 2026 8:27:15 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R3: Executing command: set protocols static route 192.168.0.0/25 interface eth0
+kwi 25, 2026 8:27:15 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R3: Command match found: set protocols static route <destination> interface <interface> for input string: set protocols static route 192.168.0.0/25 interface eth0
+kwi 25, 2026 8:27:15 PM org.uj.routingemulator.router.Router addRoute
+INFO: R3: Creating static route StaticRoutingEntry{subnet=192.168.0.0/25, routerInterface=RouterInterface(interfaceName=eth0, interfaceAddress=192.168.0.130/26, macAddress=02:0D:D8:50:0E:2F, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false}
+kwi 25, 2026 8:27:17 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R3: Executing command: commit
+kwi 25, 2026 8:27:17 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R3: Command match found: commit for input string: commit
+kwi 25, 2026 8:27:17 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth0 with address 192.168.0.130/26
+kwi 25, 2026 8:27:17 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth0 in-place
+kwi 25, 2026 8:27:17 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth1 with address 20.0.0.1/8
+kwi 25, 2026 8:27:17 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth1 in-place
+kwi 25, 2026 8:27:17 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth2 with address null
+kwi 25, 2026 8:27:17 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth2 in-place
+kwi 25, 2026 8:27:17 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Copying routing table with updated interfaces
+kwi 25, 2026 8:27:17 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Processing route StaticRoutingEntry{subnet=192.168.0.0/25, routerInterface=RouterInterface(interfaceName=eth0, interfaceAddress=192.168.0.130/26, macAddress=02:0D:D8:50:0E:2F, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false} for subnet 192.168.0.0/25
+kwi 25, 2026 8:27:17 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Route is interface-based, finding corresponding interface in new configuration
+kwi 25, 2026 8:27:17 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Creating new interface-based route with default administrative distance
+kwi 25, 2026 8:27:17 PM org.uj.routingemulator.router.Router commitChanges
+INFO: R3: Commit complete
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: ping 192.168.0.130
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: ping [-c <count>] [-t <ttl>] <ip> for input string: ping 192.168.0.130
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.PingService ping
+FINE: R1: Router pinging 192.168.0.130 with 4 probes (ttl=64)...
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.PingService ping
+FINEST: Probe 1: Router R1 sending ICMP Echo Request from 192.168.0.1 to 192.168.0.130 with ttl=64
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.1 to 192.168.0.130
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: Checking interfaces of router R1 for destination 192.168.0.130
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: No directly connected subnet matches destination. Looking for static routes on router R1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: Checking interfaces of router R2 for destination 192.168.0.130
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINEST: Destination directly connected to router R2 via interface eth1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINEST: Looking for host with IP 192.168.0.130 reachable from router R2 interface eth1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINER: Verifying return route from destination router R3 interface eth0 to source IP 192.168.0.1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Forwarding from router R3 interface eth0 to destination IP 192.168.0.1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Return route verification success: destination IP 192.168.0.1 matches neighbor router interface eth1 on router R2
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINEST: Return route verification result: reachable
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Forwarding success: reached destination router R3 interface eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.PingService ping
+FINEST: Probe 2: Router R1 sending ICMP Echo Request from 192.168.0.1 to 192.168.0.130 with ttl=64
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.1 to 192.168.0.130
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: Checking interfaces of router R1 for destination 192.168.0.130
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: No directly connected subnet matches destination. Looking for static routes on router R1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: Checking interfaces of router R2 for destination 192.168.0.130
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINEST: Destination directly connected to router R2 via interface eth1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINEST: Looking for host with IP 192.168.0.130 reachable from router R2 interface eth1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINER: Verifying return route from destination router R3 interface eth0 to source IP 192.168.0.1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Forwarding from router R3 interface eth0 to destination IP 192.168.0.1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Return route verification success: destination IP 192.168.0.1 matches neighbor router interface eth1 on router R2
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINEST: Return route verification result: reachable
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Forwarding success: reached destination router R3 interface eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.PingService ping
+FINEST: Probe 3: Router R1 sending ICMP Echo Request from 192.168.0.1 to 192.168.0.130 with ttl=64
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.1 to 192.168.0.130
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: Checking interfaces of router R1 for destination 192.168.0.130
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: No directly connected subnet matches destination. Looking for static routes on router R1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: Checking interfaces of router R2 for destination 192.168.0.130
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINEST: Destination directly connected to router R2 via interface eth1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINEST: Looking for host with IP 192.168.0.130 reachable from router R2 interface eth1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINER: Verifying return route from destination router R3 interface eth0 to source IP 192.168.0.1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Forwarding from router R3 interface eth0 to destination IP 192.168.0.1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Return route verification success: destination IP 192.168.0.1 matches neighbor router interface eth1 on router R2
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINEST: Return route verification result: reachable
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Forwarding success: reached destination router R3 interface eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.PingService ping
+FINEST: Probe 4: Router R1 sending ICMP Echo Request from 192.168.0.1 to 192.168.0.130 with ttl=64
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.1 to 192.168.0.130
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: Checking interfaces of router R1 for destination 192.168.0.130
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: No directly connected subnet matches destination. Looking for static routes on router R1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINER: Checking interfaces of router R2 for destination 192.168.0.130
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINEST: Destination directly connected to router R2 via interface eth1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINEST: Looking for host with IP 192.168.0.130 reachable from router R2 interface eth1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINER: Verifying return route from destination router R3 interface eth0 to source IP 192.168.0.1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Forwarding from router R3 interface eth0 to destination IP 192.168.0.1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between Ethernet0 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINEST: Checking connection between eth1 and eth0
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Return route verification success: destination IP 192.168.0.1 matches neighbor router interface eth1 on router R2
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINEST: Return route verification result: reachable
+kwi 25, 2026 8:27:52 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Forwarding success: reached destination router R3 interface eth0

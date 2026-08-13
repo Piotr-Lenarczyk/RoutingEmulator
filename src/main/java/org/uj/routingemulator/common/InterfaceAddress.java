@@ -1,8 +1,5 @@
 package org.uj.routingemulator.common;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-
 /**
  * Represents an IP address assigned to a network interface along with its subnet mask.
  * This is distinct from {@link Subnet} which represents a network address/range.
@@ -10,21 +7,14 @@ import lombok.Getter;
  * <p>For example, an interface might have InterfaceAddress of 192.168.1.1/24,
  * which means the interface has IP 192.168.1.1 and belongs to the 192.168.1.0/24 network.
  */
-@Getter
-@EqualsAndHashCode
-public class InterfaceAddress {
-	private final IPAddress ipAddress;
-	private final SubnetMask subnetMask;
-
+public record InterfaceAddress(IPAddress ipAddress, SubnetMask subnetMask) {
 	/**
 	 * Creates an interface address configuration.
 	 *
-	 * @param ipAddress the IP address assigned to the interface (e.g., 192.168.1.1)
+	 * @param ipAddress  the IP address assigned to the interface (e.g., 192.168.1.1)
 	 * @param subnetMask the subnet mask (e.g., /24)
 	 */
-	public InterfaceAddress(IPAddress ipAddress, SubnetMask subnetMask) {
-		this.ipAddress = ipAddress;
-		this.subnetMask = subnetMask;
+	public InterfaceAddress {
 	}
 
 	/**
@@ -64,13 +54,13 @@ public class InterfaceAddress {
 	}
 
 	private long getNetworkAsLong() {
-		int prefixLength = subnetMask.getShortMask();
+		int prefixLength = subnetMask.shortMask();
 
 		// Convert IP to long
 		long ipAsLong = ((long) ipAddress.getOctet1() << 24) |
-		                ((long) ipAddress.getOctet2() << 16) |
-		                ((long) ipAddress.getOctet3() << 8) |
-		                (ipAddress.getOctet4());
+				((long) ipAddress.getOctet2() << 16) |
+				((long) ipAddress.getOctet3() << 8) |
+				(ipAddress.getOctet4());
 
 		// Create network mask (prefixLength 1s followed by 0s)
 		long networkMask = (prefixLength == 0) ? 0 : (0xFFFFFFFFL << (32 - prefixLength));
@@ -78,8 +68,9 @@ public class InterfaceAddress {
 		// Apply mask to get network address
 		return ipAsLong & networkMask;
 	}
+
 	public boolean isValidHostAddress() {
-		int prefixLength = subnetMask.getShortMask();
+		int prefixLength = subnetMask.shortMask();
 		if (prefixLength == 32 || prefixLength == 31) {
 			return true;
 		}
@@ -89,8 +80,9 @@ public class InterfaceAddress {
 
 		return hostPortion != 0 && hostPortion != hostMask;
 	}
+
 	public boolean isNetworkAddress() {
-		int prefixLength = subnetMask.getShortMask();
+		int prefixLength = subnetMask.shortMask();
 		if (prefixLength == 32 || prefixLength == 31) {
 			return false;
 		}
@@ -100,8 +92,9 @@ public class InterfaceAddress {
 
 		return hostPortion == 0;
 	}
+
 	public boolean isBroadcastAddress() {
-		int prefixLength = subnetMask.getShortMask();
+		int prefixLength = subnetMask.shortMask();
 		if (prefixLength == 32 || prefixLength == 31) {
 			return false;
 		}
@@ -139,7 +132,7 @@ public class InterfaceAddress {
 
 	@Override
 	public String toString() {
-		return ipAddress.toString() + "/" + subnetMask.getShortMask();
+		return ipAddress.toString() + "/" + subnetMask.shortMask();
 	}
 }
 

@@ -17,7 +17,7 @@ public class Packet {
 	}
 
 	public boolean decrementTTL() {
-		return --ttl > 0;
+		return --ttl <= 0;
 	}
 
 	public enum PacketType {

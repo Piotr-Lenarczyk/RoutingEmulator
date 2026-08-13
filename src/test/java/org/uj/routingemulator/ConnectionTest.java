@@ -39,8 +39,8 @@ class ConnectionTest {
 		Connection connection = new Connection(routerInterface1, routerInterface2);
 
 		assertNotNull(connection);
-		assertEquals(routerInterface1, connection.getInterfaceA());
-		assertEquals(routerInterface2, connection.getInterfaceB());
+		assertEquals(routerInterface1, connection.interfaceA());
+		assertEquals(routerInterface2, connection.interfaceB());
 	}
 
 	@Test
@@ -48,8 +48,8 @@ class ConnectionTest {
 		Connection connection = new Connection(routerInterface1, switchPort1);
 
 		assertNotNull(connection);
-		assertEquals(routerInterface1, connection.getInterfaceA());
-		assertEquals(switchPort1, connection.getInterfaceB());
+		assertEquals(routerInterface1, connection.interfaceA());
+		assertEquals(switchPort1, connection.interfaceB());
 	}
 
 	@Test
@@ -57,8 +57,8 @@ class ConnectionTest {
 		Connection connection = new Connection(switchPort1, hostInterface1);
 
 		assertNotNull(connection);
-		assertEquals(switchPort1, connection.getInterfaceA());
-		assertEquals(hostInterface1, connection.getInterfaceB());
+		assertEquals(switchPort1, connection.interfaceA());
+		assertEquals(hostInterface1, connection.interfaceB());
 	}
 
 	@Test
@@ -95,20 +95,20 @@ class ConnectionTest {
 		Connection connection = new Connection(routerInterface1, routerInterface1);
 
 		assertNotNull(connection);
-		assertEquals(routerInterface1, connection.getInterfaceA());
-		assertEquals(routerInterface1, connection.getInterfaceB());
+		assertEquals(routerInterface1, connection.interfaceA());
+		assertEquals(routerInterface1, connection.interfaceB());
 	}
 
 	@Test
 	void testConnectionImmutability() {
 		Connection connection = new Connection(routerInterface1, routerInterface2);
 
-		var ifaceA = connection.getInterfaceA();
-		var ifaceB = connection.getInterfaceB();
+		var ifaceA = connection.interfaceA();
+		var ifaceB = connection.interfaceB();
 
 		// Verify getters return the same instances
-		assertSame(ifaceA, connection.getInterfaceA());
-		assertSame(ifaceB, connection.getInterfaceB());
+		assertSame(ifaceA, connection.interfaceA());
+		assertSame(ifaceB, connection.interfaceB());
 	}
 
 	@Test

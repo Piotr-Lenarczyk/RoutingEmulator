@@ -17,12 +17,8 @@ import java.util.logging.Logger;
  * LinkState is set automatically when connection is established - it is a result
  * of the connection, not a prerequisite.
  */
-@Getter
-@EqualsAndHashCode
-public class Connection {
+public record Connection(NetworkInterface interfaceA, NetworkInterface interfaceB) {
 	private static final Logger logger = Logger.getLogger(Connection.class.getName());
-	private final NetworkInterface interfaceA;
-	private final NetworkInterface interfaceB;
 
 	/**
 	 * Creates a new connection between two network interfaces.

@@ -51,8 +51,7 @@ public class SetRouteNextHopDistanceCommand implements RouterCommand {
 					String msg = String.format("\n\tError: %s is not a valid IPv4 prefix\n\n\n\tInvalid value\n\tValue validation failed\n\tSet failed\n\n[edit]", nextHop);
 					throw new InvalidNextHopException(msg);
 				}
-				if (e instanceof RuntimeException) throw (RuntimeException) e;
-				throw new RuntimeException(e);
+				throw (RuntimeException) e;
 			}
 
 			router.addRoute(

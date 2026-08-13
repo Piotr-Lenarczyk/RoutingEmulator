@@ -2,7 +2,6 @@ package org.uj.routingemulator.common;
 
 import java.util.DoubleSummaryStatistics;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Formats PingStatistics into VyOS-like textual output.
@@ -24,17 +23,17 @@ public class PingFormatter {
 
         sb.append("PING ").append(dstStr).append(" (").append(dstStr).append("): 56(84) bytes of data.\n");
 
-        List<PingResult> results = stats.getResults();
+        List<PingResult> results = stats.results();
 
         for (PingResult r : results) {
-            if (r.isSuccess()) {
-                sb.append(String.format("64 bytes from %s: icmp_seq=%d ttl=%d time=%dms\n", dstStr, r.getSequence(), ttl, r.getRttMs()));
+            if (r.success()) {
+                sb.append(String.format("64 bytes from %s: icmp_seq=%d ttl=%d time=%dms\n", dstStr, r.sequence(), ttl, r.rttMs()));
             } else {
-                String reason = r.getErrorMessage();
+                String reason = r.errorMessage();
                 if (reason == null || reason.isEmpty()) {
                     reason = "Destination Host Unreachable";
                 }
-                sb.append(String.format("From %s icmp_seq=%d %s\n", srcStr, r.getSequence(), reason));
+                sb.append(String.format("From %s icmp_seq=%d %s\n", srcStr, r.sequence(), reason));
             }
         }
 
@@ -47,7 +46,7 @@ public class PingFormatter {
                 transmitted, received, (errors > 0 ? "+" + errors : "0"), loss, 0));
 
         // rtt stats
-        List<Long> rtts = results.stream().filter(PingResult::isSuccess).map(PingResult::getRttMs).collect(Collectors.toList());
+        List<Long> rtts = results.stream().filter(PingResult::success).map(PingResult::rttMs).toList();
         if (!rtts.isEmpty()) {
             DoubleSummaryStatistics stat = rtts.stream().mapToDouble(Long::doubleValue).summaryStatistics();
             double min = stat.getMin();

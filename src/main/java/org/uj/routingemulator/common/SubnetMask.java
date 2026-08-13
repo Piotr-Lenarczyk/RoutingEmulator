@@ -16,20 +16,15 @@ import lombok.Getter;
  * <p>
  * Valid range is 0-32 for IPv4 addresses.
  */
-@Getter
-@EqualsAndHashCode
-public class SubnetMask {
-	private final int shortMask;
-
+public record SubnetMask(int shortMask) {
 	/**
 	 * Creates a subnet mask with the specified prefix length.
 	 *
 	 * @param shortMask prefix length (0-32)
 	 * @throws RuntimeException if prefix length is outside valid range
 	 */
-	public SubnetMask(int shortMask) {
+	public SubnetMask {
 		validateShortMask(shortMask);
-		this.shortMask = shortMask;
 	}
 
 	/**

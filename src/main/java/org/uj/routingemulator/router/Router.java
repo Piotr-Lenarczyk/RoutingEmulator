@@ -117,7 +117,7 @@ public class Router {
 			IPAddress nh = entry.getNextHop();
 			// Look for an interface in stagedInterfaces that has this exact IP assigned
 			RouterInterface found = stagedInterfaces.stream()
-					.filter(i -> i.getInterfaceAddress() != null && i.getInterfaceAddress().getIpAddress().equals(nh))
+					.filter(i -> i.getInterfaceAddress() != null && i.getInterfaceAddress().ipAddress().equals(nh))
 					.findFirst()
 					.orElse(null);
 
@@ -136,12 +136,12 @@ public class Router {
 			Integer inferredMask = null;
 			for (RouterInterface ri : stagedInterfaces) {
 				logger.finest("Checking interface %s with subnet %s".formatted(ri.getInterfaceName(), ri.getSubnet()));
-				if (ri.getSubnet() != null && ri.getSubnet().getSubnetMask() != null) {
+				if (ri.getSubnet() != null && ri.getSubnet().subnetMask() != null) {
 					Subnet s = ri.getSubnet();
 					long ipAsLong = ((long) nh.getOctet1() << 24) | ((long) nh.getOctet2() << 16) | ((long) nh.getOctet3() << 8) | nh.getOctet4();
-					int prefix = s.getSubnetMask().getShortMask();
+					int prefix = s.subnetMask().shortMask();
 					long networkMask = (prefix == 0) ? 0 : (0xFFFFFFFFL << (32 - prefix));
-					long net = ((long) s.getNetworkAddress().getOctet1() << 24) | ((long) s.getNetworkAddress().getOctet2() << 16) | ((long) s.getNetworkAddress().getOctet3() << 8) | s.getNetworkAddress().getOctet4();
+					long net = ((long) s.networkAddress().getOctet1() << 24) | ((long) s.networkAddress().getOctet2() << 16) | ((long) s.networkAddress().getOctet3() << 8) | s.networkAddress().getOctet4();
 					if ((ipAsLong & networkMask) == (net & networkMask)) {
 						inferredMask = prefix;
 						break;
@@ -275,9 +275,6 @@ public class Router {
 			logger.warning("Attempted to assign duplicate address %s to interface %s".formatted(interfaceAddress, routerInterfaceName));
 			throw new DuplicateConfigurationException("Configuration already exists");
 		}
-
-		// Capture previous staged value for rollback (rollback removed)
-		final InterfaceAddress previous = routerInterface.getInterfaceAddress();
 
 		// Stage the new address
 		routerInterface.setInterfaceAddress(interfaceAddress);
@@ -581,8 +578,8 @@ public class Router {
 
 			String prefix = entry.isConnected ? "C>*" : "S>*";
 			output.append(prefix).append(" ");
-			output.append(entry.subnet.getNetworkAddress()).append("/");
-			output.append(entry.subnet.getSubnetMask().getShortMask());
+			output.append(entry.subnet.networkAddress()).append("/");
+			output.append(entry.subnet.subnetMask().shortMask());
 
 			if (entry.isConnected) {
 				// Connected routes - actually connected to the interface
@@ -648,12 +645,12 @@ public class Router {
 
 		// Sort routes by subnet (network address, then mask length)
 		displayEntries.sort((a, b) -> {
-			int addrCompare = a.subnet.getNetworkAddress().toString()
-					.compareTo(b.subnet.getNetworkAddress().toString());
+			int addrCompare = a.subnet.networkAddress().toString()
+					.compareTo(b.subnet.networkAddress().toString());
 			if (addrCompare != 0) return addrCompare;
 			return Integer.compare(
-					b.subnet.getSubnetMask().getShortMask(),
-					a.subnet.getSubnetMask().getShortMask()
+					b.subnet.subnetMask().shortMask(),
+					a.subnet.subnetMask().shortMask()
 			);
 		});
 		return displayEntries;
@@ -694,13 +691,6 @@ public class Router {
 		PingService svc = new PingService();
 		logger.info("%s: Pinging %s with 4 probes...".formatted(this.name, dst));
 		return svc.ping(this, IPAddress.fromString(dst), 4, 64, topology);
-	}
-
-	public PingStatistics ping(String dst, int count, int ttl, NetworkTopology topology) {
-		logger.info("Initializing new PingService for host %s".formatted(this.name));
-		PingService svc = new PingService();
-		logger.info("%s: Pinging %s with 4 probes...".formatted(this.name, dst));
-		return svc.ping(this, IPAddress.fromString(dst), count, ttl, topology);
 	}
 
 	/**

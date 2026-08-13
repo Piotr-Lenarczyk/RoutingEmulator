@@ -363,7 +363,7 @@ class E2ETest {
 		assertEquals(4, stats2.getReceived(), "Should receive a reply from H1");
 
 		// Should prefer route with lower metric
-		int initialHops = stats2.getResults().getFirst().getHopCount();
+		int initialHops = stats2.results().getFirst().hopCount();
 
 		r2.disableRoute(new StaticRoutingEntry(new Subnet(new IPAddress(10, 0, 0, 0), new SubnetMask(8)), r2.findFromName("eth0")));
 		r2.commitChanges();
@@ -373,8 +373,8 @@ class E2ETest {
 		assertEquals(4, stats3.getReceived(), "Should receive a reply from H1");
 
 		// Should now use secondary route
-		for (PingResult pingResult : stats3.getResults()) {
-			assertEquals(initialHops + 1, pingResult.getHopCount());
+		for (PingResult pingResult : stats3.results()) {
+			assertEquals(initialHops + 1, pingResult.hopCount());
 		}
 	}
 
@@ -430,11 +430,6 @@ class E2ETest {
 	// Parse network prefix and return Subnet-like helper via IPAddress.fromStringPrefixOrDefault (added below) - not available, so implement small helper
 	// We will add a small helper to create IPAddress from CIDR and expose network address and prefix
 	// For brevity inside tests we use IPAddress.fromString and SubnetMask where needed; create helper below
-
-	// Utility to be used above in complex route creation
-	private static Subnet IPAddress_fromStringPrefixOrDefault(String cidr, String defaultCidr) {
-		return subnetFromCidrOrDefault(cidr, defaultCidr);
-	}
 
 	@ParameterizedTest
 	@CsvFileSource(resources = "/network_configuration.csv", numLinesToSkip = 1)
@@ -547,7 +542,7 @@ class E2ETest {
 		rx.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 2, 0), new SubnetMask(24)), IPAddress.fromString(trimAddressMask(rbEth0)))); // To RA
 		rx.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(30)), IPAddress.fromString(trimAddressMask(rbEth0)))); // To ra-rb
 		Subnet nodeXXSubnet = subnetFromCidrOrDefault(nodeXX_rc, "2.2.10.88/29");
-		rx.addRoute(new StaticRoutingEntry(new Subnet(nodeXXSubnet.getNetworkAddress(), new SubnetMask(nodeXXSubnet.getSubnetMask().getShortMask())), IPAddress.fromString(trimAddressMask(rxxEth1)))); // To nodeXX-rc
+		rx.addRoute(new StaticRoutingEntry(new Subnet(nodeXXSubnet.networkAddress(), new SubnetMask(nodeXXSubnet.subnetMask().shortMask())), IPAddress.fromString(trimAddressMask(rxxEth1)))); // To nodeXX-rc
 		rx.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 3, 0), new SubnetMask(30)), IPAddress.fromString(trimAddressMask(rxxEth1)))); // To rc-rd
 		rx.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 4, 0), new SubnetMask(24)), IPAddress.fromString(trimAddressMask(rxxEth1)))); // To RD
 		rx.commitChanges();
@@ -556,23 +551,23 @@ class E2ETest {
 		rxx.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 4, 0), new SubnetMask(24)), IPAddress.fromString(trimAddressMask(rcEth2)))); // To RD
 		rxx.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 3, 0), new SubnetMask(30)), IPAddress.fromString(trimAddressMask(rcEth2)))); // To rc-rd
 		Subnet rbNodeXSubnet = subnetFromCidrOrDefault(rb_nodex, "1.1.10.24/29");
-		rxx.addRoute(new StaticRoutingEntry(new Subnet(rbNodeXSubnet.getNetworkAddress(), new SubnetMask(rbNodeXSubnet.getSubnetMask().getShortMask())), IPAddress.fromString(trimAddressMask(rxEth1)))); // To rb-nodeX
+		rxx.addRoute(new StaticRoutingEntry(new Subnet(rbNodeXSubnet.networkAddress(), new SubnetMask(rbNodeXSubnet.subnetMask().shortMask())), IPAddress.fromString(trimAddressMask(rxEth1)))); // To rb-nodeX
 		rxx.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(30)), IPAddress.fromString(trimAddressMask(rxEth1)))); // To ra-rb
 		rxx.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 2, 0), new SubnetMask(24)), IPAddress.fromString(trimAddressMask(rxEth1)))); // To RA
 		rxx.commitChanges();
 
 		// External routers (RA, RB, RC, RD) need return routes to the internal "core" networks
 		Subnet xXxSubnet3 = subnetFromCidrOrDefault(x_xx, "192.168.10.0/24");
-		rb.addRoute(new StaticRoutingEntry(new Subnet(xXxSubnet3.getNetworkAddress(), new SubnetMask(xXxSubnet3.getSubnetMask().getShortMask())), IPAddress.fromString(trimAddressMask(rxEth0))));
+		rb.addRoute(new StaticRoutingEntry(new Subnet(xXxSubnet3.networkAddress(), new SubnetMask(xXxSubnet3.subnetMask().shortMask())), IPAddress.fromString(trimAddressMask(rxEth0))));
 		Subnet nodeXXSubnet3 = subnetFromCidrOrDefault(nodeXX_rc, "2.2.10.88/29");
-		rb.addRoute(new StaticRoutingEntry(new Subnet(nodeXXSubnet3.getNetworkAddress(), new SubnetMask(nodeXXSubnet3.getSubnetMask().getShortMask())), IPAddress.fromString(trimAddressMask(rxEth0))));
+		rb.addRoute(new StaticRoutingEntry(new Subnet(nodeXXSubnet3.networkAddress(), new SubnetMask(nodeXXSubnet3.subnetMask().shortMask())), IPAddress.fromString(trimAddressMask(rxEth0))));
 		rb.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 4, 0), new SubnetMask(24)), IPAddress.fromString(trimAddressMask(rxEth0))));
 		rb.commitChanges();
 
 		Subnet xXxSubnet4 = subnetFromCidrOrDefault(x_xx, "192.168.10.0/24");
-		rc.addRoute(new StaticRoutingEntry(new Subnet(xXxSubnet4.getNetworkAddress(), new SubnetMask(xXxSubnet4.getSubnetMask().getShortMask())), IPAddress.fromString(trimAddressMask(rxxEth2))));
+		rc.addRoute(new StaticRoutingEntry(new Subnet(xXxSubnet4.networkAddress(), new SubnetMask(xXxSubnet4.subnetMask().shortMask())), IPAddress.fromString(trimAddressMask(rxxEth2))));
 		Subnet rbNodeXSubnet4 = subnetFromCidrOrDefault(rb_nodex, "1.1.10.24/29");
-		rc.addRoute(new StaticRoutingEntry(new Subnet(rbNodeXSubnet4.getNetworkAddress(), new SubnetMask(rbNodeXSubnet4.getSubnetMask().getShortMask())), IPAddress.fromString(trimAddressMask(rxxEth2))));
+		rc.addRoute(new StaticRoutingEntry(new Subnet(rbNodeXSubnet4.networkAddress(), new SubnetMask(rbNodeXSubnet4.subnetMask().shortMask())), IPAddress.fromString(trimAddressMask(rxxEth2))));
 		rc.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 2, 0), new SubnetMask(24)), IPAddress.fromString(trimAddressMask(rxxEth2))));
 		rc.commitChanges();
 

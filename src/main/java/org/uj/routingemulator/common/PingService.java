@@ -65,7 +65,7 @@ public class PingService {
 		if (hi.getSubnet() != null) {
 			// Note: HostInterface stores a Subnet object. Tests currently initialize it with the
 			// interface IP as the networkAddress field (legacy). Use that address as the source.
-			sourceIp = hi.getSubnet().getNetworkAddress();
+			sourceIp = hi.getSubnet().networkAddress();
 		}
 
 		for (int seq = 1; seq <= count; seq++) {
@@ -74,13 +74,13 @@ public class PingService {
 			Packet p = new Packet(srcAddr, dst, Packet.PacketType.ICMP_ECHO_REQUEST, 64);
 			logger.finest("Forwarding packet %s to destination %s".formatted(p, dst));
 			ForwardingOutcome outcome = engine.forward(p, src, topology);
-			if (outcome.isReached()) {
-				long rtt = BASE_MS + outcome.getHopCount() * PER_HOP_MS;
-				logger.finest("Probe %d succeeded: Reached destination in %d ms with %d hops".formatted(seq, rtt, outcome.getHopCount()));
-				results.add(new PingResult(seq, true, outcome.getHopCount(), rtt, null));
+			if (outcome.reached()) {
+				long rtt = BASE_MS + outcome.hopCount() * PER_HOP_MS;
+				logger.finest("Probe %d succeeded: Reached destination in %d ms with %d hops".formatted(seq, rtt, outcome.hopCount()));
+				results.add(new PingResult(seq, true, outcome.hopCount(), rtt, null));
 			} else {
-				logger.finest("Probe %d failed: %s after %d hops".formatted(seq, outcome.getReason(), outcome.getHopCount()));
-				results.add(new PingResult(seq, false, outcome.getHopCount(), 0, outcome.getReason()));
+				logger.finest("Probe %d failed: %s after %d hops".formatted(seq, outcome.reason(), outcome.hopCount()));
+				results.add(new PingResult(seq, false, outcome.hopCount(), 0, outcome.reason()));
 			}
 		}
 
@@ -137,10 +137,10 @@ public class PingService {
 
 		IPAddress sourceIp = null;
 		if (ri != null && ri.getSubnet() != null) {
-			if (ri.getInterfaceAddress() != null && ri.getInterfaceAddress().getIpAddress() != null) {
-				sourceIp = ri.getInterfaceAddress().getIpAddress();
+			if (ri.getInterfaceAddress() != null && ri.getInterfaceAddress().ipAddress() != null) {
+				sourceIp = ri.getInterfaceAddress().ipAddress();
 			} else {
-				sourceIp = ri.getSubnet().getNetworkAddress();
+				sourceIp = ri.getSubnet().networkAddress();
 			}
 		}
 
@@ -149,11 +149,11 @@ public class PingService {
 			logger.finest("Probe %d: Router %s sending ICMP Echo Request from %s to %s with ttl=%d".formatted(seq, srcRouter.getName(), srcAddr, dst, ttl));
 			Packet p = new Packet(srcAddr, dst, Packet.PacketType.ICMP_ECHO_REQUEST, ttl);
 			ForwardingOutcome outcome = engine.forward(p, srcRouter, topology);
-			if (outcome.isReached()) {
-				long rtt = BASE_MS + outcome.getHopCount() * PER_HOP_MS;
-				results.add(new PingResult(seq, true, outcome.getHopCount(), rtt, null));
+			if (outcome.reached()) {
+				long rtt = BASE_MS + outcome.hopCount() * PER_HOP_MS;
+				results.add(new PingResult(seq, true, outcome.hopCount(), rtt, null));
 			} else {
-				results.add(new PingResult(seq, false, outcome.getHopCount(), 0, outcome.getReason()));
+				results.add(new PingResult(seq, false, outcome.hopCount(), 0, outcome.reason()));
 			}
 		}
 

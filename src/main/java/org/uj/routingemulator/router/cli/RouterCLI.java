@@ -15,7 +15,7 @@ public class RouterCLI {
 	private final Router router;
 
 	/**
-	 * Constructs a new CLI seession for the specified router.
+	 * Constructs a new CLI session for the specified router.
 	 *
 	 * @param router the router to interact with
 	 */

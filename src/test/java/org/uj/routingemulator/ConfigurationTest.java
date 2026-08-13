@@ -155,8 +155,8 @@ class ConfigurationTest {
 
 		// Verify the configuration was restored to original
 		assertEquals(savedConfig, restoredConfig, "Configuration should be restored to original");
-		assertEquals("192.168.1.254", router.findFromName("eth0").getInterfaceAddress().getIpAddress().toString());
-		assertEquals("192.168.2.1", router.findFromName("eth1").getInterfaceAddress().getIpAddress().toString());
+		assertEquals("192.168.1.254", router.findFromName("eth0").getInterfaceAddress().ipAddress().toString());
+		assertEquals("192.168.2.1", router.findFromName("eth1").getInterfaceAddress().ipAddress().toString());
 		assertEquals(1, router.getRoutingTable().getRoutingEntries().size());
 	}
 
@@ -178,7 +178,7 @@ class ConfigurationTest {
 		assertThrows(ConfigurationParseException.class, () -> parser.loadConfiguration(router, invalidConfig));
 
 		// Verify original configuration is preserved
-		assertEquals("192.168.1.1", router.findFromName("eth0").getInterfaceAddress().getIpAddress().toString());
+		assertEquals("192.168.1.1", router.findFromName("eth0").getInterfaceAddress().ipAddress().toString());
 	}
 
 	@Test
@@ -220,8 +220,8 @@ class ConfigurationTest {
 		assertDoesNotThrow(() -> parser.loadConfiguration(router, config));
 
 		// Verify configuration was applied
-		assertEquals("192.168.1.1", router.findFromName("eth0").getInterfaceAddress().getIpAddress().toString());
-		assertEquals("192.168.2.1", router.findFromName("eth1").getInterfaceAddress().getIpAddress().toString());
+		assertEquals("192.168.1.1", router.findFromName("eth0").getInterfaceAddress().ipAddress().toString());
+		assertEquals("192.168.2.1", router.findFromName("eth1").getInterfaceAddress().ipAddress().toString());
 		assertEquals(1, router.getRoutingTable().getRoutingEntries().size());
 	}
 
@@ -302,8 +302,8 @@ class ConfigurationTest {
 		assertDoesNotThrow(() -> parser.loadConfiguration(router, config));
 
 		// Verify configuration was applied
-		assertEquals("192.168.1.1", router.findFromName("eth0").getInterfaceAddress().getIpAddress().toString());
-		assertEquals("192.168.2.1", router.findFromName("eth1").getInterfaceAddress().getIpAddress().toString());
+		assertEquals("192.168.1.1", router.findFromName("eth0").getInterfaceAddress().ipAddress().toString());
+		assertEquals("192.168.2.1", router.findFromName("eth1").getInterfaceAddress().ipAddress().toString());
 		assertEquals(1, router.getRoutingTable().getRoutingEntries().size());
 		assertEquals(5, router.getRoutingTable().getRoutingEntries().getFirst().getAdministrativeDistance());
 	}
@@ -320,8 +320,8 @@ class ConfigurationTest {
 		ConfigurationParser parser = new HierarchicalConfigurationParser();
 		assertDoesNotThrow(() -> parser.loadConfiguration(newRouter, config));
 
-		assertEquals("192.168.1.1", newRouter.findFromName("eth0").getInterfaceAddress().getIpAddress().toString());
-		assertEquals("192.168.2.1", newRouter.findFromName("eth1").getInterfaceAddress().getIpAddress().toString());
+		assertEquals("192.168.1.1", newRouter.findFromName("eth0").getInterfaceAddress().ipAddress().toString());
+		assertEquals("192.168.2.1", newRouter.findFromName("eth1").getInterfaceAddress().ipAddress().toString());
 	}
 }
 

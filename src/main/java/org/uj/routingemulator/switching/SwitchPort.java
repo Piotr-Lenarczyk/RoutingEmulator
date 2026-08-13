@@ -31,18 +31,6 @@ public class SwitchPort implements NetworkInterface {
 	}
 
 	/**
-	 * Creates a switch port with name and subnet configuration.
-	 *
-	 * @param interfaceName the name of the port (e.g., "GigabitEthernet0/1")
-	 * @param subnet the subnet configuration (typically null for L2 ports)
-	 */
-	public SwitchPort(String interfaceName, Subnet subnet) {
-		this.interfaceName = interfaceName;
-		this.subnet = subnet;
-		this.macAddress = new MacAddress();
-	}
-
-	/**
 	 * Creates a switch port with only a name.
 	 *
 	 * @param interfaceName the name of the port

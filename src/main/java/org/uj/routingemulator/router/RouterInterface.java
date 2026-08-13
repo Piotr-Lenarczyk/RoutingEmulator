@@ -131,7 +131,7 @@ public class RouterInterface implements NetworkInterface {
 		// For backward compatibility - interpret as setting the interface address
 		// to the network address (though this is semantically incorrect)
 		if (subnet != null) {
-			this.interfaceAddress = new InterfaceAddress(subnet.getNetworkAddress(), subnet.getSubnetMask());
+			this.interfaceAddress = new InterfaceAddress(subnet.networkAddress(), subnet.subnetMask());
 		} else {
 			this.interfaceAddress = null;
 		}

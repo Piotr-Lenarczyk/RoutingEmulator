@@ -69,7 +69,7 @@ public class ForwardingEngine {
         // Now perform hop-by-hop forwarding using router routing tables
         logger.finer("Default gateway reached. Starting hop-by-hop forwarding from router %s".formatted(currentRouter.getName()));
         while (true) {
-            if (!packet.decrementTTL()) {
+            if (packet.decrementTTL()) {
                 logger.fine("Forwarding failure: TTL expired while forwarding from router %s".formatted(currentRouter.getName()));
                 return new ForwardingOutcome(false, hops, "TTL expired");
             }
@@ -91,12 +91,12 @@ public class ForwardingEngine {
                 }
 
                 // If the destination equals the router's own interface address -> reached
-                if (dstIf.getInterfaceAddress() != null && dstIf.getInterfaceAddress().getIpAddress().equals(packet.getDestination())) {
+                if (dstIf.getInterfaceAddress() != null && dstIf.getInterfaceAddress().ipAddress().equals(packet.getDestination())) {
                     hops++;
                     // For router-originated pings, also verify return route from destination router back to source
                     Router dstRouter = findRouterOwningInterface(topology, dstIf);
                     if (dstRouter != null) {
-                        if (!verifyReturnRouteFromRouter(dstRouter, dstIf, packet.getSource(), topology)) {
+                        if (verifyReturnRouteFromRouter(dstRouter, dstIf, packet.getSource(), topology)) {
                             logger.fine("Forwarding failure: no return route from destination router %s to source IP".formatted(dstRouter.getName()));
                             return new ForwardingOutcome(false, hops, "No return route");
                         }
@@ -129,7 +129,7 @@ public class ForwardingEngine {
                         Router dstRouter = findRouterOwningInterface(topology, neighborRouterIf);
                         if (dstRouter != null) {
                             // Verify return route from destination router back to source (strict)
-                            if (!verifyReturnRouteFromRouter(dstRouter, neighborRouterIf, packet.getSource(), topology)) {
+                            if (verifyReturnRouteFromRouter(dstRouter, neighborRouterIf, packet.getSource(), topology)) {
                                 logger.fine("Forwarding failure: no return route from destination router %s to source IP".formatted(dstRouter.getName()));
                                 return new ForwardingOutcome(false, hops, "No return route");
                             }
@@ -233,7 +233,7 @@ public class ForwardingEngine {
         int hops = 0;
 
         while (true) {
-            if (!packet.decrementTTL()) {
+            if (packet.decrementTTL()) {
                 logger.fine("Forwarding failure: TTL expired while forwarding from router %s".formatted(currentRouter.getName()));
                 return new ForwardingOutcome(false, hops, "TTL expired");
             }
@@ -255,7 +255,7 @@ public class ForwardingEngine {
                 }
 
                 // If the destination equals the router's own interface address -> reached
-                if (dstIf.getInterfaceAddress() != null && dstIf.getInterfaceAddress().getIpAddress().equals(packet.getDestination())) {
+                if (dstIf.getInterfaceAddress() != null && dstIf.getInterfaceAddress().ipAddress().equals(packet.getDestination())) {
                     hops++;
                     logger.fine("Forwarding success: reached destination router %s interface %s".formatted(currentRouter.getName(), dstIf.getInterfaceName()));
                     return new ForwardingOutcome(true, hops, "Reached (router interface)");
@@ -280,7 +280,7 @@ public class ForwardingEngine {
                         Router dstRouter = findRouterOwningInterface(topology, neighborRouterIf);
                         if (dstRouter != null) {
                             // Verify return route from destination router back to source (strict)
-                            if (!verifyReturnRouteFromRouter(dstRouter, neighborRouterIf, packet.getSource(), topology)) {
+                            if (verifyReturnRouteFromRouter(dstRouter, neighborRouterIf, packet.getSource(), topology)) {
                                 logger.fine("Forwarding failure: no return route from destination router %s to source IP".formatted(dstRouter.getName()));
                                 return new ForwardingOutcome(false, hops, "No return route");
                             }
@@ -375,8 +375,8 @@ public class ForwardingEngine {
     private boolean verifyReturnRouteFromRouter(Router dstRouter, RouterInterface dstIf, IPAddress srcIp, NetworkTopology topology) {
         logger.finer("Verifying return route from destination router %s interface %s to source IP %s".formatted(dstRouter.getName(), dstIf.getInterfaceName(), srcIp));
         ForwardingOutcome outcome = forwardFromRouter(dstRouter, dstIf, srcIp, topology);
-        logger.finest("Return route verification result: %s".formatted(outcome.isReached() ? "reachable" : "unreachable"));
-        return outcome.isReached();
+        logger.finest("Return route verification result: %s".formatted(outcome.reached() ? "reachable" : "unreachable"));
+        return !outcome.reached();
     }
 
     // Helper: verify that destination host can reach source IP (via its default gateway) (strict)
@@ -398,8 +398,8 @@ public class ForwardingEngine {
             return false;
         }
         ForwardingOutcome outcome = forwardFromRouter(gatewayRouter, gatewayIf, srcIp, topology);
-        logger.finest("Return route verification result: %s".formatted(outcome.isReached() ? "reachable" : "unreachable"));
-        return outcome.isReached();
+        logger.finest("Return route verification result: %s".formatted(outcome.reached() ? "reachable" : "unreachable"));
+        return outcome.reached();
     }
 
     // Simulate forwarding originating at a router/interface towards a destination IP
@@ -418,7 +418,7 @@ public class ForwardingEngine {
             if (intfToDst.isPresent()) {
                 RouterInterface dstIf = intfToDst.get();
                 // If destination equals router's own interface
-                if (dstIf.getInterfaceAddress() != null && dstIf.getInterfaceAddress().getIpAddress().equals(dstIp)) {
+                if (dstIf.getInterfaceAddress() != null && dstIf.getInterfaceAddress().ipAddress().equals(dstIp)) {
                     logger.finer("Return route verification success: destination IP %s matches router %s interface %s".formatted(dstIp, currentRouter.getName(), dstIf.getInterfaceName()));
                     return new ForwardingOutcome(true, hops, "Return reached (router interface)");
                 }
@@ -525,17 +525,17 @@ public class ForwardingEngine {
     private boolean belongsToSubnet(IPAddress ip, Subnet subnet) {
         // Convert IP to long
         long ipAsLong = ((long) ip.getOctet1() << 24) | ((long) ip.getOctet2() << 16) | ((long) ip.getOctet3() << 8) | ip.getOctet4();
-        SubnetMask mask = subnet.getSubnetMask();
-        int prefix = mask.getShortMask();
+        SubnetMask mask = subnet.subnetMask();
+        int prefix = mask.shortMask();
         long networkMask = (prefix == 0) ? 0 : (0xFFFFFFFFL << (32 - prefix));
-        long net = ((long) subnet.getNetworkAddress().getOctet1() << 24) | ((long) subnet.getNetworkAddress().getOctet2() << 16) | ((long) subnet.getNetworkAddress().getOctet3() << 8) | subnet.getNetworkAddress().getOctet4();
+        long net = ((long) subnet.networkAddress().getOctet1() << 24) | ((long) subnet.networkAddress().getOctet2() << 16) | ((long) subnet.networkAddress().getOctet3() << 8) | subnet.networkAddress().getOctet4();
         return (ipAsLong & networkMask) == (net & networkMask);
     }
 
     private RouterInterface findInterfaceByIp(NetworkTopology topology, IPAddress ip) {
         for (Router r : topology.getRouters()) {
             for (RouterInterface ri : r.getInterfaces()) {
-                if (ri.getInterfaceAddress() != null && ri.getInterfaceAddress().getIpAddress().equals(ip)) {
+                if (ri.getInterfaceAddress() != null && ri.getInterfaceAddress().ipAddress().equals(ip)) {
                     return ri;
                 }
             }

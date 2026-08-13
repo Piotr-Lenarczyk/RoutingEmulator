@@ -212,7 +212,7 @@ public class RouterCLIParser {
 		}
 
 		// Return the command only if there's exactly one match
-		return matches.size() == 1 ? matches.get(0) : null;
+		return matches.size() == 1 ? matches.getFirst() : null;
 	}
 
 	/**

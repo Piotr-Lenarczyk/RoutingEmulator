@@ -1,8 +1,5 @@
 package org.uj.routingemulator.common;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-
 /**
  * Represents a network subnet (network address + subnet mask).
  * The network address should always have all host bits set to 0.
@@ -11,21 +8,14 @@ import lombok.Getter;
  * <p>This is distinct from {@link InterfaceAddress} which represents
  * an IP address assigned to an interface.
  */
-@Getter
-@EqualsAndHashCode
-public class Subnet {
-	private final IPAddress networkAddress;
-	private final SubnetMask subnetMask;
-
+public record Subnet(IPAddress networkAddress, SubnetMask subnetMask) {
 	/**
 	 * Creates a subnet with the given network address and mask.
 	 *
 	 * @param networkAddress the network address (should have host bits = 0)
-	 * @param subnetMask the subnet mask
+	 * @param subnetMask     the subnet mask
 	 */
-	public Subnet(IPAddress networkAddress, SubnetMask subnetMask) {
-		this.networkAddress = networkAddress;
-		this.subnetMask = subnetMask;
+	public Subnet {
 	}
 
 	/**
@@ -52,7 +42,7 @@ public class Subnet {
 	 * @return true if this is a valid network address, false otherwise
 	 */
 	public boolean isValidNetworkAddress() {
-		int prefixLength = subnetMask.getShortMask();
+		int prefixLength = subnetMask.shortMask();
 		if (prefixLength == 32) {
 			// /32 is a host route, but technically valid
 			return true;
@@ -66,9 +56,9 @@ public class Subnet {
 
 		// Convert IP address to a 32-bit integer
 		long ipAsLong = ((long) networkAddress.getOctet1() << 24) |
-		                ((long) networkAddress.getOctet2() << 16) |
-		                ((long) networkAddress.getOctet3() << 8) |
-		                (networkAddress.getOctet4());
+				((long) networkAddress.getOctet2() << 16) |
+				((long) networkAddress.getOctet3() << 8) |
+				(networkAddress.getOctet4());
 
 		// Check if all host bits are 0
 		return (ipAsLong & hostMask) == 0;
@@ -83,7 +73,7 @@ public class Subnet {
 	public boolean contains(IPAddress ip) {
 		if (ip == null) return false;
 		long ipAsLong = ((long) ip.getOctet1() << 24) | ((long) ip.getOctet2() << 16) | ((long) ip.getOctet3() << 8) | (ip.getOctet4());
-		int prefix = subnetMask.getShortMask();
+		int prefix = subnetMask.shortMask();
 		long networkMask = (prefix == 0) ? 0 : (0xFFFFFFFFL << (32 - prefix));
 		long net = ((long) networkAddress.getOctet1() << 24) | ((long) networkAddress.getOctet2() << 16) | ((long) networkAddress.getOctet3() << 8) | networkAddress.getOctet4();
 		return (ipAsLong & networkMask) == (net & networkMask);
@@ -91,6 +81,6 @@ public class Subnet {
 
 	@Override
 	public String toString() {
-		return networkAddress.toString() + "/" + subnetMask.getShortMask();
+		return networkAddress.toString() + "/" + subnetMask.shortMask();
 	}
 }

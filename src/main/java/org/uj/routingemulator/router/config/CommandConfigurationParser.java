@@ -83,14 +83,14 @@ public class CommandConfigurationParser implements ConfigurationParser {
 	private void parseCommand(Router router) {
 		Token token = getCurrentToken();
 
-		if (!token.getValue().equals("set")) {
+		if (!token.value().equals("set")) {
 			throw new ConfigurationParseException("Expected 'set' command at position ", token);
 		}
 
 		advance();
 		token = getCurrentToken();
 
-		switch (token.getValue()) {
+		switch (token.value()) {
 			case "interfaces":
 				parseInterfaces(router);
 				break;
@@ -113,12 +113,12 @@ public class CommandConfigurationParser implements ConfigurationParser {
 		advance();
 		Token token = getCurrentToken();
 
-		if (!token.getValue().equals("ethernet")) {
+		if (!token.value().equals("ethernet")) {
 			throw new ConfigurationParseException("Expected 'ethernet'", token);
 		}
 
 		advance();
-		String interfaceName = getCurrentToken().getValue();
+		String interfaceName = getCurrentToken().value();
 		Token interfaceToken = getCurrentToken();
 		advance();
 
@@ -132,10 +132,10 @@ public class CommandConfigurationParser implements ConfigurationParser {
 		}
 
 		token = getCurrentToken();
-		switch (token.getValue()) {
+		switch (token.value()) {
 			case "address":
 				advance();
-				String[] addressValue = getCurrentToken().getValue().split("/");
+				String[] addressValue = getCurrentToken().value().split("/");
 				advance();
 				try {
 					IPAddress ipAddress = IPAddress.fromString(addressValue[0]);
@@ -179,32 +179,32 @@ public class CommandConfigurationParser implements ConfigurationParser {
 		advance();
 		Token token = getCurrentToken();
 
-		if (!token.getValue().equals("static")) {
+		if (!token.value().equals("static")) {
 			throw new ConfigurationParseException("Expected 'static'", token);
 		}
 
 		advance();
 		token = getCurrentToken();
 
-		if (!token.getValue().equals("route")) {
+		if (!token.value().equals("route")) {
 			throw new ConfigurationParseException("Expected 'route'", token);
 		}
 
 		advance(); // skip 'route'
-		String destination = getCurrentToken().getValue();
+		String destination = getCurrentToken().value();
 		advance(); // skip subnet
 
 		try {
 			Subnet subnet = Subnet.fromString(destination);
 			token = getCurrentToken();
 
-			if (token.getValue().equals("next-hop")) {
+			if (token.value().equals("next-hop")) {
 				advance();
-				IPAddress nextHop = IPAddress.fromString(getCurrentToken().getValue());
+				IPAddress nextHop = IPAddress.fromString(getCurrentToken().value());
 				advance();
 
 				// Check for additional options or end of command
-				if (position >= tokens.size() || getCurrentToken().getValue().equals("set")) {
+				if (position >= tokens.size() || getCurrentToken().value().equals("set")) {
 					// End of command - add route
 					try {
 						router.addRoute(new StaticRoutingEntry(subnet, nextHop));
@@ -216,7 +216,7 @@ public class CommandConfigurationParser implements ConfigurationParser {
 					}
 				} else {
 					token = getCurrentToken();
-					if (token.getValue().equals(DISABLE)) {
+					if (token.value().equals(DISABLE)) {
 						advance();
 						try {
 							router.disableRoute(new StaticRoutingEntry(subnet, nextHop));
@@ -226,9 +226,9 @@ public class CommandConfigurationParser implements ConfigurationParser {
 							}
 							throw e;
 						}
-					} else if (token.getValue().equals("distance")) {
+					} else if (token.value().equals("distance")) {
 						advance();
-						int administrativeDistance = Integer.parseInt(getCurrentToken().getValue());
+						int administrativeDistance = Integer.parseInt(getCurrentToken().value());
 						advance();
 						try {
 							router.addRoute(new StaticRoutingEntry(subnet, nextHop, administrativeDistance));
@@ -242,9 +242,9 @@ public class CommandConfigurationParser implements ConfigurationParser {
 						throw new ConfigurationParseException("Unrecognized route option", token);
 					}
 				}
-			} else if (token.getValue().equals("interface")) {
+			} else if (token.value().equals("interface")) {
 				advance();
-				String interfaceName = getCurrentToken().getValue();
+				String interfaceName = getCurrentToken().value();
 				Token interfaceToken = getCurrentToken();
 				advance();
 
@@ -257,7 +257,7 @@ public class CommandConfigurationParser implements ConfigurationParser {
 				}
 
 				// Check for additional options or end of command
-				if (position >= tokens.size() || getCurrentToken().getValue().equals("set")) {
+				if (position >= tokens.size() || getCurrentToken().value().equals("set")) {
 					// End of command - add route
 					try {
 						router.addRoute(new StaticRoutingEntry(subnet, routerInterface));
@@ -269,7 +269,7 @@ public class CommandConfigurationParser implements ConfigurationParser {
 					}
 				} else {
 					token = getCurrentToken();
-					if (token.getValue().equals(DISABLE)) {
+					if (token.value().equals(DISABLE)) {
 						advance();
 						try {
 							router.disableRoute(new StaticRoutingEntry(subnet, routerInterface));
@@ -279,9 +279,9 @@ public class CommandConfigurationParser implements ConfigurationParser {
 							}
 							throw e;
 						}
-					} else if (token.getValue().equals("distance")) {
+					} else if (token.value().equals("distance")) {
 						advance();
-						int administrativeDistance = Integer.parseInt(getCurrentToken().getValue());
+						int administrativeDistance = Integer.parseInt(getCurrentToken().value());
 						advance();
 						try {
 							router.addRoute(new StaticRoutingEntry(subnet, routerInterface, administrativeDistance));
@@ -316,7 +316,7 @@ public class CommandConfigurationParser implements ConfigurationParser {
 		if (position >= tokens.size()) {
 			throw new ConfigurationParseException(
 					"Unexpected end of configuration at line " +
-							(tokens.isEmpty() ? 1 : tokens.getLast().getLine())
+							(tokens.isEmpty() ? 1 : tokens.getLast().line())
 			);
 		}
 		return tokens.get(position);

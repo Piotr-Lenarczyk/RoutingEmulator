@@ -8,21 +8,14 @@ import java.util.List;
 /**
  * Aggregated ping statistics for a ping operation.
  */
-@Getter
-@ToString
-public class PingStatistics {
-    private final List<PingResult> results;
-
-    public PingStatistics(List<PingResult> results) {
-        this.results = results;
-    }
+public record PingStatistics(List<PingResult> results) {
 
     public int getSent() {
         return results.size();
     }
 
     public int getReceived() {
-        return (int) results.stream().filter(PingResult::isSuccess).count();
+        return (int) results.stream().filter(PingResult::success).count();
     }
 
     public double getLossPercent() {
@@ -30,8 +23,5 @@ public class PingStatistics {
         return 100.0 * (getSent() - getReceived()) / getSent();
     }
 
-    public List<PingResult> getResults() {
-        return results;
-    }
 }
 

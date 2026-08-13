@@ -17,14 +17,5 @@ public class RouterException extends RuntimeException {
 		super(message);
 	}
 
-	/**
-	 * Creates a new router exception with the specified message and cause.
-	 *
-	 * @param message the error message
-	 * @param cause   the cause of the exception
-	 */
-	public RouterException(String message, Throwable cause) {
-		super(message, cause);
-	}
 }
 

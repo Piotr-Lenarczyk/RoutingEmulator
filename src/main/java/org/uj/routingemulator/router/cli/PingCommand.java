@@ -121,7 +121,7 @@ public class PingCommand implements RouterCommand {
         IPAddress srcIp = null;
         for (var ri : router.getInterfaces()) {
             if (ri.getSubnet() != null) {
-                srcIp = ri.getSubnet().getNetworkAddress();
+                srcIp = ri.getSubnet().networkAddress();
                 break;
             }
         }

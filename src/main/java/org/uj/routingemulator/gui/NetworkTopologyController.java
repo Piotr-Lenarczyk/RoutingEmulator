@@ -359,13 +359,13 @@ public class NetworkTopologyController {
 	private boolean isDeviceInConnection(Object device, Connection connection) {
 		if (device instanceof Router router) {
 			return router.getInterfaces().stream().anyMatch(iface ->
-				iface.equals(connection.getInterfaceA()) || iface.equals(connection.getInterfaceB()));
+				iface.equals(connection.interfaceA()) || iface.equals(connection.interfaceB()));
 		} else if (device instanceof Switch sw) {
 			return sw.getPorts().stream().anyMatch(port ->
-				port.equals(connection.getInterfaceA()) || port.equals(connection.getInterfaceB()));
+				port.equals(connection.interfaceA()) || port.equals(connection.interfaceB()));
 		} else if (device instanceof Host host) {
-			return host.getHostInterface().equals(connection.getInterfaceA()) ||
-				host.getHostInterface().equals(connection.getInterfaceB());
+			return host.getHostInterface().equals(connection.interfaceA()) ||
+				host.getHostInterface().equals(connection.interfaceB());
 		}
 		return false;
 	}
@@ -412,7 +412,7 @@ public class NetworkTopologyController {
 			@Override
 			public String toString(Connection conn) {
 				if (conn == null) return "null";
-				return formatInterfaceDisplay(conn.getInterfaceA()) + " <--> " + formatInterfaceDisplay(conn.getInterfaceB());
+				return formatInterfaceDisplay(conn.interfaceA()) + " <--> " + formatInterfaceDisplay(conn.interfaceB());
 			}
 
 			@Override
@@ -642,7 +642,7 @@ public class NetworkTopologyController {
 		List<NetworkInterface> availableInterfaces = new ArrayList<>();
 		for (NetworkInterface iface : allInterfaces) {
 			boolean isConnected = topology.getConnections().stream().anyMatch(conn ->
-				conn.getInterfaceA().equals(iface) || conn.getInterfaceB().equals(iface));
+				conn.interfaceA().equals(iface) || conn.interfaceB().equals(iface));
 			if (!isConnected) {
 				availableInterfaces.add(iface);
 			}
@@ -661,8 +661,8 @@ public class NetworkTopologyController {
 			Connection conn = entry.getKey();
 			Line line = entry.getValue();
 
-			Object deviceA = findDevice(conn.getInterfaceA());
-			Object deviceB = findDevice(conn.getInterfaceB());
+			Object deviceA = findDevice(conn.interfaceA());
+			Object deviceB = findDevice(conn.interfaceB());
 
 			if (device.equals(deviceA) || device.equals(deviceB)) {
 				DeviceNode nodeA = deviceNodes.get(deviceA);
@@ -753,8 +753,8 @@ public class NetworkTopologyController {
 		display.append(iface.getInterfaceName());
 
 		if (iface.getSubnet() != null) {
-			display.append(" (").append(iface.getSubnet().getNetworkAddress());
-			display.append("/").append(iface.getSubnet().getSubnetMask().getShortMask()).append(")");
+			display.append(" (").append(iface.getSubnet().networkAddress());
+			display.append("/").append(iface.getSubnet().subnetMask().shortMask()).append(")");
 		} else {
 			display.append(" (unconfigured)");
 		}
@@ -969,7 +969,7 @@ public class NetworkTopologyController {
 			boolean allInterfacesUp = true;
 
 			for (RouterInterface iface : router.getInterfaces()) {
-				if (iface.equals(conn.getInterfaceA()) || iface.equals(conn.getInterfaceB())) {
+				if (iface.equals(conn.interfaceA()) || iface.equals(conn.interfaceB())) {
 					hasRouterInterface = true;
 					if (iface.isDisabled()) {
 						allInterfacesUp = false;

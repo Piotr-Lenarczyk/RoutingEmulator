@@ -49,24 +49,6 @@ public class Switch {
 	}
 
 	/**
-	 * Adds a port to this switch.
-	 *
-	 * @param port the port to add
-	 */
-	public void addPort(SwitchPort port) {
-		this.ports.add(port);
-	}
-
-	/**
-	 * Removes a port from this switch.
-	 *
-	 * @param port the port to remove
-	 */
-	public void removePort(SwitchPort port) {
-		this.ports.remove(port);
-	}
-
-	/**
 	 * Checks if this switch contains the specified port.
 	 *
 	 * @param port the port to check

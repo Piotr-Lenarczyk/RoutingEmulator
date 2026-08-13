@@ -61,8 +61,8 @@ public class HostConfigDialog extends Dialog<Void> {
         // Initialize fields from current host interface
         HostInterface hi = host.getHostInterface();
         if (hi != null && hi.getSubnet() != null) {
-            ipField.setText(hi.getSubnet().getNetworkAddress().toString());
-            prefixField.setText(String.valueOf(hi.getSubnet().getSubnetMask().getShortMask()));
+            ipField.setText(hi.getSubnet().networkAddress().toString());
+            prefixField.setText(String.valueOf(hi.getSubnet().subnetMask().shortMask()));
             if (hi.getDefaultGateway() != null) {
                 gatewayField.setText(hi.getDefaultGateway().toString());
             }
