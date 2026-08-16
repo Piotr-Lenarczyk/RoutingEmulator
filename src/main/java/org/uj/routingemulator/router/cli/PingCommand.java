@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
  * CLI command for ping: ping [-c count] [-t ttl] <IP>
  */
 public class PingCommand implements RouterCommand {
+    private static final String PING_ERROR = "ping: %s: System error";
     private static final Pattern MASK_PATTERN = Pattern.compile(".*/\\d{1,2}$");
     private String rawInput;
 
@@ -33,6 +34,38 @@ public class PingCommand implements RouterCommand {
         return true;
     }
 
+    private static PingParameters parsePingParameters(String[] parts, int count, PrintWriter out, int ttl, String ipArg) {
+        int i = 1;
+        while (i < parts.length) {
+            String p = parts[i];
+            if ("-c".equals(p) && i + 1 < parts.length) {
+                try {
+                    count = Integer.parseInt(parts[++i]);
+                } catch (NumberFormatException e) {
+                    out.println("Invalid count value");
+                    out.flush();
+                    return null;
+                }
+            } else if ("-t".equals(p) && i + 1 < parts.length) {
+                try {
+                    ttl = Integer.parseInt(parts[++i]);
+                } catch (NumberFormatException e) {
+                    out.println("Invalid ttl value");
+                    out.flush();
+                    return null;
+                }
+            } else if (p.startsWith("-")) {
+                out.println("Invalid option: " + p);
+                out.flush();
+                return null;
+            } else {
+                ipArg = p;
+            }
+            i++;
+        }
+        return new PingParameters(count, ttl, ipArg);
+    }
+
     @Override
     public void execute(Router router) {
         PrintWriter out = CLIContext.getWriter();
@@ -50,59 +83,34 @@ public class PingCommand implements RouterCommand {
         int count = 4;
         int ttl = 64;
         String ipArg = null;
+        PingParameters pingParameters = parsePingParameters(parts, count, out, ttl, ipArg);
+        if (pingParameters == null) return;
 
-        for (int i = 1; i < parts.length; i++) {
-            String p = parts[i];
-            if ("-c".equals(p) && i + 1 < parts.length) {
-                try {
-                    count = Integer.parseInt(parts[++i]);
-                } catch (NumberFormatException e) {
-                    out.println("Invalid count value");
-                    out.flush();
-                    return;
-                }
-            } else if ("-t".equals(p) && i + 1 < parts.length) {
-                try {
-                    ttl = Integer.parseInt(parts[++i]);
-                } catch (NumberFormatException e) {
-                    out.println("Invalid ttl value");
-                    out.flush();
-                    return;
-                }
-            } else if (p.startsWith("-")) {
-                out.println("Invalid option: " + p);
-                out.flush();
-                return;
-            } else {
-                ipArg = p;
-            }
-        }
-
-        if (ipArg == null) {
+        if (pingParameters.ipArg() == null) {
             out.println("Invalid command: ping requires target IP");
             out.flush();
             return;
         }
 
         // Validation: reject masked addresses and invalid IPs with specific message
-        if (MASK_PATTERN.matcher(ipArg).matches()) {
-            out.println(String.format("ping: %s: System error", ipArg));
+        if (MASK_PATTERN.matcher(pingParameters.ipArg()).matches()) {
+            out.println(String.format(PING_ERROR, pingParameters.ipArg()));
             out.flush();
             return;
         }
 
         // Basic dotted-quad check: simple regex
-        if (!ipArg.matches("\\d{1,3}(\\.\\d{1,3}){3}")) {
-            out.println(String.format("ping: %s: System error", ipArg));
+        if (!pingParameters.ipArg().matches("\\d{1,3}(\\.\\d{1,3}){3}")) {
+            out.println(String.format(PING_ERROR, pingParameters.ipArg()));
             out.flush();
             return;
         }
 
         IPAddress dst;
         try {
-            dst = IPAddress.fromString(ipArg);
+            dst = IPAddress.fromString(pingParameters.ipArg());
         } catch (RuntimeException e) {
-            out.println(String.format("ping: %s: System error", ipArg));
+            out.println(String.format(PING_ERROR, pingParameters.ipArg()));
             out.flush();
             return;
         }
@@ -115,7 +123,7 @@ public class PingCommand implements RouterCommand {
             out.flush();
             return;
         }
-        PingStatistics stats = svc.ping(router, dst, count, ttl, topology);
+        PingStatistics stats = svc.ping(router, dst, pingParameters.count(), pingParameters.ttl(), topology);
 
         // Find source IP for display
         IPAddress srcIp = null;
@@ -127,8 +135,11 @@ public class PingCommand implements RouterCommand {
         }
         if (srcIp == null) srcIp = new IPAddress(0, 0, 0, 0);
 
-        String outText = PingFormatter.format(dst, srcIp, ttl, stats);
+        String outText = PingFormatter.format(dst, srcIp, pingParameters.ttl(), stats);
         out.print(outText);
         out.flush();
+    }
+
+    private record PingParameters(int count, int ttl, String ipArg) {
     }
 }

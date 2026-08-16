@@ -294,30 +294,4 @@ class LogicalErrorTest {
 		assertEquals(4, stats.getSent());
 		assertEquals(0, stats.getReceived(), "Should not receive a reply due to next-hop not being on the neighbor");
 	}
-
-	@Test
-	void testNextHopNotARouter() {
-		NetworkTopology networkTopology = new NetworkTopology();
-
-		Host h1 = new Host("PC1", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 1, 1), new SubnetMask(24)), new IPAddress(192, 168, 1, 254)));
-		Host h2 = new Host("PC2", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 2, 1), new SubnetMask(24)), new IPAddress(192, 168, 2, 254)));
-
-		Router r1 = new Router("R1", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
-
-		networkTopology.addHost(h1);
-		networkTopology.addHost(h2);
-		networkTopology.addRouter(r1);
-
-		networkTopology.addConnection(new Connection(h1.getHostInterface(), r1.getInterfaces().getFirst()));
-		networkTopology.addConnection(new Connection(h2.getHostInterface(), r1.getInterfaces().get(1)));
-
-		r1.setMode(RouterMode.CONFIGURATION);
-		r1.configureInterface("eth0", InterfaceAddress.fromString("192.168.1.254/24"));
-		r1.configureInterface("eth1", InterfaceAddress.fromString("192.168.2.254/24"));
-		// Previously expected exception and manual confirm; now Router logs warnings and stages the route
-		r1.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 3, 0), new SubnetMask(24)), new IPAddress(192, 168, 2, 254)));
-		r1.commitChanges();
-
-		// No assertions here - behavior checked via ping in other tests
-	}
 }

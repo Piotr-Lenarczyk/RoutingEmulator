@@ -443,8 +443,7 @@ public class NetworkTopology {
 		Connection c = getConnectionForInterface(cur);
 		if (c == null) return null;
 
-		NetworkInterface neighbor = c.getNeighborInterface(cur);
-		return neighbor;
+		return c.getNeighborInterface(cur);
 	}
 
 	/**

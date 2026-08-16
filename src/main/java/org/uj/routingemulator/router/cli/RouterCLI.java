@@ -36,23 +36,24 @@ public class RouterCLI {
 			CLIContext.setWriter(parser.getWriter());
 		}
 
-		while (true) {
+		boolean running = true;
+
+		while (running) {
 			try {
 				String prompt = getPrompt();
 				String line = parser.readLine(prompt);
 
-				if (line == null || line.trim().isEmpty()) {
-					continue;
+				if (line != null && !line.trim().isEmpty()) {
+					if (line.trim().equalsIgnoreCase("exit")
+							&& router.getMode() == RouterMode.OPERATIONAL) {
+						running = false;
+					} else {
+						parser.executeCommand(line, router);
+					}
 				}
-
-				if (line.trim().equalsIgnoreCase("exit") && router.getMode() == RouterMode.OPERATIONAL) {
-					break;
-				}
-
-				parser.executeCommand(line, router);
 			} catch (UserInterruptException | EndOfFileException e) {
 				parser.getWriter().println();
-				break;
+				running = false;
 			}
 		}
 

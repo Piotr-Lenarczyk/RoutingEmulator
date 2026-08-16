@@ -129,6 +129,97 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 		}
 	}
 
+	private static void applyRouteConfiguration(Router router, String nextHop, Subnet subnet, int distance, String interfaceName, boolean disabled) {
+		if (addRoute(router, nextHop, subnet, distance, interfaceName)) return;
+
+		if (disabled) {
+			// Disable the route we just added
+			for (StaticRoutingEntry entry : router.getStagedRoutingTable().getRoutingEntries()) {
+				if (entry.getSubnet().equals(subnet)) {
+					disableRoute(router, entry);
+					return;
+				}
+			}
+		}
+	}
+
+	private static boolean addRoute(Router router, String nextHop, Subnet subnet, int distance, String interfaceName) {
+		if (nextHop != null) {
+			return addNextHopRoute(router, nextHop, subnet, distance);
+		} else if (interfaceName != null) {
+			RouterInterface iface = router.findFromName(interfaceName);
+			if (iface == null) {
+				throw new ConfigurationParseException(
+						String.format("Interface %s does not exist on this router", interfaceName)
+				);
+			}
+			return addInterfaceRoute(router, subnet, iface, distance);
+		}
+		return false;
+	}
+
+	private static boolean addInterfaceRoute(Router router, Subnet subnet, RouterInterface iface, int distance) {
+		try {
+			router.addRoute(new StaticRoutingEntry(subnet, iface, distance));
+		} catch (RuntimeException e) {
+			if (e.getMessage() != null && e.getMessage().equals("Route already exists")) {
+				return true;
+			}
+			throw e;
+		}
+		return false;
+	}
+
+	private static void disableRoute(Router router, StaticRoutingEntry entry) {
+		try {
+			router.disableRoute(entry);
+		} catch (RuntimeException e) {
+			if (e.getMessage() != null && e.getMessage().contains("already exists")) {
+				return;
+			}
+			throw e;
+		}
+	}
+
+	private static boolean addNextHopRoute(Router router, String nextHop, Subnet subnet, int distance) {
+		IPAddress nextHopAddress = IPAddress.fromString(nextHop);
+		try {
+			router.addRoute(new StaticRoutingEntry(subnet, nextHopAddress, distance));
+		} catch (RuntimeException e) {
+			if (e.getMessage() != null && e.getMessage().equals("Route already exists")) {
+				return true;
+			}
+			throw e;
+		}
+		return false;
+	}
+
+	private static void disableInterface(Router router, String interfaceName) {
+		try {
+			router.disableInterface(interfaceName);
+		} catch (RuntimeException e) {
+			if (e.getMessage() != null && e.getMessage().contains("already exists")) {
+				return;
+			}
+			throw e;
+		}
+	}
+
+	private static void configureInterface(Router router, String address, String interfaceName) {
+		try {
+			String[] parts = address.split("/");
+			IPAddress ip = IPAddress.fromString(parts[0]);
+			SubnetMask mask = SubnetMask.fromString(parts[1]);
+			InterfaceAddress interfaceAddress = new InterfaceAddress(ip, mask);
+			router.configureInterface(interfaceName, interfaceAddress);
+		} catch (RuntimeException e) {
+			if (e.getMessage() != null && e.getMessage().equals("Configuration already exists")) {
+				return;
+			}
+			throw new ConfigurationParseException("Invalid interface address: " + e.getMessage());
+		}
+	}
+
 	/**
 	 * Parses a complete route block and collects all configuration values.
 	 * <p>
@@ -160,14 +251,29 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 			}
 
 			String[] parts = trimmed.split("\\s+");
-			if (parts.length >= 2 && parts[0].equals("next-hop")) {
-				nextHop = parts[1];
-			} else if (parts.length >= 2 && parts[0].equals("interface")) {
-				interfaceName = parts[1];
-			} else if (parts.length >= 2 && parts[0].equals("distance")) {
-				distance = Integer.parseInt(parts[1]);
-			} else if (parts.length >= 1 && parts[0].equals("disable")) {
-				disabled = true;
+
+			if (parts.length >= 2) {
+				switch (parts[0]) {
+					case "next-hop":
+						nextHop = parts[1];
+						break;
+					case "interface":
+						interfaceName = parts[1];
+						break;
+					case "distance":
+						try {
+							distance = Integer.parseInt(parts[1]);
+						} catch (NumberFormatException e) {
+							throw new ConfigurationParseException("Invalid distance value: " + parts[1]);
+						}
+						break;
+					case "disable":
+						disabled = true;
+						break;
+					default:
+						throw new ConfigurationParseException("Unknown route configuration option: " + parts[0]);
+				}
+
 			}
 
 			position++;
@@ -177,49 +283,7 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 		try {
 			Subnet subnet = Subnet.fromString(destination);
 
-			if (nextHop != null) {
-				IPAddress nextHopAddress = IPAddress.fromString(nextHop);
-				try {
-					router.addRoute(new StaticRoutingEntry(subnet, nextHopAddress, distance));
-				} catch (RuntimeException e) {
-					if (e.getMessage() != null && e.getMessage().equals("Route already exists")) {
-						return;
-					}
-					throw e;
-				}
-			} else if (interfaceName != null) {
-				RouterInterface iface = router.findFromName(interfaceName);
-				if (iface == null) {
-					throw new ConfigurationParseException(
-						String.format("Interface %s does not exist on this router", interfaceName)
-					);
-				}
-				try {
-					router.addRoute(new StaticRoutingEntry(subnet, iface, distance));
-				} catch (RuntimeException e) {
-					if (e.getMessage() != null && e.getMessage().equals("Route already exists")) {
-						return;
-					}
-					throw e;
-				}
-			}
-
-			if (disabled) {
-				// Disable the route we just added
-				for (StaticRoutingEntry entry : router.getStagedRoutingTable().getRoutingEntries()) {
-					if (entry.getSubnet().equals(subnet)) {
-						try {
-							router.disableRoute(entry);
-						} catch (RuntimeException e) {
-							if (e.getMessage() != null && e.getMessage().contains("already exists")) {
-								return;
-							}
-							throw e;
-						}
-						return;
-					}
-				}
-			}
+			applyRouteConfiguration(router, nextHop, subnet, distance, interfaceName, disabled);
 		} catch (ConfigurationParseException e) {
 			throw new ConfigurationParseException("Error parsing route: " + e.getMessage());
 		}
@@ -259,27 +323,9 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 						if (address.equals("dhcp")) {
 							return;
 						}
-						try {
-							String[] parts = address.split("/");
-							IPAddress ip = IPAddress.fromString(parts[0]);
-							SubnetMask mask = SubnetMask.fromString(parts[1]);
-							InterfaceAddress interfaceAddress = new InterfaceAddress(ip, mask);
-							router.configureInterface(interfaceName, interfaceAddress);
-						} catch (RuntimeException e) {
-							if (e.getMessage() != null && e.getMessage().equals("Configuration already exists")) {
-								return;
-							}
-							throw new ConfigurationParseException("Invalid interface address: " + e.getMessage());
-						}
+						configureInterface(router, address, interfaceName);
 					} else if (path.get(3).equals("disable") && path.size() == 4) {
-						try {
-							router.disableInterface(interfaceName);
-						} catch (RuntimeException e) {
-							if (e.getMessage() != null && e.getMessage().contains("already exists")) {
-								return;
-							}
-							throw e;
-						}
+						disableInterface(router, interfaceName);
 					}
 
 			}

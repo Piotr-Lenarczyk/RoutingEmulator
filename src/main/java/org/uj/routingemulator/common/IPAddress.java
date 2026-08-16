@@ -2,6 +2,7 @@ package org.uj.routingemulator.common;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import org.uj.routingemulator.router.exceptions.InvalidAddressException;
 
 /**
  * Represents an IPv4 address.
@@ -72,7 +73,7 @@ public class IPAddress {
 		try {
 			String[] parts = ipString.split("\\.");
 			if (parts.length != 4) {
-				throw new RuntimeException("Invalid IP address format: " + ipString);
+				throw new InvalidAddressException("Invalid IP address format: " + ipString);
 			}
 			int octet1 = Integer.parseInt(parts[0]);
 			int octet2 = Integer.parseInt(parts[1]);
@@ -85,8 +86,8 @@ public class IPAddress {
 			// For other NumberFormatExceptions, rethrow so callers can see
 			// the original cause.
 			if (ipString.matches(".*/\\d{1,2}$")) {
-				String msg = String.format("\n\tError: %s is not a valid IPv4 prefix\n\n\n\tInvalid value\n\tValue validation failed\n\tSet failed\n\n[edit]", ipString);
-				throw new RuntimeException(msg);
+				String msg = String.format("%n\tError: %s is not a valid IPv4 prefix%n%n%n\tInvalid value%n\tValue validation failed%n\tSet failed%n%n[edit]", ipString);
+				throw new InvalidAddressException(msg);
 			}
 			throw e; // preserve original behavior for other malformed inputs
 		}

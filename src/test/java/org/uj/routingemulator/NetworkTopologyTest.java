@@ -153,7 +153,8 @@ class NetworkTopologyTest {
 		topology.addConnection(connection1);
 
 		// Try to connect eth0R1 to another interface (it's already connected)
-		RuntimeException exception = assertThrows(RuntimeException.class, () -> topology.addConnection(new Connection(eth0R1, eth1R2)));
+		Connection connection2 = new Connection(eth0R1, eth1R2);
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> topology.addConnection(connection2));
 
 		assertTrue(exception.getMessage().contains("is already connected"));
 	}
