@@ -72,9 +72,9 @@ public class Main extends Application {
 	private static void runCLIMode() {
 		NetworkTopology topology = new NetworkTopology();
 
-		Host h1 = new Host("PC1", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 1, 1), new SubnetMask(24)), new IPAddress(192, 168, 1, 254)));
-		Host h2 = new Host("PC2", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 2, 1), new SubnetMask(24)), new IPAddress(192, 168, 2, 254)));
-		Host h3 = new Host("PC3", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 3, 1), new SubnetMask(24)), new IPAddress(192, 168, 3, 254)));
+		Host h1 = new Host("PC1", new HostInterface("Ethernet0", new InterfaceAddress(new IPAddress(192, 168, 1, 1), new SubnetMask(24)), new IPAddress(192, 168, 1, 254)));
+		Host h2 = new Host("PC2", new HostInterface("Ethernet0", new InterfaceAddress(new IPAddress(192, 168, 2, 1), new SubnetMask(24)), new IPAddress(192, 168, 2, 254)));
+		Host h3 = new Host("PC3", new HostInterface("Ethernet0", new InterfaceAddress(new IPAddress(192, 168, 3, 1), new SubnetMask(24)), new IPAddress(192, 168, 3, 254)));
 		topology.addHost(h1);
 		topology.addHost(h2);
 		topology.addHost(h3);

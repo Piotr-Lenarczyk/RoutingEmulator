@@ -45,8 +45,7 @@ class NetworkTopologyTest {
 		));
 
 		host1 = new Host("PC1", new HostInterface(
-			"Ethernet0",
-			new Subnet(new IPAddress(192, 168, 1, 1), new SubnetMask(24)),
+				"Ethernet0", new InterfaceAddress(new IPAddress(192, 168, 1, 1), new SubnetMask(24)),
 			new IPAddress(192, 168, 1, 254)
 		));
 	}

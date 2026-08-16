@@ -60,12 +60,9 @@ public class PingService {
 			return new PingStatistics(results);
 		}
 
-		// Determine a sensible source IP for the packet: prefer interface's configured IP if available
 		IPAddress sourceIp = null;
-		if (hi.getSubnet() != null) {
-			// Note: HostInterface stores a Subnet object. Tests currently initialize it with the
-			// interface IP as the networkAddress field (legacy). Use that address as the source.
-			sourceIp = hi.getSubnet().networkAddress();
+		if (hi.getInterfaceAddress() != null) {
+			sourceIp = hi.getInterfaceAddress().ipAddress();
 		}
 
 		for (int seq = 1; seq <= count; seq++) {

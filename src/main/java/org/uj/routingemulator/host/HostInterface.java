@@ -2,22 +2,19 @@ package org.uj.routingemulator.host;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.uj.routingemulator.common.IPAddress;
-import org.uj.routingemulator.common.MacAddress;
-import org.uj.routingemulator.common.NetworkInterface;
-import org.uj.routingemulator.common.Subnet;
+import org.uj.routingemulator.common.*;
 
 /**
  * Represents a network interface on a host device.
  * <p>
- * Host interfaces have a subnet configuration and default gateway for routing.
+ * Host interfaces have an IP address, subnet mask, and default gateway for routing.
  * The interface is always active (no administrative state management).
  */
 @Getter
 @Setter
 public class HostInterface implements NetworkInterface {
 	private String interfaceName;
-	private Subnet subnet;
+	private InterfaceAddress interfaceAddress;
 	private MacAddress macAddress;
 	private IPAddress defaultGateway;
 
@@ -27,7 +24,7 @@ public class HostInterface implements NetworkInterface {
 	 */
 	public HostInterface() {
 		this.interfaceName = "";
-		this.subnet = null;
+		this.interfaceAddress = null;
 		this.macAddress = new MacAddress();
 		this.defaultGateway = null;
 	}
@@ -36,22 +33,46 @@ public class HostInterface implements NetworkInterface {
 	 * Creates a host interface with specified configuration.
 	 *
 	 * @param interfaceName the name of the interface
-	 * @param subnet the subnet configuration including IP and mask
+	 * @param interfaceAddress the IP address and subnet mask assigned to this interface
 	 * @param defaultGateway the default gateway IP address
 	 */
-	public HostInterface(String interfaceName, Subnet subnet, IPAddress defaultGateway) {
+	public HostInterface(String interfaceName, InterfaceAddress interfaceAddress, IPAddress defaultGateway) {
 		this.interfaceName = interfaceName;
-		this.subnet = subnet;
+		this.interfaceAddress = interfaceAddress;
 		this.macAddress = new MacAddress();
 		this.defaultGateway = defaultGateway;
+	}
+
+	/**
+	 * Gets the subnet (network) this interface belongs to.
+	 *
+	 * @return Subnet this interface belongs to, or null if no address is configured
+	 */
+	@Override
+	public Subnet getSubnet() {
+		return interfaceAddress != null ? interfaceAddress.getSubnet() : null;
+	}
+
+	/**
+	 * Sets the subnet by converting to interface address.
+	 *
+	 * @param subnet the subnet to set
+	 */
+	@Override
+	public void setSubnet(Subnet subnet) {
+		if (subnet != null) {
+			this.interfaceAddress = new InterfaceAddress(subnet.networkAddress(), subnet.subnetMask());
+		} else {
+			this.interfaceAddress = null;
+		}
 	}
 
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("HostInterface(interfaceName=").append(interfaceName);
-		if (subnet != null) {
-			sb.append(", subnet=").append(subnet);
+		if (interfaceAddress != null) {
+			sb.append(", interfaceAddress=").append(interfaceAddress);
 		}
 		if (macAddress != null) {
 			sb.append(", macAddress=").append(macAddress);

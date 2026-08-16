@@ -17,8 +17,8 @@ class PingTest {
     @Test
     void testPingSameSubnet() {
         NetworkTopology topology = new NetworkTopology();
-        Host h1 = new Host("h1", new HostInterface("eth0", new Subnet(new IPAddress(192, 168, 1, 1), new SubnetMask(24)), new IPAddress(192, 168, 1, 254)));
-        Host h2 = new Host("h2", new HostInterface("eth0", new Subnet(new IPAddress(192, 168, 1, 2), new SubnetMask(24)), new IPAddress(192, 168, 1, 254)));
+	    Host h1 = new Host("h1", new HostInterface("eth0", new InterfaceAddress(new IPAddress(192, 168, 1, 1), new SubnetMask(24)), new IPAddress(192, 168, 1, 254)));
+	    Host h2 = new Host("h2", new HostInterface("eth0", new InterfaceAddress(new IPAddress(192, 168, 1, 2), new SubnetMask(24)), new IPAddress(192, 168, 1, 254)));
         topology.addHost(h1);
         topology.addHost(h2);
         topology.addConnection(new Connection(h1.getHostInterface(), h2.getHostInterface()));
@@ -31,8 +31,8 @@ class PingTest {
     @Test
     void testPingViaRouter() {
         NetworkTopology topology = new NetworkTopology();
-        Host h1 = new Host("h1", new HostInterface("eth0", new Subnet(new IPAddress(192, 168, 1, 2), new SubnetMask(24)), new IPAddress(192, 168, 1, 1)));
-        Host h2 = new Host("h2", new HostInterface("eth0", new Subnet(new IPAddress(192, 168, 2, 2), new SubnetMask(24)), new IPAddress(192, 168, 2, 1)));
+	    Host h1 = new Host("h1", new HostInterface("eth0", new InterfaceAddress(new IPAddress(192, 168, 1, 2), new SubnetMask(24)), new IPAddress(192, 168, 1, 1)));
+	    Host h2 = new Host("h2", new HostInterface("eth0", new InterfaceAddress(new IPAddress(192, 168, 2, 2), new SubnetMask(24)), new IPAddress(192, 168, 2, 1)));
 
         Router r = new Router("R1", java.util.List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
         // configure router interfaces
@@ -53,8 +53,8 @@ class PingTest {
     @Test
     void testPingViaRouterAndSwitch() {
         NetworkTopology topology = new NetworkTopology();
-        Host h1 = new Host("h1", new HostInterface("eth0", new Subnet(new IPAddress(192, 168, 1, 2), new SubnetMask(24)), new IPAddress(192, 168, 1, 1)));
-        Host h2 = new Host("h2", new HostInterface("eth0", new Subnet(new IPAddress(192, 168, 2, 2), new SubnetMask(24)), new IPAddress(192, 168, 2, 1)));
+	    Host h1 = new Host("h1", new HostInterface("eth0", new InterfaceAddress(new IPAddress(192, 168, 1, 2), new SubnetMask(24)), new IPAddress(192, 168, 1, 1)));
+	    Host h2 = new Host("h2", new HostInterface("eth0", new InterfaceAddress(new IPAddress(192, 168, 2, 2), new SubnetMask(24)), new IPAddress(192, 168, 2, 1)));
 
         Switch sw1 = new Switch("SW1");
         // Register switch in topology so topology traversal can treat it as a hub
@@ -87,8 +87,8 @@ class PingTest {
     @Test
     void testPingBasicRouting() {
         NetworkTopology topology = new NetworkTopology();
-        Host h1 = new Host("h1", new HostInterface("eth0", new Subnet(new IPAddress(192, 168, 1, 1), new SubnetMask(24)), new IPAddress(192, 168, 1, 254)));
-        Host h2 = new Host("h2", new HostInterface("eth0", new Subnet(new IPAddress(192, 168, 3, 1), new SubnetMask(24)), new IPAddress(192, 168, 3, 254)));
+	    Host h1 = new Host("h1", new HostInterface("eth0", new InterfaceAddress(new IPAddress(192, 168, 1, 1), new SubnetMask(24)), new IPAddress(192, 168, 1, 254)));
+	    Host h2 = new Host("h2", new HostInterface("eth0", new InterfaceAddress(new IPAddress(192, 168, 3, 1), new SubnetMask(24)), new IPAddress(192, 168, 3, 254)));
 
         Router r1 = new Router("R1", java.util.List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
         Router r2 = new Router("R2", java.util.List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
@@ -120,8 +120,8 @@ class PingTest {
     @Test
     void testPingViaRouterUnknownHost() {
         NetworkTopology topology = new NetworkTopology();
-        Host h1 = new Host("h1", new HostInterface("eth0", new Subnet(new IPAddress(192, 168, 1, 2), new SubnetMask(24)), new IPAddress(192, 168, 1, 1)));
-        Host h2 = new Host("h2", new HostInterface("eth0", new Subnet(new IPAddress(192, 168, 2, 2), new SubnetMask(24)), new IPAddress(192, 168, 2, 1)));
+	    Host h1 = new Host("h1", new HostInterface("eth0", new InterfaceAddress(new IPAddress(192, 168, 1, 2), new SubnetMask(24)), new IPAddress(192, 168, 1, 1)));
+	    Host h2 = new Host("h2", new HostInterface("eth0", new InterfaceAddress(new IPAddress(192, 168, 2, 2), new SubnetMask(24)), new IPAddress(192, 168, 2, 1)));
 
         Router r = new Router("R1", java.util.List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
         // configure router interfaces
@@ -149,7 +149,7 @@ class PingTest {
     @Test
     void testPingUnreachable() {
         NetworkTopology topology = new NetworkTopology();
-        Host h1 = new Host("h1", new HostInterface("eth0", new Subnet(new IPAddress(10, 0, 0, 1), new SubnetMask(24)), new IPAddress(10, 0, 0, 254)));
+	    Host h1 = new Host("h1", new HostInterface("eth0", new InterfaceAddress(new IPAddress(10, 0, 0, 1), new SubnetMask(24)), new IPAddress(10, 0, 0, 254)));
         topology.addHost(h1);
 
         PingStatistics stats = h1.ping("192.168.99.1", topology);

@@ -4,7 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.uj.routingemulator.common.Connection;
 import org.uj.routingemulator.common.IPAddress;
-import org.uj.routingemulator.common.Subnet;
+import org.uj.routingemulator.common.InterfaceAddress;
 import org.uj.routingemulator.common.SubnetMask;
 import org.uj.routingemulator.host.HostInterface;
 import org.uj.routingemulator.router.RouterInterface;
@@ -28,8 +28,7 @@ class ConnectionTest {
 		routerInterface2 = new RouterInterface("eth1");
 		switchPort1 = new SwitchPort("GigabitEthernet0/1");
 		hostInterface1 = new HostInterface(
-			"Ethernet0",
-			new Subnet(new IPAddress(192, 168, 1, 1), new SubnetMask(24)),
+				"Ethernet0", new InterfaceAddress(new IPAddress(192, 168, 1, 1), new SubnetMask(24)),
 			new IPAddress(192, 168, 1, 254)
 		);
 	}

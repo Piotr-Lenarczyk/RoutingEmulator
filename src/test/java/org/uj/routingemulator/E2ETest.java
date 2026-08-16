@@ -65,8 +65,8 @@ class E2ETest {
 	void testTripleRouterSetup() {
 		NetworkTopology topology = new NetworkTopology();
 
-		Host h1 = new Host("H1", new HostInterface("Ethernet0", new Subnet(new IPAddress(10, 0, 0, 2), new SubnetMask(8)), new IPAddress(10, 0, 0, 1)));
-		Host h2 = new Host("H2", new HostInterface("Ethernet0", new Subnet(new IPAddress(20, 0, 0, 2), new SubnetMask(8)), new IPAddress(20, 0, 0, 1)));
+		Host h1 = new Host("H1", new HostInterface("Ethernet0", new InterfaceAddress(new IPAddress(10, 0, 0, 2), new SubnetMask(8)), new IPAddress(10, 0, 0, 1)));
+		Host h2 = new Host("H2", new HostInterface("Ethernet0", new InterfaceAddress(new IPAddress(20, 0, 0, 2), new SubnetMask(8)), new IPAddress(20, 0, 0, 1)));
 		Router r1 = new Router("R1", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
 		Router r2 = new Router("R2", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
 		Router r3 = new Router("R3", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
@@ -130,8 +130,8 @@ class E2ETest {
 	void testTripleRouterSetupEndToEnd() {
 		NetworkTopology topology = new NetworkTopology();
 
-		Host h1 = new Host("H1", new HostInterface("Ethernet0", new Subnet(new IPAddress(10, 0, 0, 2), new SubnetMask(8)), new IPAddress(10, 0, 0, 1)));
-		Host h2 = new Host("H2", new HostInterface("Ethernet0", new Subnet(new IPAddress(20, 0, 0, 2), new SubnetMask(8)), new IPAddress(20, 0, 0, 1)));
+		Host h1 = new Host("H1", new HostInterface("Ethernet0", new InterfaceAddress(new IPAddress(10, 0, 0, 2), new SubnetMask(8)), new IPAddress(10, 0, 0, 1)));
+		Host h2 = new Host("H2", new HostInterface("Ethernet0", new InterfaceAddress(new IPAddress(20, 0, 0, 2), new SubnetMask(8)), new IPAddress(20, 0, 0, 1)));
 		Router r1 = new Router("R1", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
 		Router r2 = new Router("R2", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
 		Router r3 = new Router("R3", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
@@ -206,8 +206,8 @@ class E2ETest {
 		// Assuming same setup as previous test
 		NetworkTopology topology = new NetworkTopology();
 
-		Host h1 = new Host("H1", new HostInterface("Ethernet0", new Subnet(new IPAddress(10, 0, 0, 2), new SubnetMask(8)), new IPAddress(10, 0, 0, 1)));
-		Host h2 = new Host("H2", new HostInterface("Ethernet0", new Subnet(new IPAddress(20, 0, 0, 2), new SubnetMask(8)), new IPAddress(20, 0, 0, 1)));
+		Host h1 = new Host("H1", new HostInterface("Ethernet0", new InterfaceAddress(new IPAddress(10, 0, 0, 2), new SubnetMask(8)), new IPAddress(10, 0, 0, 1)));
+		Host h2 = new Host("H2", new HostInterface("Ethernet0", new InterfaceAddress(new IPAddress(20, 0, 0, 2), new SubnetMask(8)), new IPAddress(20, 0, 0, 1)));
 		Router r1 = new Router("R1", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
 		Router r2 = new Router("R2", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
 		Router r3 = new Router("R3", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
@@ -284,8 +284,8 @@ class E2ETest {
 	void testTriangleTopologyWithMetrics() {
 		NetworkTopology topology = new NetworkTopology();
 
-		Host h1 = new Host("H1", new HostInterface("Ethernet0", new Subnet(new IPAddress(10, 0, 0, 2), new SubnetMask(8)), new IPAddress(10, 0, 0, 1)));
-		Host h2 = new Host("H2", new HostInterface("Ethernet0", new Subnet(new IPAddress(20, 0, 0, 2), new SubnetMask(8)), new IPAddress(20, 0, 0, 1)));
+		Host h1 = new Host("H1", new HostInterface("Ethernet0", new InterfaceAddress(new IPAddress(10, 0, 0, 2), new SubnetMask(8)), new IPAddress(10, 0, 0, 1)));
+		Host h2 = new Host("H2", new HostInterface("Ethernet0", new InterfaceAddress(new IPAddress(20, 0, 0, 2), new SubnetMask(8)), new IPAddress(20, 0, 0, 1)));
 		Router r1 = new Router("R1", List.of(new RouterInterface("eth0"), new RouterInterface("eth1"), new RouterInterface("eth2")));
 		Router r2 = new Router("R2", List.of(new RouterInterface("eth0"), new RouterInterface("eth1"), new RouterInterface("eth2")));
 		Router r3 = new Router("R3", List.of(new RouterInterface("eth0"), new RouterInterface("eth1"), new RouterInterface("eth2")));
@@ -504,8 +504,8 @@ class E2ETest {
 		assertEquals(4, stats3.getReceived(), "Should receive a reply from RC");
 
 		// Configure remaining interfaces
-		Host h1 = new Host("H1", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 2, 2), new SubnetMask(8)), new IPAddress(192, 168, 2, 1)));
-		Host h2 = new Host("H1", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 4, 2), new SubnetMask(8)), new IPAddress(192, 168, 4, 1)));
+		Host h1 = new Host("H1", new HostInterface("Ethernet0", new InterfaceAddress(new IPAddress(192, 168, 2, 2), new SubnetMask(8)), new IPAddress(192, 168, 2, 1)));
+		Host h2 = new Host("H1", new HostInterface("Ethernet0", new InterfaceAddress(new IPAddress(192, 168, 4, 2), new SubnetMask(8)), new IPAddress(192, 168, 4, 1)));
 
 		topology.addHost(h1);
 		topology.addHost(h2);

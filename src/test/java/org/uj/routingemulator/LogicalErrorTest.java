@@ -23,8 +23,8 @@ class LogicalErrorTest {
 	void testNoReturnRoute() {
 		NetworkTopology topology = new NetworkTopology();
 
-		Host h1 = new Host("PC1", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 1, 1), new SubnetMask(24)), new IPAddress(192, 168, 1, 254)));
-		Host h2 = new Host("PC2", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 2, 1), new SubnetMask(24)), new IPAddress(192, 168, 2, 254)));
+		Host h1 = new Host("PC1", new HostInterface("Ethernet0", new InterfaceAddress(new IPAddress(192, 168, 1, 1), new SubnetMask(24)), new IPAddress(192, 168, 1, 254)));
+		Host h2 = new Host("PC2", new HostInterface("Ethernet0", new InterfaceAddress(new IPAddress(192, 168, 2, 1), new SubnetMask(24)), new IPAddress(192, 168, 2, 254)));
 
 		Router r1 = new Router("R1", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
 		Router r2 = new Router("R2", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
@@ -79,8 +79,8 @@ class LogicalErrorTest {
 	void testRoutingAsymmetry() {
 		NetworkTopology topology = new NetworkTopology();
 
-		Host h1 = new Host("PC1", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 1, 1), new SubnetMask(24)), new IPAddress(192, 168, 1, 254)));
-		Host h2 = new Host("PC2", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 2, 1), new SubnetMask(24)), new IPAddress(192, 168, 2, 254)));
+		Host h1 = new Host("PC1", new HostInterface("Ethernet0", new InterfaceAddress(new IPAddress(192, 168, 1, 1), new SubnetMask(24)), new IPAddress(192, 168, 1, 254)));
+		Host h2 = new Host("PC2", new HostInterface("Ethernet0", new InterfaceAddress(new IPAddress(192, 168, 2, 1), new SubnetMask(24)), new IPAddress(192, 168, 2, 254)));
 
 		Router r1 = new Router("R1", List.of(new RouterInterface("eth0"), new RouterInterface("eth1"), new RouterInterface("eth2")));
 		Router r2 = new Router("R2", List.of(new RouterInterface("eth0"), new RouterInterface("eth1"), new RouterInterface("eth2")));
@@ -152,9 +152,9 @@ class LogicalErrorTest {
 	void testBlackholeRoute() {
 		NetworkTopology topology = new NetworkTopology();
 
-		Host h1 = new Host("PC1", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 1, 1), new SubnetMask(24)), new IPAddress(192, 168, 1, 254)));
-		Host h2 = new Host("PC2", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 2, 1), new SubnetMask(24)), new IPAddress(192, 168, 2, 254)));
-		Host h3 = new Host("PC3", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 3, 1), new SubnetMask(24)), new IPAddress(192, 168, 3, 254)));
+		Host h1 = new Host("PC1", new HostInterface("Ethernet0", new InterfaceAddress(new IPAddress(192, 168, 1, 1), new SubnetMask(24)), new IPAddress(192, 168, 1, 254)));
+		Host h2 = new Host("PC2", new HostInterface("Ethernet0", new InterfaceAddress(new IPAddress(192, 168, 2, 1), new SubnetMask(24)), new IPAddress(192, 168, 2, 254)));
+		Host h3 = new Host("PC3", new HostInterface("Ethernet0", new InterfaceAddress(new IPAddress(192, 168, 3, 1), new SubnetMask(24)), new IPAddress(192, 168, 3, 254)));
 
 		Router r1 = new Router("R1", List.of(new RouterInterface("eth0"), new RouterInterface("eth1"), new RouterInterface("eth2")));
 
@@ -196,7 +196,7 @@ class LogicalErrorTest {
 	void testRouteViaNonexistentNextHop() {
 		NetworkTopology topology = new NetworkTopology();
 
-		Host h1 = new Host("PC1", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 1, 1), new SubnetMask(24)), new IPAddress(192, 168, 1, 254)));
+		Host h1 = new Host("PC1", new HostInterface("Ethernet0", new InterfaceAddress(new IPAddress(192, 168, 1, 1), new SubnetMask(24)), new IPAddress(192, 168, 1, 254)));
 
 		Router r1 = new Router("R1", List.of(new RouterInterface("eth0"), new RouterInterface("eth1"), new RouterInterface("eth2")));
 
@@ -221,8 +221,8 @@ class LogicalErrorTest {
 	void testNextHopOnLocalInterface() {
 		NetworkTopology networkTopology = new NetworkTopology();
 
-		Host h1 = new Host("PC1", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 1, 1), new SubnetMask(24)), new IPAddress(192, 168, 1, 254)));
-		Host h2 = new Host("PC2", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 2, 1), new SubnetMask(24)), new IPAddress(192, 168, 2, 254)));
+		Host h1 = new Host("PC1", new HostInterface("Ethernet0", new InterfaceAddress(new IPAddress(192, 168, 1, 1), new SubnetMask(24)), new IPAddress(192, 168, 1, 254)));
+		Host h2 = new Host("PC2", new HostInterface("Ethernet0", new InterfaceAddress(new IPAddress(192, 168, 2, 1), new SubnetMask(24)), new IPAddress(192, 168, 2, 254)));
 
 		Router r1 = new Router("R1", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
 		Router r2 = new Router("R2", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
@@ -258,8 +258,8 @@ class LogicalErrorTest {
 	void testNextHopNotOnTheNeighbor() {
 		NetworkTopology networkTopology = new NetworkTopology();
 
-		Host h1 = new Host("PC1", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 1, 1), new SubnetMask(24)), new IPAddress(192, 168, 1, 254)));
-		Host h2 = new Host("PC2", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 2, 1), new SubnetMask(24)), new IPAddress(192, 168, 2, 254)));
+		Host h1 = new Host("PC1", new HostInterface("Ethernet0", new InterfaceAddress(new IPAddress(192, 168, 1, 1), new SubnetMask(24)), new IPAddress(192, 168, 1, 254)));
+		Host h2 = new Host("PC2", new HostInterface("Ethernet0", new InterfaceAddress(new IPAddress(192, 168, 2, 1), new SubnetMask(24)), new IPAddress(192, 168, 2, 254)));
 
 		Router r1 = new Router("R1", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
 		Router r2 = new Router("R2", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));

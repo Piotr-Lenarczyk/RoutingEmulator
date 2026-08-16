@@ -290,7 +290,7 @@ public class NetworkTopologyController {
 
 					HostInterface hostInterface = new HostInterface(
 							"Ethernet0",
-							new Subnet(ip, mask),
+							new InterfaceAddress(ip, mask),
 							gateway
 					);
 
