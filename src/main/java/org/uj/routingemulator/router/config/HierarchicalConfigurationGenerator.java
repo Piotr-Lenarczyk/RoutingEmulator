@@ -18,6 +18,39 @@ import org.uj.routingemulator.router.StaticRoutingEntry;
  */
 public class HierarchicalConfigurationGenerator implements ConfigurationGenerator {
 
+	private static void buildRoute(StaticRoutingEntry entry, StringBuilder config) {
+		config.append("        route ").append(entry.getSubnet()).append(" {\n");
+
+		if (entry.getNextHop() != null) {
+			config.append("            next-hop ").append(entry.getNextHop()).append("\n");
+		} else if (entry.getRouterInterface() != null) {
+			config.append("            interface ").append(entry.getRouterInterface().getInterfaceName()).append("\n");
+		}
+
+		if (entry.getAdministrativeDistance() != 1) {
+			config.append("            distance ").append(entry.getAdministrativeDistance()).append("\n");
+		}
+
+		if (entry.isDisabled()) {
+			config.append("            disable\n");
+		}
+
+		config.append("        }\n");
+	}
+
+	private static void buildInterface(RouterInterface iface, StringBuilder config) {
+		if (iface.getInterfaceAddress() != null || iface.isDisabled()) {
+			config.append("    ethernet ").append(iface.getInterfaceName()).append(" {\n");
+			if (iface.getInterfaceAddress() != null) {
+				config.append("        address ").append(iface.getInterfaceAddress()).append("\n");
+			}
+			if (iface.isDisabled()) {
+				config.append("        disable\n");
+			}
+			config.append("    }\n");
+		}
+	}
+
 	/**
 	 * Generates hierarchical configuration for the specified router.
 	 * <p>
@@ -41,16 +74,7 @@ public class HierarchicalConfigurationGenerator implements ConfigurationGenerato
 		if (router.getInterfaces().stream().anyMatch(i -> i.getInterfaceAddress() != null || i.isDisabled())) {
 			config.append("interfaces {\n");
 			for (RouterInterface iface : router.getInterfaces()) {
-				if (iface.getInterfaceAddress() != null || iface.isDisabled()) {
-					config.append("    ethernet ").append(iface.getInterfaceName()).append(" {\n");
-					if (iface.getInterfaceAddress() != null) {
-						config.append("        address ").append(iface.getInterfaceAddress()).append("\n");
-					}
-					if (iface.isDisabled()) {
-						config.append("        disable\n");
-					}
-					config.append("    }\n");
-				}
+				buildInterface(iface, config);
 			}
 			config.append("}\n");
 		}
@@ -60,23 +84,7 @@ public class HierarchicalConfigurationGenerator implements ConfigurationGenerato
 			config.append("protocols {\n");
 			config.append("    static {\n");
 			for (StaticRoutingEntry entry : router.getRoutingTable().getRoutingEntries()) {
-				config.append("        route ").append(entry.getSubnet()).append(" {\n");
-
-				if (entry.getNextHop() != null) {
-					config.append("            next-hop ").append(entry.getNextHop()).append("\n");
-				} else if (entry.getRouterInterface() != null) {
-					config.append("            interface ").append(entry.getRouterInterface().getInterfaceName()).append("\n");
-				}
-
-				if (entry.getAdministrativeDistance() != 1) {
-					config.append("            distance ").append(entry.getAdministrativeDistance()).append("\n");
-				}
-
-				if (entry.isDisabled()) {
-					config.append("            disable\n");
-				}
-
-				config.append("        }\n");
+				buildRoute(entry, config);
 			}
 			config.append("    }\n");
 			config.append("}\n");

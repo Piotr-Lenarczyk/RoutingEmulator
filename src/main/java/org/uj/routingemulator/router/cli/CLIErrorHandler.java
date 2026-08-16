@@ -67,33 +67,11 @@ public class CLIErrorHandler {
 
 				// Provide educational error messages
 				if (message != null && message.contains("Cannot assign network address")) {
-					// Extract just the IP (without mask) for display
-					String ip = ipWithMask.contains("/") ? ipWithMask.split("/")[0] : ipWithMask;
-					String mask = ipWithMask.contains("/") ? ipWithMask.split("/")[1] : "unknown";
-					return new RuntimeException(
-							String.format("""
-											\t%s is the network address for this subnet
-											\tNetwork addresses cannot be assigned to interfaces
-											\tUse a host address from this subnet (e.g., %s.1/%s)""",
-									ip, ip.substring(0, ip.lastIndexOf('.')), mask)
-					);
+					return parseNetworkAddress(ipWithMask);
 				}
 
 				if (message != null && message.contains("Cannot assign broadcast address")) {
-					// Extract just the IP (without mask) for display
-					String ip = ipWithMask.contains("/") ? ipWithMask.split("/")[0] : ipWithMask;
-					String mask = ipWithMask.contains("/") ? ipWithMask.split("/")[1] : "unknown";
-					// Calculate suggested IP (one less than broadcast)
-					String[] octets = ip.split("\\.");
-					int lastOctet = Integer.parseInt(octets[3]);
-					String suggestedIp = String.format("%s.%s.%s.%d", octets[0], octets[1], octets[2], lastOctet - 1);
-					return new RuntimeException(
-							String.format("""
-											\t%s is the broadcast address for this subnet
-											\tBroadcast addresses cannot be assigned to interfaces
-											\tUse a host address from this subnet (e.g., %s/%s)""",
-									ip, suggestedIp, mask)
-					);
+					return parseBroadcastAddress(ipWithMask);
 				}
 
 				// Generic invalid address error
@@ -120,6 +98,35 @@ public class CLIErrorHandler {
 
 		// For unknown exceptions, rethrow the original
 		return e;
+	}
+
+	private static RuntimeException parseBroadcastAddress(String ipWithMask) {
+		// Extract just the IP (without mask) for display
+		String ip = ipWithMask.contains("/") ? ipWithMask.split("/")[0] : ipWithMask;
+		String mask = ipWithMask.contains("/") ? ipWithMask.split("/")[1] : "unknown";
+		// Calculate suggested IP (one less than broadcast)
+		String[] octets = ip.split("\\.");
+		int lastOctet = Integer.parseInt(octets[3]);
+		String suggestedIp = String.format("%s.%s.%s.%d", octets[0], octets[1], octets[2], lastOctet - 1);
+		return new RuntimeException(
+				String.format("""
+								\t%s is the broadcast address for this subnet
+								\tBroadcast addresses cannot be assigned to interfaces
+								\tUse a host address from this subnet (e.g., %s/%s)""",
+						ip, suggestedIp, mask)
+		);
+	}
+
+	private static RuntimeException parseNetworkAddress(String ipWithMask) {
+		String ip = ipWithMask.contains("/") ? ipWithMask.split("/")[0] : ipWithMask;
+		String mask = ipWithMask.contains("/") ? ipWithMask.split("/")[1] : "unknown";
+		return new RuntimeException(
+				String.format("""
+								\t%s is the network address for this subnet
+								\tNetwork addresses cannot be assigned to interfaces
+								\tUse a host address from this subnet (e.g., %s.1/%s)""",
+						ip, ip.substring(0, ip.lastIndexOf('.')), mask)
+		);
 	}
 
 	/**

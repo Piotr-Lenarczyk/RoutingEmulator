@@ -1,8 +1,10 @@
 package org.uj.routingemulator.common;
 
+import org.uj.routingemulator.common.exceptions.NoNeighborInterfaceException;
 import org.uj.routingemulator.router.AdminState;
 import org.uj.routingemulator.router.InterfaceStatus;
 import org.uj.routingemulator.router.RouterInterface;
+import org.uj.routingemulator.router.exceptions.InterfaceAdministrativelyDownException;
 
 import java.util.logging.Logger;
 
@@ -25,14 +27,12 @@ public record Connection(NetworkInterface interfaceA, NetworkInterface interface
 	 * @param interfaceB second interface
 	 * @throws RuntimeException if connection cannot be established due to interface state
 	 */
-	public Connection(NetworkInterface interfaceA, NetworkInterface interfaceB) {
+	public Connection {
 		try {
 			validateConnection(interfaceA, interfaceB);
 		} catch (RuntimeException e) {
-			throw new RuntimeException("Could not establish connection " + e.getMessage());
+			throw new IllegalStateException("Could not establish connection " + e.getMessage());
 		}
-		this.interfaceA = interfaceA;
-		this.interfaceB = interfaceB;
 		logger.fine("Setting up connection between %s and %s".formatted(interfaceA.getInterfaceName(), interfaceB.getInterfaceName()));
 	}
 
@@ -41,7 +41,7 @@ public record Connection(NetworkInterface interfaceA, NetworkInterface interface
 	 *
 	 * @param interfaceA first interface
 	 * @param interfaceB second interface
-	 * @throws RuntimeException if either interface is in invalid state
+	 * @throws InterfaceAdministrativelyDownException if either interface is in invalid state
 	 */
 	private void validateConnection(NetworkInterface interfaceA, NetworkInterface interfaceB) {
 		handleRouterInterface(interfaceA);
@@ -52,7 +52,7 @@ public record Connection(NetworkInterface interfaceA, NetworkInterface interface
 	 * Validates router interface state.
 	 *
 	 * @param networkInterface interface to validate
-	 * @throws RuntimeException if router interface is administratively down
+	 * @throws InterfaceAdministrativelyDownException if router interface is administratively down
 	 */
 	private void handleRouterInterface(NetworkInterface networkInterface) {
 		if (networkInterface instanceof RouterInterface router) {
@@ -60,7 +60,7 @@ public record Connection(NetworkInterface interfaceA, NetworkInterface interface
 			// Only check administrative state - link state will be set as result of connection
 			if (status != null && status.getAdmin().equals(AdminState.ADMIN_DOWN)) {
 				logger.warning("Cannot connect to interface %s: Interface is administratively down.".formatted(networkInterface.getInterfaceName()));
-				throw new RuntimeException("Interface " + networkInterface.getInterfaceName() + " is administratively down.");
+				throw new InterfaceAdministrativelyDownException("Interface " + networkInterface.getInterfaceName() + " is administratively down.");
 			}
 		}
 	}
@@ -80,7 +80,7 @@ public record Connection(NetworkInterface interfaceA, NetworkInterface interface
 		} else {
 			logger.severe("Interface %s is not part of this connection between %s and %s".formatted(
 					iface.getInterfaceName(), interfaceA.getInterfaceName(), interfaceB.getInterfaceName()));
-			throw new RuntimeException("Interface not part of this connection");
+			throw new NoNeighborInterfaceException("Interface not part of this connection");
 		}
 	}
 }

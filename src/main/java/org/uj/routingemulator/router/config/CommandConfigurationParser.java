@@ -168,6 +168,28 @@ public class CommandConfigurationParser implements ConfigurationParser {
 		}
 	}
 
+	private static void disableNextHopRoute(Router router, StaticRoutingEntry subnet) {
+		try {
+			router.disableRoute(subnet);
+		} catch (RuntimeException e) {
+			if (e.getMessage() != null && e.getMessage().contains(ALREADY_EXISTS)) {
+				return;
+			}
+			throw e;
+		}
+	}
+
+	private static void addNextHopRoute(Router router, StaticRoutingEntry subnet) {
+		try {
+			router.addRoute(subnet);
+		} catch (RuntimeException e) {
+			if (e.getMessage() != null && e.getMessage().equals(ROUTE_ALREADY_EXISTS)) {
+				return;
+			}
+			throw e;
+		}
+	}
+
 	/**
 	 * Parses static routing protocol configuration commands.
 	 * Handles 'set protocols static route' commands with various options.
@@ -204,97 +226,14 @@ public class CommandConfigurationParser implements ConfigurationParser {
 				advance();
 
 				// Check for additional options or end of command
-				if (position >= tokens.size() || getCurrentToken().value().equals("set")) {
-					// End of command - add route
-					try {
-						router.addRoute(new StaticRoutingEntry(subnet, nextHop));
-					} catch (RuntimeException e) {
-						if (e.getMessage() != null && e.getMessage().equals(ROUTE_ALREADY_EXISTS)) {
-							return; // Ignore duplicate
-						}
-						throw e;
-					}
-				} else {
-					token = getCurrentToken();
-					if (token.value().equals(DISABLE)) {
-						advance();
-						try {
-							router.disableRoute(new StaticRoutingEntry(subnet, nextHop));
-						} catch (RuntimeException e) {
-							if (e.getMessage() != null && e.getMessage().contains(ALREADY_EXISTS)) {
-								return; // Ignore duplicate
-							}
-							throw e;
-						}
-					} else if (token.value().equals("distance")) {
-						advance();
-						int administrativeDistance = Integer.parseInt(getCurrentToken().value());
-						advance();
-						try {
-							router.addRoute(new StaticRoutingEntry(subnet, nextHop, administrativeDistance));
-						} catch (RuntimeException e) {
-							if (e.getMessage() != null && e.getMessage().equals(ROUTE_ALREADY_EXISTS)) {
-								return; // Ignore duplicate
-							}
-							throw e;
-						}
-					} else {
-						throw new ConfigurationParseException("Unrecognized route option", token);
-					}
-				}
+				parseNextHopRoute(router, subnet, nextHop);
 			} else if (token.value().equals("interface")) {
 				advance();
 				String interfaceName = getCurrentToken().value();
 				Token interfaceToken = getCurrentToken();
 				advance();
 
-				RouterInterface routerInterface = router.findFromName(interfaceName);
-				if (routerInterface == null) {
-					throw new ConfigurationParseException(
-						String.format("Interface %s does not exist on this router", interfaceName),
-						interfaceToken
-					);
-				}
-
-				// Check for additional options or end of command
-				if (position >= tokens.size() || getCurrentToken().value().equals("set")) {
-					// End of command - add route
-					try {
-						router.addRoute(new StaticRoutingEntry(subnet, routerInterface));
-					} catch (RuntimeException e) {
-						if (e.getMessage() != null && e.getMessage().equals(ROUTE_ALREADY_EXISTS)) {
-							return; // Ignore duplicate
-						}
-						throw e;
-					}
-				} else {
-					token = getCurrentToken();
-					if (token.value().equals(DISABLE)) {
-						advance();
-						try {
-							router.disableRoute(new StaticRoutingEntry(subnet, routerInterface));
-						} catch (RuntimeException e) {
-							if (e.getMessage() != null && e.getMessage().contains(ALREADY_EXISTS)) {
-								return; // Ignore duplicate
-							}
-							throw e;
-						}
-					} else if (token.value().equals("distance")) {
-						advance();
-						int administrativeDistance = Integer.parseInt(getCurrentToken().value());
-						advance();
-						try {
-							router.addRoute(new StaticRoutingEntry(subnet, routerInterface, administrativeDistance));
-						} catch (RuntimeException e) {
-							if (e.getMessage() != null && e.getMessage().equals(ROUTE_ALREADY_EXISTS)) {
-								return; // Ignore duplicate
-							}
-							throw e;
-						}
-					} else {
-						throw new ConfigurationParseException("Unrecognized route option", token);
-					}
-				}
+				parseInterfaceRoute(router, interfaceName, interfaceToken, subnet);
 			} else {
 				throw new ConfigurationParseException("Expected 'next-hop' or 'interface'", token);
 			}
@@ -303,6 +242,57 @@ public class CommandConfigurationParser implements ConfigurationParser {
 		} catch (ConfigurationParseException e) {
 			throw new ConfigurationParseException("Invalid route configuration: " + e.getMessage(),
 					position > 0 ? tokens.get(position - 1) : tokens.getFirst());
+		}
+	}
+
+	private void parseInterfaceRoute(Router router, String interfaceName, Token interfaceToken, Subnet subnet) {
+		Token token;
+		RouterInterface routerInterface = router.findFromName(interfaceName);
+		if (routerInterface == null) {
+			throw new ConfigurationParseException(
+					String.format("Interface %s does not exist on this router", interfaceName),
+					interfaceToken
+			);
+		}
+
+		// Check for additional options or end of command
+		if (position >= tokens.size() || getCurrentToken().value().equals("set")) {
+			// End of command - add route
+			addNextHopRoute(router, new StaticRoutingEntry(subnet, routerInterface));// Ignore duplicate
+		} else {
+			token = getCurrentToken();
+			if (token.value().equals(DISABLE)) {
+				advance();
+				disableNextHopRoute(router, new StaticRoutingEntry(subnet, routerInterface));// Ignore duplicate
+			} else if (token.value().equals("distance")) {
+				advance();
+				int administrativeDistance = Integer.parseInt(getCurrentToken().value());
+				advance();
+				addNextHopRoute(router, new StaticRoutingEntry(subnet, routerInterface, administrativeDistance));// Ignore duplicate
+			} else {
+				throw new ConfigurationParseException("Unrecognized route option", token);
+			}
+		}
+	}
+
+	private void parseNextHopRoute(Router router, Subnet subnet, IPAddress nextHop) {
+		Token token;
+		if (position >= tokens.size() || getCurrentToken().value().equals("set")) {
+			// End of command - add route
+			addNextHopRoute(router, new StaticRoutingEntry(subnet, nextHop));// Ignore duplicate
+		} else {
+			token = getCurrentToken();
+			if (token.value().equals(DISABLE)) {
+				advance();
+				disableNextHopRoute(router, new StaticRoutingEntry(subnet, nextHop));// Ignore duplicate
+			} else if (token.value().equals("distance")) {
+				advance();
+				int administrativeDistance = Integer.parseInt(getCurrentToken().value());
+				advance();
+				addNextHopRoute(router, new StaticRoutingEntry(subnet, nextHop, administrativeDistance));// Ignore duplicate
+			} else {
+				throw new ConfigurationParseException("Unrecognized route option", token);
+			}
 		}
 	}
 

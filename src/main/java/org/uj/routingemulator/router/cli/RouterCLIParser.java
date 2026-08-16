@@ -10,7 +10,6 @@ import org.uj.routingemulator.router.cli.ethernet.DeleteInterfaceEthernetCommand
 import org.uj.routingemulator.router.cli.ethernet.DisableInterfaceEthernetCommand;
 import org.uj.routingemulator.router.cli.ethernet.SetInterfaceEthernetCommand;
 import org.uj.routingemulator.router.cli.route.*;
-import org.uj.routingemulator.router.exceptions.InterfaceUnavailableException;
 
 import java.io.File;
 import java.io.IOException;
@@ -137,11 +136,8 @@ public class RouterCLIParser {
 					logger.info("%s: Command match found: %s for input string: %s".formatted(router.getName(), command.getCommandPattern(), input));
 					command.execute(router);
 					out.flush();
-				} catch (InterfaceUnavailableException e) {
-					// Print message and do not prompt for confirmation; warnings are logged by Router
-					out.println(e.getMessage());
-					out.flush();
 				} catch (RuntimeException e) {
+					// Print message and do not prompt for confirmation; warnings are logged by Router
 					out.println(e.getMessage());
 					out.flush();
 				}

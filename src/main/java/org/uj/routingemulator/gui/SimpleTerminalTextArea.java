@@ -96,42 +96,46 @@ public class SimpleTerminalTextArea extends TextArea {
 	/**
 	 * Handles key press events for history and shortcuts.
 	 */
+	@SuppressWarnings("java:S6916")
 	private void handleKeyPress(KeyEvent event) {
-		if (event.getCode() == KeyCode.ENTER) {
-			handleEnter();
-			event.consume();
-		} else if (event.getCode() == KeyCode.UP) {
-			navigateHistory(-1);
-			event.consume();
-		} else if (event.getCode() == KeyCode.DOWN) {
-			navigateHistory(1);
-			event.consume();
-		} else if (event.getCode() == KeyCode.TAB) {
-			handleTab();
-			event.consume();
-		} else if (event.getCode() == KeyCode.U && event.isControlDown()) {
-			// Ctrl+U: Clear the command (but keep prompt)
-			replaceText(promptStartPosition, getLength(), "");
-			event.consume();
-		} else if (event.getCode() == KeyCode.BACK_SPACE) {
-			// Prevent backspace from deleting the prompt
-			if (getCaretPosition() <= promptStartPosition) {
+		switch (event.getCode()) {
+			case KeyCode.ENTER -> handleEnter();
+			case KeyCode.UP -> navigateHistory(-1);
+			case KeyCode.DOWN -> navigateHistory(1);
+			case KeyCode.TAB -> handleTab();
+			case KeyCode.U -> {
+				if (event.isControlDown()) {
+					// Ctrl+U: Clear the command (but keep prompt)
+					replaceText(promptStartPosition, getLength(), "");
+					event.consume();
+				}
+			}
+			case KeyCode.BACK_SPACE -> {
+				// Prevent backspace from deleting the prompt
+				if (getCaretPosition() <= promptStartPosition) {
+					event.consume();
+				}
+			}
+			case KeyCode.DELETE -> {
+				// Allow delete only after the prompt
+				if (getCaretPosition() < promptStartPosition) {
+					event.consume();
+				}
+			}
+			case KeyCode.LEFT -> {
+				// Prevent moving cursor before the prompt
+				if (getCaretPosition() <= promptStartPosition) {
+					event.consume();
+				}
+			}
+			case KeyCode.HOME -> {
+				// Home key should move to start of command, not start of line
+				positionCaret(promptStartPosition);
 				event.consume();
 			}
-		} else if (event.getCode() == KeyCode.DELETE) {
-			// Allow delete only after the prompt
-			if (getCaretPosition() < promptStartPosition) {
-				event.consume();
+			default -> {
+				// No action for other keys
 			}
-		} else if (event.getCode() == KeyCode.LEFT) {
-			// Prevent moving cursor before the prompt
-			if (getCaretPosition() <= promptStartPosition) {
-				event.consume();
-			}
-		} else if (event.getCode() == KeyCode.HOME) {
-			// Home key should move to start of command, not start of line
-			positionCaret(promptStartPosition);
-			event.consume();
 		}
 
 		// Additional check: if user somehow manages to position cursor before prompt, move it back
@@ -183,43 +187,49 @@ public class SimpleTerminalTextArea extends TextArea {
 				: "";
 
 		if (onTabComplete != null) {
-			onTabComplete.accept(currentInput, completions -> {
-				if (completions != null && !completions.isEmpty()) {
-					if (completions.size() == 1) {
-						// Single completion - replace only the last word
-						String completion = completions.getFirst();
-
-						// Find the position where the last word starts
-						// If input ends with space, we're completing a new empty word
-						boolean endsWithSpace = currentInput.endsWith(" ");
-						String trimmedInput = currentInput.trim();
-
-						int wordStartPos;
-						if (endsWithSpace || trimmedInput.isEmpty()) {
-							// Completing after a space or empty input
-							wordStartPos = promptStartPosition + currentInput.length();
-						} else {
-							// Completing a partial word
-							int lastSpacePos = currentInput.lastIndexOf(' ');
-							wordStartPos = promptStartPosition + (lastSpacePos >= 0 ? lastSpacePos + 1 : 0);
-						}
-
-						// Replace from word start to end with the completion, and add a space
-						replaceText(wordStartPos, getLength(), completion + " ");
-						positionCaret(getLength());
-					} else {
-						// Multiple completions - show them
-						appendText("\n");
-						for (String completion : completions) {
-							appendText(completion + "  ");
-						}
-						appendText("\n");
-						showPrompt(currentPrompt);
-						appendText(currentInput);
-					}
-				}
-			});
+			onTabComplete.accept(currentInput, completions -> performTabCompletion(completions, currentInput));
 		}
+	}
+
+	private void performTabCompletion(List<String> completions, String currentInput) {
+		if (completions != null && !completions.isEmpty()) {
+			if (completions.size() == 1) {
+				// Single completion - replace only the last word
+				handleSingleCompletion(completions, currentInput);
+			} else {
+				// Multiple completions - show them
+				appendText("\n");
+				for (String completion : completions) {
+					appendText(completion + "  ");
+				}
+				appendText("\n");
+				showPrompt(currentPrompt);
+				appendText(currentInput);
+			}
+		}
+	}
+
+	private void handleSingleCompletion(List<String> completions, String currentInput) {
+		String completion = completions.getFirst();
+
+		// Find the position where the last word starts
+		// If input ends with space, we're completing a new empty word
+		boolean endsWithSpace = currentInput.endsWith(" ");
+		String trimmedInput = currentInput.trim();
+
+		int wordStartPos;
+		if (endsWithSpace || trimmedInput.isEmpty()) {
+			// Completing after a space or empty input
+			wordStartPos = promptStartPosition + currentInput.length();
+		} else {
+			// Completing a partial word
+			int lastSpacePos = currentInput.lastIndexOf(' ');
+			wordStartPos = promptStartPosition + (lastSpacePos >= 0 ? lastSpacePos + 1 : 0);
+		}
+
+		// Replace from word start to end with the completion, and add a space
+		replaceText(wordStartPos, getLength(), completion + " ");
+		positionCaret(getLength());
 	}
 
 	/**

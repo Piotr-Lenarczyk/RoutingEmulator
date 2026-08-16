@@ -15,6 +15,16 @@ import java.util.List;
  * Provides context-aware command completion based on the router's current mode and partial input.
  */
 public class RouterCommandCompleter implements Completer {
+	private static final String PROTOCOLS = "protocols";
+	private static final String STATIC = "static";
+	private static final String ETHERNET = "ethernet";
+	private static final String ROUTE = "route";
+	private static final String ADDRESS_FORMAT = "<x.x.x.x/prefix>";
+	private static final String NEXT_HOP = "next-hop";
+	private static final String INTERFACE = "interface";
+	private static final String INTERFACES = "interfaces";
+	private static final String DELETE = "delete";
+
 	private final Router router;
 
 	public RouterCommandCompleter(Router router) {
@@ -77,29 +87,34 @@ public class RouterCommandCompleter implements Completer {
 				return currentWord.equalsIgnoreCase("ip");
 			}
 		} else { // CONFIGURATION mode
-			if (words.length == 1) {
-				// Only "set" and "delete" have subcommands, others are complete commands
-				return currentWord.equalsIgnoreCase("set") ||
-						currentWord.equalsIgnoreCase("delete");
-			} else if (words.length == 2 && (words[0].equalsIgnoreCase("set") || words[0].equalsIgnoreCase("delete"))) {
-				// Both "interfaces" and "protocols" have subcommands
-				return currentWord.equalsIgnoreCase("interfaces") ||
-						currentWord.equalsIgnoreCase("protocols");
-			} else if (words.length == 3 && words[1].equalsIgnoreCase("interfaces")) {
-				// "ethernet" has subcommands (interface name)
-				return currentWord.equalsIgnoreCase("ethernet");
-			} else if (words.length == 3 && words[1].equalsIgnoreCase("protocols")) {
-				// "static" has subcommands
-				return currentWord.equalsIgnoreCase("static");
-			} else if (words.length == 4 && words[2].equalsIgnoreCase("static")) {
-				// "route" expects a destination
-				return currentWord.equalsIgnoreCase("route");
-			} else if (words.length == 6 && words[3].equalsIgnoreCase("route")) {
-				// "next-hop" and "interface" expect values
-				return currentWord.equalsIgnoreCase("next-hop") ||
-						currentWord.equalsIgnoreCase("interface");
-			}
+			return verifyConfigurationMode(words, currentWord);
 			// Note: "address", "disable", "distance" are terminal - they don't have subcommands
+		}
+		return false;
+	}
+
+	private boolean verifyConfigurationMode(String[] words, String currentWord) {
+		if (words.length == 1) {
+			// Only "set" and "delete" have subcommands, others are complete commands
+			return currentWord.equalsIgnoreCase("set") ||
+					currentWord.equalsIgnoreCase(DELETE);
+		} else if (words.length == 2 && (words[0].equalsIgnoreCase("set") || words[0].equalsIgnoreCase(DELETE))) {
+			// Both "interfaces" and "protocols" have subcommands
+			return currentWord.equalsIgnoreCase(INTERFACES) ||
+					currentWord.equalsIgnoreCase(PROTOCOLS);
+		} else if (words.length == 3 && words[1].equalsIgnoreCase(INTERFACES)) {
+			// "ethernet" has subcommands (interface name)
+			return currentWord.equalsIgnoreCase(ETHERNET);
+		} else if (words.length == 3 && words[1].equalsIgnoreCase(PROTOCOLS)) {
+			// "static" has subcommands
+			return currentWord.equalsIgnoreCase(STATIC);
+		} else if (words.length == 4 && words[2].equalsIgnoreCase(STATIC)) {
+			// "route" expects a destination
+			return currentWord.equalsIgnoreCase(ROUTE);
+		} else if (words.length == 6 && words[3].equalsIgnoreCase(ROUTE)) {
+			// "next-hop" and "interface" expect values
+			return currentWord.equalsIgnoreCase(NEXT_HOP) ||
+					currentWord.equalsIgnoreCase(INTERFACE);
 		}
 		return false;
 	}
@@ -113,22 +128,22 @@ public class RouterCommandCompleter implements Completer {
 			// 'show' commands
 			if (words.length == 2) {
 				addCandidateIfMatches(candidates, "ip", "Show IP information", currentWord);
-				addCandidateIfMatches(candidates, "interfaces", "Show interface information", currentWord);
+				addCandidateIfMatches(candidates, INTERFACES, "Show interface information", currentWord);
 				addCandidateIfMatches(candidates, "configuration", "Show configuration", currentWord);
 			}
 		} else if (words.length == 3 && words[1].equalsIgnoreCase("ip")) {
-			addCandidateIfMatches(candidates, "route", "Show IP routing table", currentWord);
+			addCandidateIfMatches(candidates, ROUTE, "Show IP routing table", currentWord);
 		}
 	}
 
 	private void completeConfigurationMode(String[] words, String currentWord, List<Candidate> candidates) {
 		if (words.length <= 1) {
 			addCandidateIfMatches(candidates, "set", "Add or modify configuration", currentWord);
-			addCandidateIfMatches(candidates, "delete", "Remove configuration", currentWord);
+			addCandidateIfMatches(candidates, DELETE, "Remove configuration", currentWord);
 			addCandidateIfMatches(candidates, "show", "Show current configuration", currentWord);
 			addCandidateIfMatches(candidates, "commit", "Apply configuration changes", currentWord);
 			addCandidateIfMatches(candidates, "exit", "Exit configuration mode", currentWord);
-		} else if (words[0].equalsIgnoreCase("set") || words[0].equalsIgnoreCase("delete")) {
+		} else if (words[0].equalsIgnoreCase("set") || words[0].equalsIgnoreCase(DELETE)) {
 			completeSetDeleteCommand(words, currentWord, candidates);
 		} else if (words[0].equalsIgnoreCase("show") && words.length == 2) {
 			addCandidateIfMatches(candidates, "configuration", "Show current configuration", currentWord);
@@ -137,52 +152,49 @@ public class RouterCommandCompleter implements Completer {
 
 	private void completeSetDeleteCommand(String[] words, String currentWord, List<Candidate> candidates) {
 		if (words.length == 2) {
-			addCandidateIfMatches(candidates, "interfaces", "Configure interfaces", currentWord);
-			addCandidateIfMatches(candidates, "protocols", "Configure protocols", currentWord);
-		} else if (words.length == 3 && words[1].equalsIgnoreCase("interfaces")) {
-			addCandidateIfMatches(candidates, "ethernet", "Configure Ethernet interface", currentWord);
-		} else if (words.length == 4 && words[1].equalsIgnoreCase("interfaces") && words[2].equalsIgnoreCase("ethernet")) {
-			for (RouterInterface iface : router.getInterfaces()) {
-				addCandidateIfMatches(candidates, iface.getInterfaceName(), "Interface " + iface.getInterfaceName(), currentWord);
-			}
-		} else if (words.length == 5 && words[1].equalsIgnoreCase("interfaces")) {
-			// After interface name (e.g., "set interfaces ethernet eth0 ...")
-			addCandidateIfMatches(candidates, "address", "Set IP address", currentWord);
-			addCandidateIfMatches(candidates, "disable", "Disable interface", currentWord);
-		} else if (words.length == 6 && words[1].equalsIgnoreCase("interfaces") && words[4].equalsIgnoreCase("address")) {
-			// After "address" keyword - user needs to enter IP address
-			if (currentWord.isEmpty()) {
-				// Show hint about IP address format
-				candidates.add(new Candidate("<x.x.x.x/prefix>", "<x.x.x.x/prefix>", null,
-						"Enter IP address with prefix (e.g., 192.168.1.1/24)", null, null, false));
-			}
-		} else if (words.length == 3 && words[1].equalsIgnoreCase("protocols")) {
-			addCandidateIfMatches(candidates, "static", "Static routing", currentWord);
-		} else if (words.length == 4 && words[1].equalsIgnoreCase("protocols") && words[2].equalsIgnoreCase("static")) {
-			addCandidateIfMatches(candidates, "route", "Configure static route", currentWord);
-		} else if (words.length == 5 && words[1].equalsIgnoreCase("protocols") && words[3].equalsIgnoreCase("route")) {
+			addCandidateIfMatches(candidates, INTERFACES, "Configure interfaces", currentWord);
+			addCandidateIfMatches(candidates, PROTOCOLS, "Configure protocols", currentWord);
+		} else if (words[1].equalsIgnoreCase(INTERFACES)) {
+			completeInterfaces(words, currentWord, candidates);
+		} else if (words[1].equalsIgnoreCase(PROTOCOLS)) {
+			completeProtocols(words, currentWord, candidates);
+		}
+	}
+
+	private void completeProtocols(String[] words, String currentWord, List<Candidate> candidates) {
+		if (words.length == 3) {
+			addCandidateIfMatches(candidates, STATIC, "Static routing", currentWord);
+		} else if (words.length == 4 && words[2].equalsIgnoreCase(STATIC)) {
+			addCandidateIfMatches(candidates, ROUTE, "Configure static route", currentWord);
+		} else if (words.length == 5 && words[3].equalsIgnoreCase(ROUTE)) {
 			// After "route" keyword - user needs to enter destination network
 			if (currentWord.isEmpty()) {
 				// Show hint about destination network format
-				candidates.add(new Candidate("<x.x.x.x/prefix>", "<x.x.x.x/prefix>", null,
+				candidates.add(new Candidate(ADDRESS_FORMAT, ADDRESS_FORMAT, null,
 						"Enter destination network (e.g., 192.168.1.0/24)", null, null, false));
 			}
-		} else if (words.length == 6 && words[1].equalsIgnoreCase("protocols") && words[3].equalsIgnoreCase("route")) {
+		} else if (words.length == 6 && words[3].equalsIgnoreCase(ROUTE)) {
 			// After destination network - show next-hop or interface options
-			addCandidateIfMatches(candidates, "next-hop", "Specify next-hop IP address", currentWord);
-			addCandidateIfMatches(candidates, "interface", "Specify outgoing interface", currentWord);
-		} else if (words.length == 7 && words[5].equalsIgnoreCase("next-hop")) {
+			addCandidateIfMatches(candidates, NEXT_HOP, "Specify next-hop IP address", currentWord);
+			addCandidateIfMatches(candidates, INTERFACE, "Specify outgoing interface", currentWord);
+		} else {
+			completeRouteType(words, currentWord, candidates);
+		}
+	}
+
+	private void completeRouteType(String[] words, String currentWord, List<Candidate> candidates) {
+		if (words.length == 7 && words[5].equalsIgnoreCase(NEXT_HOP)) {
 			// After "next-hop" keyword - user needs to enter next-hop IP
 			if (currentWord.isEmpty()) {
 				candidates.add(new Candidate("<x.x.x.x>", "<x.x.x.x>", null,
 						"Enter next-hop IP address (e.g., 192.168.1.254)", null, null, false));
 			}
-		} else if (words.length == 7 && words[5].equalsIgnoreCase("interface")) {
+		} else if (words.length == 7 && words[5].equalsIgnoreCase(INTERFACE)) {
 			// After "interface" keyword - show available interfaces
 			for (RouterInterface iface : router.getInterfaces()) {
 				addCandidateIfMatches(candidates, iface.getInterfaceName(), "Interface " + iface.getInterfaceName(), currentWord);
 			}
-		} else if (words.length == 8 && (words[5].equalsIgnoreCase("next-hop") || words[5].equalsIgnoreCase("interface"))) {
+		} else if (words.length == 8 && (words[5].equalsIgnoreCase(NEXT_HOP) || words[5].equalsIgnoreCase(INTERFACE))) {
 			// After next-hop IP or interface name - show optional parameters
 			addCandidateIfMatches(candidates, "distance", "Set administrative distance", currentWord);
 			addCandidateIfMatches(candidates, "disable", "Disable route", currentWord);
@@ -190,6 +202,25 @@ public class RouterCommandCompleter implements Completer {
 			// After "distance" keyword - user needs to enter distance value
 			candidates.add(new Candidate("<1-255>", "<1-255>", null,
 					"Enter administrative distance (1-255, default: 1)", null, null, false));
+		}
+	}
+
+	private void completeInterfaces(String[] words, String currentWord, List<Candidate> candidates) {
+		if (words.length == 3) {
+			addCandidateIfMatches(candidates, ETHERNET, "Configure Ethernet interface", currentWord);
+		} else if (words.length == 4 && words[2].equalsIgnoreCase(ETHERNET)) {
+			for (RouterInterface iface : router.getInterfaces()) {
+				addCandidateIfMatches(candidates, iface.getInterfaceName(), "Interface " + iface.getInterfaceName(), currentWord);
+			}
+		} else if (words.length == 5) {
+			// After interface name (e.g., "set interfaces ethernet eth0 ...")
+			addCandidateIfMatches(candidates, "address", "Set IP address", currentWord);
+			addCandidateIfMatches(candidates, "disable", "Disable interface", currentWord);
+		} else if (words.length == 6 && words[4].equalsIgnoreCase("address") && currentWord.isEmpty()) {
+			// After "address" keyword - user needs to enter IP address
+			// Show hint about IP address format
+			candidates.add(new Candidate(ADDRESS_FORMAT, ADDRESS_FORMAT, null,
+					"Enter IP address with prefix (e.g., 192.168.1.1/24)", null, null, false));
 		}
 	}
 

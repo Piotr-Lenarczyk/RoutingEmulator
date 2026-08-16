@@ -5,6 +5,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.uj.routingemulator.common.*;
+import org.uj.routingemulator.common.exceptions.InvalidSubnetException;
 import org.uj.routingemulator.router.exceptions.*;
 
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ import java.util.logging.Logger;
 @Setter
 @EqualsAndHashCode
 public class Router {
+	private static final String INTERFACE_NOT_EXISTS = "WARN: interface %s does not exist, changes will not be commited";
 	private static final Logger logger = Logger.getLogger(Router.class.getName());
 
 	private String name;
@@ -86,6 +88,26 @@ public class Router {
 		return hasUncommittedChanges;
 	}
 
+	private static void handleEntryFormatting(RouteDisplayEntry entry, StringBuilder output) {
+		if (entry.isConnected) {
+			// Connected routes - actually connected to the interface
+			output.append(" is directly connected, ").append(entry.interfaceName);
+		} else {
+			// Static routes
+			output.append(" [").append(entry.distance).append("]");
+			if (entry.nextHop != null) {
+				// Static route with next-hop
+				output.append(" via ").append(entry.nextHop);
+				if (entry.interfaceName != null) {
+					output.append(", ").append(entry.interfaceName);
+				}
+			} else if (entry.interfaceName != null) {
+				// Static route via interface (not "directly connected")
+				output.append(" via ").append(entry.interfaceName);
+			}
+		}
+	}
+
 	/**
 	 * Adds a new static route to the routing table.
 	 *
@@ -104,7 +126,7 @@ public class Router {
 		if (routeSubnet == null || !routeSubnet.isValidNetworkAddress()) {
 			String msg = String.format("\n\tError: %s is not a valid IPv4 prefix\n\n\n\tInvalid value\n\tValue validation failed\n\tSet failed\n\n[edit]", routeSubnet == null ? "null" : routeSubnet.toString());
 			logger.warning("Invalid subnet (not a network address) provided for route: %s".formatted(routeSubnet));
-			throw new RuntimeException(msg);
+			throw new InvalidSubnetException(msg);
 		}
 
 		if (stagedRoutingTable.contains(entry)) {
@@ -134,20 +156,7 @@ public class Router {
 
 			// Determine whether next-hop lies inside any configured subnet on staged interfaces
 			Integer inferredMask = null;
-			for (RouterInterface ri : stagedInterfaces) {
-				logger.finest("Checking interface %s with subnet %s".formatted(ri.getInterfaceName(), ri.getSubnet()));
-				if (ri.getSubnet() != null && ri.getSubnet().subnetMask() != null) {
-					Subnet s = ri.getSubnet();
-					long ipAsLong = ((long) nh.getOctet1() << 24) | ((long) nh.getOctet2() << 16) | ((long) nh.getOctet3() << 8) | nh.getOctet4();
-					int prefix = s.subnetMask().shortMask();
-					long networkMask = (prefix == 0) ? 0 : (0xFFFFFFFFL << (32 - prefix));
-					long net = ((long) s.networkAddress().getOctet1() << 24) | ((long) s.networkAddress().getOctet2() << 16) | ((long) s.networkAddress().getOctet3() << 8) | s.networkAddress().getOctet4();
-					if ((ipAsLong & networkMask) == (net & networkMask)) {
-						inferredMask = prefix;
-						break;
-					}
-				}
-			}
+			inferredMask = findNextHopFromStagedInterfaces(nh, inferredMask);
 
 			if (inferredMask != null) {
 				String nhFormatted = nh + "/" + inferredMask;
@@ -227,6 +236,24 @@ public class Router {
 		logger.info("%s: Route %s disabled in staged configuration".formatted(this.name, entry));
 	}
 
+	private Integer findNextHopFromStagedInterfaces(IPAddress nh, Integer inferredMask) {
+		for (RouterInterface ri : stagedInterfaces) {
+			logger.finest("Checking interface %s with subnet %s".formatted(ri.getInterfaceName(), ri.getSubnet()));
+			if (ri.getSubnet() != null && ri.getSubnet().subnetMask() != null) {
+				Subnet s = ri.getSubnet();
+				long ipAsLong = ((long) nh.getOctet1() << 24) | ((long) nh.getOctet2() << 16) | ((long) nh.getOctet3() << 8) | nh.getOctet4();
+				int prefix = s.subnetMask().shortMask();
+				long networkMask = (prefix == 0) ? 0 : (0xFFFFFFFFL << (32 - prefix));
+				long net = ((long) s.networkAddress().getOctet1() << 24) | ((long) s.networkAddress().getOctet2() << 16) | ((long) s.networkAddress().getOctet3() << 8) | s.networkAddress().getOctet4();
+				if ((ipAsLong & networkMask) == (net & networkMask)) {
+					inferredMask = prefix;
+					break;
+				}
+			}
+		}
+		return inferredMask;
+	}
+
 	/**
 	 * Configures a router interface with an IP address in the staged configuration.
 	 *
@@ -268,7 +295,7 @@ public class Router {
 		RouterInterface routerInterface = stagedInterfaces.stream()
 				.filter(intf -> intf.getInterfaceName().equals(routerInterfaceName))
 				.findFirst()
-				.orElseThrow(() -> new InterfaceNotFoundException("WARN: interface %s does not exist, changes will not be commited".formatted(routerInterfaceName)));
+				.orElseThrow(() -> new InterfaceNotFoundException(INTERFACE_NOT_EXISTS.formatted(routerInterfaceName)));
 
 		// Check duplicate first
 		if (routerInterface.getInterfaceAddress() != null && routerInterface.getInterfaceAddress().equals(interfaceAddress)) {
@@ -306,39 +333,10 @@ public class Router {
 		RouterInterface routerInterface = stagedInterfaces.stream()
 				.filter(intf -> intf.getInterfaceName().equals(routerInterfaceName))
 				.findFirst()
-				.orElseThrow(() -> new InterfaceNotFoundException("WARN: interface %s does not exist, changes will not be commited".formatted(routerInterfaceName)));
+				.orElseThrow(() -> new InterfaceNotFoundException(INTERFACE_NOT_EXISTS.formatted(routerInterfaceName)));
 		logger.info("%s: Disabling interface %s in staged configuration".formatted(this.getName(), routerInterfaceName));
 		routerInterface.disable();
 		hasUncommittedChanges = true;
-	}
-
-	/**
-	 * Removes an address from a router interface in the staged configuration.
-	 *
-	 * @param routerInterfaceName Name of the router interface
-	 * @throws InvalidModeException           if not in CONFIGURATION mode
-	 * @throws InterfaceNotFoundException     if the interface doesn't exist
-	 * @throws ConfigurationNotFoundException if the interface has no address to delete
-	 */
-	public void deleteInterfaceAddress(String routerInterfaceName) {
-		if (mode != RouterMode.CONFIGURATION) {
-			logger.warning("Attempted to delete interface address while in %s mode".formatted(mode));
-			throw new InvalidModeException("Invalid command: delete [interfaces]");
-		}
-
-		RouterInterface routerInterface = stagedInterfaces.stream()
-				.filter(intf -> intf.getInterfaceName().equals(routerInterfaceName))
-				.findFirst()
-				.orElseThrow(() -> new InterfaceNotFoundException("WARN: interface %s does not exist, changes will not be commited".formatted(routerInterfaceName)));
-
-		if (routerInterface.getInterfaceAddress() == null) {
-			logger.warning("Attempted to delete non-existent address from interface %s".formatted(routerInterfaceName));
-			throw new ConfigurationNotFoundException("No value to delete");
-		}
-
-		routerInterface.setInterfaceAddress(null);
-		hasUncommittedChanges = true;
-		logger.info("%s: Address deleted from interface %s in staged configuration".formatted(this.name, routerInterfaceName));
 	}
 
 	/**
@@ -543,6 +541,35 @@ public class Router {
 	}
 
 	/**
+	 * Removes an address from a router interface in the staged configuration.
+	 *
+	 * @param routerInterfaceName Name of the router interface
+	 * @throws InvalidModeException           if not in CONFIGURATION mode
+	 * @throws InterfaceNotFoundException     if the interface doesn't exist
+	 * @throws ConfigurationNotFoundException if the interface has no address to delete
+	 */
+	public void deleteInterfaceAddress(String routerInterfaceName) {
+		if (mode != RouterMode.CONFIGURATION) {
+			logger.warning("Attempted to delete interface address while in %s mode".formatted(mode));
+			throw new InvalidModeException("Invalid command: delete [interfaces]");
+		}
+
+		RouterInterface routerInterface = stagedInterfaces.stream()
+				.filter(intf -> intf.getInterfaceName().equals(routerInterfaceName))
+				.findFirst()
+				.orElseThrow(() -> new InterfaceNotFoundException(INTERFACE_NOT_EXISTS.formatted(routerInterfaceName)));
+
+		if (routerInterface.getInterfaceAddress() == null) {
+			logger.warning("Attempted to delete non-existent address from interface %s".formatted(routerInterfaceName));
+			throw new ConfigurationNotFoundException("No value to delete");
+		}
+
+		routerInterface.setInterfaceAddress(null);
+		hasUncommittedChanges = true;
+		logger.info("%s: Address deleted from interface %s in staged configuration".formatted(this.name, routerInterfaceName));
+	}
+
+	/**
 	 * Displays the IP routing table in VyOS format.
 	 * Shows both static routes and connected routes (directly connected networks).
 	 * Must be executed in OPERATIONAL mode.
@@ -581,23 +608,7 @@ public class Router {
 			output.append(entry.subnet.networkAddress()).append("/");
 			output.append(entry.subnet.subnetMask().shortMask());
 
-			if (entry.isConnected) {
-				// Connected routes - actually connected to the interface
-				output.append(" is directly connected, ").append(entry.interfaceName);
-			} else {
-				// Static routes
-				output.append(" [").append(entry.distance).append("]");
-				if (entry.nextHop != null) {
-					// Static route with next-hop
-					output.append(" via ").append(entry.nextHop);
-					if (entry.interfaceName != null) {
-						output.append(", ").append(entry.interfaceName);
-					}
-				} else if (entry.interfaceName != null) {
-					// Static route via interface (not "directly connected")
-					output.append(" via ").append(entry.interfaceName);
-				}
-			}
+			handleEntryFormatting(entry, output);
 			output.append("\n");
 		}
 

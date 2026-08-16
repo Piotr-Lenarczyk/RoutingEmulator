@@ -24,28 +24,28 @@ public class PingFormatter {
         String dstStr = dst.toString();
         String srcStr = src != null ? src.toString() : "0.0.0.0";
 
-        sb.append("PING ").append(dstStr).append(" (").append(dstStr).append("): 56(84) bytes of data.\n");
+        sb.append("PING ").append(dstStr).append(" (").append(dstStr).append("): 56(84) bytes of data.%n");
 
         List<PingResult> results = stats.results();
 
         for (PingResult r : results) {
             if (r.success()) {
-                sb.append(String.format("64 bytes from %s: icmp_seq=%d ttl=%d time=%dms\n", dstStr, r.sequence(), ttl, r.rttMs()));
+                sb.append(String.format("64 bytes from %s: icmp_seq=%d ttl=%d time=%dms%n", dstStr, r.sequence(), ttl, r.rttMs()));
             } else {
                 String reason = r.errorMessage();
                 if (reason == null || reason.isEmpty()) {
                     reason = "Destination Host Unreachable";
                 }
-                sb.append(String.format("From %s icmp_seq=%d %s\n", srcStr, r.sequence(), reason));
+                sb.append(String.format("From %s icmp_seq=%d %s%n", srcStr, r.sequence(), reason));
             }
         }
 
-        sb.append("\n--- ").append(dstStr).append(" ping statistics ---\n");
+        sb.append("%n--- ").append(dstStr).append(" ping statistics ---%n");
         int transmitted = stats.getSent();
         int received = stats.getReceived();
         long errors = (long) transmitted - received; // simple
         double loss = transmitted == 0 ? 100.0 : (100.0 * (transmitted - received) / transmitted);
-        sb.append(String.format("%d packets transmitted, %d received, %s errors, %.0f%% packet loss, time %dms\n",
+        sb.append(String.format("%d packets transmitted, %d received, %s errors, %.0f%% packet loss, time %dms%n",
                 transmitted, received, (errors > 0 ? "+" + errors : "0"), loss, 0));
 
         // rtt stats
@@ -56,7 +56,7 @@ public class PingFormatter {
             double avg = stat.getAverage();
             double max = stat.getMax();
             double mdev = Math.sqrt(rtts.stream().mapToDouble(v -> (v - avg) * (v - avg)).average().orElse(0));
-            sb.append(String.format("rtt min/avg/max/mdev = %.2f/%.2f/%.2f/%.2f ms\n", min, avg, max, mdev));
+            sb.append(String.format("rtt min/avg/max/mdev = %.2f/%.2f/%.2f/%.2f ms%n", min, avg, max, mdev));
         }
 
         return sb.toString();

@@ -1,8 +1,6 @@
 package org.uj.routingemulator.router.cli.route;
 
-import org.uj.routingemulator.common.IPAddress;
-import org.uj.routingemulator.common.Subnet;
-import org.uj.routingemulator.common.exceptions.InvalidNextHopException;
+import org.uj.routingemulator.router.NextHopRouteParameters;
 import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.StaticRoutingEntry;
 import org.uj.routingemulator.router.cli.CLIContext;
@@ -40,34 +38,8 @@ public class SetRouteNextHopCommand implements RouterCommand {
 	public void execute(Router router) {
 		PrintWriter out = CLIContext.getWriter();
 		try {
-			Subnet dest;
-			try {
-				dest = Subnet.fromString(destinationSubnet);
-			} catch (RuntimeException e) {
-				// Provide user-friendly message for invalid prefix
-				String msg = String.format("\n\tError: %s is not a valid IPv4 prefix\n\n\n\tInvalid value\n\tValue validation failed\n\tSet failed\n\n[edit]", destinationSubnet);
-				throw new RuntimeException(msg);
-			}
-
-			IPAddress nh;
-			try {
-				nh = IPAddress.fromString(nextHop);
-			} catch (RuntimeException e) {
-				// If nextHop contains a mask, produce a clearer error message
-				if (nextHop != null && nextHop.contains("/")) {
-					String msg = String.format("\n\tError: %s is not a valid IPv4 prefix\n\n\n\tInvalid value\n\tValue validation failed\n\tSet failed\n\n[edit]", nextHop);
-					throw new InvalidNextHopException(msg);
-				}
-				// otherwise rethrow
-				throw e;
-			}
-
-			router.addRoute(
-					new StaticRoutingEntry(
-							dest,
-							nh
-					)
-			);
+			NextHopRouteParameters nextHopRouteParameters = NextHopRouteParameters.parseRouteParameters(destinationSubnet, nextHop);
+			router.addRoute(new StaticRoutingEntry(nextHopRouteParameters.dest(), nextHopRouteParameters.nh()));
 			out.println("[edit]");
 			out.flush();
 		} catch (RuntimeException e) {

@@ -2,6 +2,8 @@ package org.uj.routingemulator.common;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.uj.routingemulator.common.exceptions.DuplicateConnectionException;
+import org.uj.routingemulator.common.exceptions.InterfaceAlreadyConnected;
 import org.uj.routingemulator.host.Host;
 import org.uj.routingemulator.host.HostInterface;
 import org.uj.routingemulator.router.AdminState;
@@ -10,10 +12,7 @@ import org.uj.routingemulator.router.RouterInterface;
 import org.uj.routingemulator.switching.Switch;
 import org.uj.routingemulator.switching.SwitchPort;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
@@ -106,7 +105,7 @@ public class NetworkTopology {
 		if (this.connections.contains(connection)) {
 			logger.warning("Attempted to add duplicate connection between %s and %s".formatted(
 					connection.interfaceA().getInterfaceName(), connection.interfaceB().getInterfaceName()));
-			throw new RuntimeException("Connection already exists");
+			throw new DuplicateConnectionException("Connection already exists");
 		}
 
 		// Check if the reverse connection exists (A-B is the same as B-A)
@@ -114,7 +113,7 @@ public class NetworkTopology {
 		if (this.connections.contains(reverseConnection)) {
 			logger.warning("Attempted to add duplicate connection (reverse direction) between %s and %s".formatted(
 					connection.interfaceB().getInterfaceName(), connection.interfaceA().getInterfaceName()));
-			throw new RuntimeException("Connection already exists (reverse direction)");
+			throw new DuplicateConnectionException("Connection already exists (reverse direction)");
 		}
 
 		// Check if either interface is already connected to something else
@@ -128,7 +127,7 @@ public class NetworkTopology {
 						connection.interfaceA().getInterfaceName(),
 						existingConnection.interfaceA().getInterfaceName(),
 						existingConnection.interfaceB().getInterfaceName()));
-				throw new RuntimeException("Interface " + connection.interfaceA().getInterfaceName() +
+				throw new InterfaceAlreadyConnected("Interface " + connection.interfaceA().getInterfaceName() +
 					" is already connected");
 			}
 			if (existingConnection.interfaceA().equals(connection.interfaceB()) ||
@@ -137,7 +136,7 @@ public class NetworkTopology {
 						connection.interfaceB().getInterfaceName(),
 						existingConnection.interfaceA().getInterfaceName(),
 						existingConnection.interfaceB().getInterfaceName()));
-				throw new RuntimeException("Interface " + connection.interfaceB().getInterfaceName() +
+				throw new InterfaceAlreadyConnected("Interface " + connection.interfaceB().getInterfaceName() +
 					" is already connected");
 			}
 		}
@@ -263,22 +262,23 @@ public class NetworkTopology {
 	 * @return text representation of the network topology
 	 */
 	public String visualize() {
+		final String EXTENDER = "└─";
 		StringBuilder sb = new StringBuilder();
 		sb.append("=== Network Topology ===\n\n");
 
 		// Hosts
 		sb.append("Hosts:\n");
 		for (Host host : hosts) {
-			sb.append("  └─ ").append(host.getHostname()).append("\n");
+			sb.append("  %s ".formatted(EXTENDER)).append(host.getHostname()).append("\n");
 			sb.append("      ├─ Interface: ").append(host.getHostInterface().getInterfaceName()).append("\n");
 			sb.append("      ├─ IP: ").append(host.getHostInterface().getSubnet().networkAddress()).append("\n");
-			sb.append("      └─ Gateway: ").append(host.getHostInterface().getDefaultGateway()).append("\n\n");
+			sb.append("      %s Gateway: ".formatted(EXTENDER)).append(host.getHostInterface().getDefaultGateway()).append("\n\n");
 		}
 
 		// Switches
 		sb.append("Switches:\n");
 		for (Switch sw : switches) {
-			sb.append("  └─ ").append(sw.getName()).append("\n");
+			sb.append("  %s ".formatted(EXTENDER)).append(sw.getName()).append("\n");
 			sb.append("      └─ Ports: ");
 			sb.append(sw.getPorts().stream()
 					.map(NetworkInterface::getInterfaceName)
@@ -389,8 +389,8 @@ public class NetworkTopology {
 	 * @return the HostInterface if found, otherwise null
 	 */
 	public HostInterface findHostInterfaceByIpConnectedToInterface(NetworkInterface start, IPAddress ip) {
-		Queue<NetworkInterface> q = new java.util.ArrayDeque<>();
-		Set<NetworkInterface> visited = new java.util.HashSet<>();
+		Queue<NetworkInterface> q = new ArrayDeque<>();
+		Set<NetworkInterface> visited = new HashSet<>();
 
 		q.add(start);
 		visited.add(start);
@@ -405,24 +405,11 @@ public class NetworkTopology {
 
 			// If current is a switch port, treat switch as hub: add all other ports of the same switch
 			if (cur instanceof SwitchPort sp) {
-				for (Switch sw : switches) {
-					if (sw.containsPort(sp)) {
-						for (SwitchPort sibling : sw.getPorts()) {
-							if (!visited.contains(sibling)) {
-								visited.add(sibling);
-								q.add(sibling);
-							}
-						}
-						break;
-					}
-				}
+				addSwitchPorts(sp, visited, q);
 			}
 
 			// Process the connection for current interface (if any)
-			Connection c = getConnectionForInterface(cur);
-			if (c == null) continue;
-
-			NetworkInterface neighbor = c.getNeighborInterface(cur);
+			NetworkInterface neighbor = processInterface(cur);
 			if (neighbor == null) continue;
 
 			if (!visited.contains(neighbor)) {
@@ -436,6 +423,28 @@ public class NetworkTopology {
 		}
 
 		return null;
+	}
+
+	private void addSwitchPorts(SwitchPort sp, Set<NetworkInterface> visited, Queue<NetworkInterface> q) {
+		for (Switch sw : switches) {
+			if (sw.containsPort(sp)) {
+				for (SwitchPort sibling : sw.getPorts()) {
+					if (!visited.contains(sibling)) {
+						visited.add(sibling);
+						q.add(sibling);
+					}
+				}
+				break;
+			}
+		}
+	}
+
+	private NetworkInterface processInterface(NetworkInterface cur) {
+		Connection c = getConnectionForInterface(cur);
+		if (c == null) return null;
+
+		NetworkInterface neighbor = c.getNeighborInterface(cur);
+		return neighbor;
 	}
 
 	/**
