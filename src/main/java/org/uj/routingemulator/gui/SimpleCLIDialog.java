@@ -17,13 +17,17 @@ import org.uj.routingemulator.router.cli.RouterCommandCompleter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Dialog window that provides CLI access to a router using SimpleTerminalTextArea.
- * This is a fallback version if RichTextFX has compatibility issues
  */
 public class SimpleCLIDialog extends Dialog<Void> {
+
+	// Manage GUI session state outside of the domain model
+	private static final Map<Router, RouterSessionState> sessionStates = new HashMap<>();
 
     private final Router router;
     private final RouterCLIParser parser;
@@ -45,10 +49,12 @@ public class SimpleCLIDialog extends Dialog<Void> {
         terminal.setPrefRowCount(24);
         terminal.setPrefColumnCount(80);
 
-        // Restore previous terminal buffer
-        boolean hasExistingBuffer = !router.getTerminalBuffer().isEmpty();
+	    // Retrieve or generate session state
+	    RouterSessionState sessionState = sessionStates.computeIfAbsent(router, r -> new RouterSessionState());
+	    boolean hasExistingBuffer = !sessionState.getTerminalBuffer().isEmpty();
+
         if (hasExistingBuffer) {
-            terminal.restoreFromBuffer(router.getTerminalBuffer().toString());
+	        terminal.restoreFromBuffer(sessionState.getTerminalBuffer().toString());
         }
 
         // Setup handlers
@@ -58,14 +64,11 @@ public class SimpleCLIDialog extends Dialog<Void> {
         VBox content = new VBox(10);
         content.setPadding(new Insets(10));
         content.getChildren().add(terminal);
-
         getDialogPane().setContent(content);
         getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
 
         // Show initial prompt and focus terminal
         Platform.runLater(() -> {
-            // Only show prompt if we didn't restore a buffer (fresh session)
-            // or if buffer doesn't end with a prompt already
             if (!hasExistingBuffer || !bufferEndsWithPrompt()) {
                 showPrompt();
             }
@@ -77,30 +80,24 @@ public class SimpleCLIDialog extends Dialog<Void> {
     }
 
     private void processCommand(String command) {
-        // Early return for empty commands - just show prompt
         if (command.trim().isEmpty()) {
             showPrompt();
             saveTerminalBuffer();
             return;
         }
 
-        // Execute command and capture output
         String output = captureOutput(() -> parser.executeCommand(command, router));
         if (output != null && !output.isEmpty()) {
             terminal.appendColoredText(output);
         }
-
-        // NOTE: confirmation mechanism was removed from Router; GUI confirmation dialog is no longer needed
 
         showPrompt();
         saveTerminalBuffer();
     }
 
     private void handleTabCompletion(String input, java.util.function.Consumer<List<String>> callback) {
-        // Use completer to get suggestions (restore previous behavior)
         ParsedLine parsedLine = new SimpleParsedLine(input);
         List<org.jline.reader.Candidate> candidates = new ArrayList<>();
-
         completer.complete(null, parsedLine, candidates);
 
         List<String> completions = candidates.stream()
@@ -113,10 +110,8 @@ public class SimpleCLIDialog extends Dialog<Void> {
     private String captureOutput(Runnable command) {
         StringWriter stringWriter = new StringWriter();
         PrintWriter printWriter = new PrintWriter(stringWriter);
-
         try {
             CLIContext.setWriter(printWriter);
-            // expose topology to commands running in this context (so ping in GUI works)
             CLIContext.setNetworkTopology(this.topology);
             command.run();
             printWriter.flush();
@@ -138,18 +133,10 @@ public class SimpleCLIDialog extends Dialog<Void> {
         terminal.showPrompt(prompt);
     }
 
-    /**
-     * Saves the current terminal content to the router's terminal buffer.
-     * This allows the terminal history to persist across dialog sessions.
-     */
     private void saveTerminalBuffer() {
-        router.setTerminalBuffer(new StringBuilder(terminal.getText()));
+	    sessionStates.get(router).updateBuffer(terminal.getText());
     }
 
-    /**
-     * Checks if the terminal text ends with a prompt.
-     * Used to avoid showing duplicate prompts when reopening the dialog.
-     */
     private boolean bufferEndsWithPrompt() {
         String text = terminal.getText();
         return text.endsWith("vyos@vyos$ ") ||
@@ -159,10 +146,8 @@ public class SimpleCLIDialog extends Dialog<Void> {
 
     // Helper class for ParsedLine
     private record SimpleParsedLine(String line) implements ParsedLine {
-
         @Override
         public String word() {
-            // If line ends with whitespace, we're starting a new word (empty)
             if (line.endsWith(" ") || line.endsWith("\t")) {
                 return "";
             }
@@ -177,7 +162,6 @@ public class SimpleCLIDialog extends Dialog<Void> {
 
         @Override
         public int wordIndex() {
-            // If line ends with space, we're at a new word position
             if (line.endsWith(" ") || line.endsWith("\t")) {
                 return line.split("\\s+").length;
             }
@@ -188,7 +172,6 @@ public class SimpleCLIDialog extends Dialog<Void> {
         public List<String> words() {
             return List.of(line.split("\\s+"));
         }
-
 
         @Override
         public int cursor() {

@@ -8,24 +8,22 @@ import java.util.regex.Pattern;
 
 /**
  * Command to display the IP routing table.
- * Shows both static routes and connected routes (directly connected networks).
- *
- * <p>Command format: {@code show ip route}
- *
- * <p>Must be executed in OPERATIONAL mode.
  */
 public class ShowIpRouteCommand implements RouterCommand {
+
 	private static final Pattern PATTERN = Pattern.compile("^show\\s+ip\\s+route$");
 
 	@Override
 	public void execute(Router router) {
 		PrintWriter out = CLIContext.getWriter();
+
 		if (router.getMode() != RouterMode.OPERATIONAL) {
 			out.println("Invalid command: show [ip]");
 			out.flush();
 			return;
 		}
 
+		// Call the router directly, respecting its encapsulation
 		String output = router.showIpRoute();
 		out.println(output);
 		out.flush();
@@ -46,4 +44,3 @@ public class ShowIpRouteCommand implements RouterCommand {
 		return "Display IP routing table";
 	}
 }
-
