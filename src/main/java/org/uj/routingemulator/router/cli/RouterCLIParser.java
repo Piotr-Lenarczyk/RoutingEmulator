@@ -121,15 +121,9 @@ public class RouterCLIParser {
 	}
 
 	public void executeCommand(String input, Router router) {
-		// CLIContext should be set by the caller before calling this method
-		// In terminal mode, it's set in RouterCLI.start()
-		// In GUI mode, it's set by captureOutput() wrapper
-
 		logger.info("%s: Executing command: %s".formatted(router.getName(), input));
+		PrintWriter out = CLIContext.getWriter();
 
-		PrintWriter out = CLIContext.getWriter(); // This has a fallback to System.out
-
-		// First, try exact match
 		for (RouterCommand command : commands) {
 			if (command.matches(input)) {
 				try {
@@ -137,7 +131,6 @@ public class RouterCLIParser {
 					command.execute(router);
 					out.flush();
 				} catch (RuntimeException e) {
-					// Print message and do not prompt for confirmation; warnings are logged by Router
 					out.println(e.getMessage());
 					out.flush();
 				}
@@ -145,9 +138,7 @@ public class RouterCLIParser {
 			}
 		}
 
-		// No exact match found - try prefix matching
-		// This allows "con" to match "configure" if it's unambiguous
-		RouterCommand prefixMatch = findUniquePrefixMatch(input);
+		RouterCommand prefixMatch = CommandMatcher.findUniquePrefixMatch(input, commands);
 		if (prefixMatch != null) {
 			try {
 				prefixMatch.execute(router);
@@ -161,76 +152,6 @@ public class RouterCLIParser {
 
 		out.println("Command not recognized or not supported");
 		out.flush();
-	}
-
-	/**
-	 * Finds a command that uniquely matches the input as a prefix.
-	 * Returns the command if exactly one command's pattern starts with the input.
-	 * Returns null if no match or multiple matches (ambiguous).
-	 *
-	 * @param input User input
-	 * @return Matching command or null
-	 */
-	private RouterCommand findUniquePrefixMatch(String input) {
-		String inputTrim = input.trim();
-		if (inputTrim.isEmpty()) {
-			return null;
-		}
-
-		// Split input to get the first word (the command keyword)
-		String[] inputWords = inputTrim.split("\\s+");
-		String firstWord = inputWords[0];
-
-		List<RouterCommand> matches = new ArrayList<>();
-
-		for (RouterCommand command : commands) {
-			String pattern = command.getCommandPattern();
-			// Get the first word of the pattern
-			String[] patternWords = pattern.split("\\s+");
-			if (patternWords.length > 0 && patternWords[0].startsWith(firstWord)) {
-				// Check if the rest of the input also matches (for multi-word commands)
-				if (inputWords.length == 1) {
-					// Only checking the first word
-					matches.add(command);
-				} else {
-					// For multi-word commands, check if the full input matches the pattern prefix
-					String patternPrefix = extractPatternPrefix(pattern, inputWords.length);
-					if (inputTrim.equals(patternPrefix)) {
-						matches.add(command);
-					}
-				}
-			}
-		}
-
-		// Return the command only if there's exactly one match
-		return matches.size() == 1 ? matches.getFirst() : null;
-	}
-
-	/**
-	 * Extracts the first N words from a pattern, stopping at placeholders.
-	 *
-	 * @param pattern   Command pattern
-	 * @param wordCount Number of words to extract
-	 * @return Pattern prefix or null if it contains placeholders
-	 */
-	private String extractPatternPrefix(String pattern, int wordCount) {
-		String[] words = pattern.split("\\s+");
-		if (words.length < wordCount) {
-			return null;
-		}
-
-		StringBuilder prefix = new StringBuilder();
-		for (int i = 0; i < wordCount; i++) {
-			// Stop if we encounter a placeholder (words with < or >)
-			if (words[i].contains("<") || words[i].contains(">")) {
-				return null;
-			}
-			if (i > 0) {
-				prefix.append(" ");
-			}
-			prefix.append(words[i]);
-		}
-		return prefix.toString();
 	}
 
 	/**

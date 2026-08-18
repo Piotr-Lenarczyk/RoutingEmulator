@@ -55,13 +55,13 @@ public class RouterConfigurationSession {
 			}
 		}
 
-		router.setRoutingTable(router.copyRoutingTableWithUpdatedInterfaces(stagedRoutingTable, router.getInterfaces()));
+		router.setRoutingTable(RoutingTableCopier.copyRoutingTableWithUpdatedInterfaces(stagedRoutingTable, router.getInterfaces()));
 		this.hasUncommittedChanges = false;
 	}
 
 	public void discardChanges(Router router) {
-		this.stagedInterfaces = router.deepCopyInterfaces(router.getInterfaces());
-		this.stagedRoutingTable = router.copyRoutingTableWithUpdatedInterfaces(router.getRoutingTable(), this.stagedInterfaces);
+		this.stagedInterfaces = RoutingTableCopier.deepCopyInterfaces(router.getInterfaces());
+		this.stagedRoutingTable = RoutingTableCopier.copyRoutingTableWithUpdatedInterfaces(router.getRoutingTable(), this.stagedInterfaces);
 		this.hasUncommittedChanges = false;
 	}
 

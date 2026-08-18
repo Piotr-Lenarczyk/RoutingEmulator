@@ -10,9 +10,9 @@ import org.uj.routingemulator.router.AdminState;
 import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.RouterInterface;
 import org.uj.routingemulator.switching.Switch;
-import org.uj.routingemulator.switching.SwitchPort;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -218,42 +218,6 @@ public class NetworkTopology {
 	}
 
 	/**
-	 * Gets the device name for a given interface.
-	 *
-	 * @param iface the interface to find the owner device for
-	 * @return device name, or "Unknown" if not found
-	 */
-	private String getDeviceName(NetworkInterface iface) {
-		// Check routers
-		for (Router router : routers) {
-			if (router.getInterfaces().stream().anyMatch(i -> i.equals(iface))) {
-				return router.getName();
-			}
-		}
-
-		// Check switches
-		for (Switch sw : switches) {
-			if (sw.getPorts().stream().anyMatch(port -> port.equals(iface))) {
-				return sw.getName();
-			}
-		}
-
-		// Check hosts
-		for (Host host : hosts) {
-			if (host.getHostInterface().equals(iface)) {
-				return host.getHostname();
-			}
-		}
-
-		return "Unknown";
-	}
-
-	private static boolean hasHostIp(HostInterface hostInterface, IPAddress ip) {
-		return hostInterface.getInterfaceAddress() != null
-				&& hostInterface.getInterfaceAddress().ipAddress().equals(ip);
-	}
-
-	/**
 	 * Finds the connection associated with the given interface.
 	 *
 	 * @param iface the interface to find connection for
@@ -331,81 +295,7 @@ public class NetworkTopology {
 	 * @return text representation of the network topology
 	 */
 	public String visualize() {
-		final String EXTENDER = "└─";
-		StringBuilder sb = new StringBuilder();
-		sb.append("=== Network Topology ===\n\n");
-
-		// Hosts
-		sb.append("Hosts:\n");
-		for (Host host : hosts) {
-			sb.append("  %s ".formatted(EXTENDER)).append(host.getHostname()).append("\n");
-			sb.append("      ├─ Interface: ").append(host.getHostInterface().getInterfaceName()).append("\n");
-			if (host.getHostInterface().getInterfaceAddress() != null) {
-				sb.append("      ├─ IP: ").append(host.getHostInterface().getInterfaceAddress()).append("\n");
-			}
-			sb.append("      %s Gateway: ".formatted(EXTENDER)).append(host.getHostInterface().getDefaultGateway()).append("\n\n");
-		}
-
-		// Switches
-		sb.append("Switches:\n");
-		for (Switch sw : switches) {
-			sb.append("  %s ".formatted(EXTENDER)).append(sw.getName()).append("\n");
-			sb.append("      └─ Ports: ");
-			sb.append(sw.getPorts().stream()
-					.map(NetworkInterface::getInterfaceName)
-					.reduce((a, b) -> a + ", " + b)
-					.orElse("none"));
-			sb.append("\n\n");
-		}
-
-		// Routers
-		sb.append("Routers:\n");
-		for (Router router : routers) {
-			sb.append("  └─ ").append(router.getName()).append("\n");
-			sb.append("      └─ Interfaces: ");
-			sb.append(router.getInterfaces().stream()
-					.map(iface -> iface.getInterfaceName() + (iface.getSubnet() != null ? " (" + iface.getSubnet().networkAddress() + "/" + iface.getSubnet().subnetMask() + ")" : " (unconfigured)"))
-					.reduce((a, b) -> a + ", " + b)
-					.orElse("none"));
-			sb.append("\n\n");
-		}
-
-		// Connections
-		sb.append("Connections:\n");
-		for (Connection conn : connections) {
-			String deviceA = getDeviceName(conn.interfaceA());
-			String deviceB = getDeviceName(conn.interfaceB());
-
-			sb.append("  ").append(deviceA)
-					.append("[").append(conn.interfaceA().getInterfaceName()).append("]")
-					.append(" <──> ")
-					.append(deviceB)
-					.append("[").append(conn.interfaceB().getInterfaceName()).append("]")
-					.append("\n");
-		}
-
-		return sb.toString();
-	}
-
-	private void addSwitchPorts(SwitchPort sp, Set<NetworkInterface> visited, Queue<NetworkInterface> q) {
-		for (Switch sw : switches) {
-			if (sw.containsPort(sp)) {
-				for (SwitchPort sibling : sw.getPorts()) {
-					if (!visited.contains(sibling)) {
-						visited.add(sibling);
-						q.add(sibling);
-					}
-				}
-				break;
-			}
-		}
-	}
-
-	private NetworkInterface processInterface(NetworkInterface cur) {
-		Connection c = getConnectionForInterface(cur);
-		if (c == null) return null;
-
-		return c.getNeighborInterface(cur);
+		return NetworkTopologyVisualizer.visualize(this);
 	}
 
 	/**
@@ -417,47 +307,7 @@ public class NetworkTopology {
 	 * @return the HostInterface if found, otherwise null
 	 */
 	public HostInterface findHostInterfaceByIpConnectedToInterface(NetworkInterface start, IPAddress ip) {
-		Queue<NetworkInterface> q = new ArrayDeque<>();
-		Set<NetworkInterface> visited = new HashSet<>();
-
-		q.add(start);
-		visited.add(start);
-
-		while (!q.isEmpty()) {
-			NetworkInterface cur = q.remove();
-
-			// If current is a HostInterface, check directly
-			if (cur instanceof HostInterface hif && hasHostIp(hif, ip)) {
-				return hif;
-			}
-
-			// If current is a switch port, treat switch as hub: add all other ports of the same switch
-			if (cur instanceof SwitchPort sp) {
-				addSwitchPorts(sp, visited, q);
-			}
-
-			// Process the connection for current interface (if any)
-			NetworkInterface neighbor = processInterface(cur);
-			if (neighbor == null) continue;
-
-			if (!visited.contains(neighbor)) {
-				visited.add(neighbor);
-				// If neighbor is HostInterface, check if it has the exact IP assigned
-				if (neighbor instanceof HostInterface hif && hasHostIp(hif, ip)) {
-					return hif;
-				}
-				q.add(neighbor);
-			}
-		}
-
-		return null;
-	}
-
-	/**
-	 * Convenience overload for RouterInterface start parameter.
-	 */
-	public HostInterface findHostInterfaceByIpConnectedToInterface(RouterInterface start, IPAddress ip) {
-		return findHostInterfaceByIpConnectedToInterface((NetworkInterface) start, ip);
+		return TopologyGraphSearch.findHostInterfaceByIpConnectedToInterface(this, start, ip);
 	}
 
 }

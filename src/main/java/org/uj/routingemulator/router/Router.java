@@ -263,50 +263,6 @@ public class Router {
 				.orElse(null);
 	}
 
-	public RoutingTable copyRoutingTableWithUpdatedInterfaces(RoutingTable routingTable, List<RouterInterface> newInterfaces) {
-		logger.finest("Copying routing table with updated interfaces");
-		RoutingTable newTable = new RoutingTable();
-
-		for (StaticRoutingEntry entry : routingTable.getRoutingEntries()) {
-			StaticRoutingEntry newEntry;
-
-			if (entry.getRouterInterface() != null) {
-				String interfaceName = entry.getRouterInterface().getInterfaceName();
-				RouterInterface newInterface = newInterfaces.stream()
-						.filter(intf -> intf.getInterfaceName().equals(interfaceName))
-						.findFirst()
-						.orElse(null);
-
-				if (entry.getAdministrativeDistance() == 1) {
-					newEntry = new StaticRoutingEntry(entry.getSubnet(), newInterface);
-				} else {
-					newEntry = new StaticRoutingEntry(entry.getSubnet(), newInterface, entry.getAdministrativeDistance());
-				}
-			} else {
-				if (entry.getAdministrativeDistance() == 1) {
-					newEntry = new StaticRoutingEntry(entry.getSubnet(), entry.getNextHop());
-				} else {
-					newEntry = new StaticRoutingEntry(entry.getSubnet(), entry.getNextHop(), entry.getAdministrativeDistance());
-				}
-			}
-
-			if (entry.isDisabled()) {
-				newEntry.disable();
-			}
-			newTable.addRoute(newEntry);
-		}
-		return newTable;
-	}
-
-	public List<RouterInterface> deepCopyInterfaces(List<RouterInterface> interfaces) {
-		logger.finest("Creating deep copy of interfaces for staged configuration");
-		List<RouterInterface> copy = new ArrayList<>();
-		for (RouterInterface iface : interfaces) {
-			copy.add(new RouterInterface(iface));
-		}
-		return copy;
-	}
-
 	public PingStatistics ping(String dst, NetworkTopology topology) {
 		logger.info("Initializing new PingService for host %s".formatted(this.name));
 		PingService svc = new PingService();

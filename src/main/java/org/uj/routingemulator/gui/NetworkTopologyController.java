@@ -411,7 +411,7 @@ public class NetworkTopologyController {
 	 * @param label the label prefix for the device
 	 */
 	private void addDeviceNode(Object device, double x, double y, Color color, String label) {
-		String name = getDeviceName(device);
+		String name = DeviceLookup.getDeviceNameFromObject(device);
 
 		Circle circle = new Circle(25, color);
 		circle.setStroke(Color.BLACK);
@@ -653,23 +653,6 @@ public class NetworkTopologyController {
 	}
 
 	/**
-	 * Gets the display name of a device.
-	 *
-	 * @param device the device
-	 * @return the device name
-	 */
-	private String getDeviceName(Object device) {
-		if (device instanceof Router router) {
-			return router.getName();
-		} else if (device instanceof Switch sw) {
-			return sw.getName();
-		} else if (device instanceof Host host) {
-			return host.getHostname();
-		}
-		return "Unknown";
-	}
-
-	/**
 	 * Formats a network interface for display with user-friendly information.
 	 *
 	 * @param iface the interface to format
@@ -792,12 +775,12 @@ public class NetworkTopologyController {
 		List<NetworkInterface> endInterfaces = getAvailableInterfaces(endNode.device);
 
 		if (startInterfaces.isEmpty()) {
-			showError("No available interfaces on " + getDeviceName(startNode.device));
+			showError("No available interfaces on " + DeviceLookup.getDeviceNameFromObject(startNode.device));
 			return;
 		}
 
 		if (endInterfaces.isEmpty()) {
-			showError("No available interfaces on " + getDeviceName(endNode.device));
+			showError("No available interfaces on " + DeviceLookup.getDeviceNameFromObject(endNode.device));
 			return;
 		}
 
@@ -817,7 +800,7 @@ public class NetworkTopologyController {
 		// Let user select interfaces
 		ChoiceDialog<NetworkInterface> startDialog = new ChoiceDialog<>(startInterfaces.getFirst(), startInterfaces);
 		startDialog.setTitle("Select Interface");
-		startDialog.setHeaderText("Select interface on " + getDeviceName(startNode.device));
+		startDialog.setHeaderText("Select interface on " + DeviceLookup.getDeviceNameFromObject(startNode.device));
 		startDialog.setContentText("Interface:");
 		// Set the converter for the ComboBox inside the ChoiceDialog
 		@SuppressWarnings("unchecked")
@@ -833,7 +816,7 @@ public class NetworkTopologyController {
 
 		ChoiceDialog<NetworkInterface> endDialog = new ChoiceDialog<>(endInterfaces.getFirst(), endInterfaces);
 		endDialog.setTitle("Select Interface");
-		endDialog.setHeaderText("Select interface on " + getDeviceName(endNode.device));
+		endDialog.setHeaderText("Select interface on " + DeviceLookup.getDeviceNameFromObject(endNode.device));
 		endDialog.setContentText("Interface:");
 		// Set the converter for the ComboBox inside the ChoiceDialog
 		@SuppressWarnings("unchecked")
