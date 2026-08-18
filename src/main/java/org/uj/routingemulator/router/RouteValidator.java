@@ -3,8 +3,8 @@ package org.uj.routingemulator.router;
 import org.uj.routingemulator.common.IPAddress;
 import org.uj.routingemulator.common.InterfaceAddress;
 import org.uj.routingemulator.common.Subnet;
-import org.uj.routingemulator.common.exceptions.InvalidSubnetException;
 import org.uj.routingemulator.router.exceptions.InvalidAddressException;
+import org.uj.routingemulator.router.exceptions.InvalidSubnetException;
 
 import java.util.List;
 import java.util.logging.Logger;
@@ -20,10 +20,8 @@ public class RouteValidator {
 
 	public static void validateSubnet(Subnet routeSubnet) {
 		if (routeSubnet == null || !routeSubnet.isValidNetworkAddress()) {
-			String msg = String.format("\n\tError: %s is not a valid IPv4 prefix\n\n\n\tInvalid value\n\tValue validation failed\n\tSet failed\n\n[edit]",
-					routeSubnet == null ? "null" : routeSubnet.toString());
 			logger.warning("Invalid subnet (not a network address) provided for route: " + routeSubnet);
-			throw new InvalidSubnetException(msg);
+			throw new InvalidSubnetException((routeSubnet == null ? "null" : routeSubnet.toString()) + " is not a valid IPv4 prefix");
 		}
 	}
 

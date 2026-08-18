@@ -11,33 +11,16 @@ import org.uj.routingemulator.router.exceptions.InvalidAddressException;
  * The address is represented in dotted-decimal notation (e.g., 192.168.1.1).
  * <p>
  * This class is immutable - once created, the address cannot be changed.
- * <p>
- * Examples:
- * <ul>
- *   <li>192.168.1.1 - typical private network address</li>
- *   <li>10.0.0.1 - private network address</li>
- *   <li>8.8.8.8 - public IP address</li>
- *   <li>127.0.0.1 - localhost</li>
- * </ul>
  */
 @Getter
 @EqualsAndHashCode
 public class IPAddress {
+
 	private final int octet1;
 	private final int octet2;
 	private final int octet3;
 	private final int octet4;
 
-	/**
-	 * Creates an IPv4 address with the specified octets.
-	 * Each octet must be in the range 0-255.
-	 *
-	 * @param octet1 first octet (0-255)
-	 * @param octet2 second octet (0-255)
-	 * @param octet3 third octet (0-255)
-	 * @param octet4 fourth octet (0-255)
-	 * @throws RuntimeException if any octet is outside the valid range
-	 */
 	public IPAddress(int octet1, int octet2, int octet3, int octet4) {
 		validateOctet(octet1);
 		validateOctet(octet2);
@@ -49,26 +32,12 @@ public class IPAddress {
 		this.octet4 = octet4;
 	}
 
-	/**
-	 * Validates that an octet value is within the valid range (0-255).
-	 *
-	 * @param octet Octet value to validate
-	 * @throws RuntimeException if the octet is outside the valid range
-	 */
 	private void validateOctet(int octet) {
 		if (octet < 0 || octet > 255) {
 			throw new IllegalArgumentException("Octet value must be between 0 and 255. Provided: " + octet);
 		}
 	}
 
-	/**
-	 * Parses an IP address from string format (e.g., "192.168.1.1").
-	 *
-	 * @param ipString String representation of the IP address in dotted-decimal notation
-	 * @return IPAddress object
-	 * @throws RuntimeException if the format is invalid or octets are out of range
-	 * @throws NumberFormatException if any octet cannot be parsed as an integer
-	 */
 	public static IPAddress fromString(String ipString) {
 		try {
 			String[] parts = ipString.split("\\.");
@@ -81,23 +50,14 @@ public class IPAddress {
 			int octet4 = Integer.parseInt(parts[3]);
 			return new IPAddress(octet1, octet2, octet3, octet4);
 		} catch (NumberFormatException e) {
-			// If the user supplied an IP that contains a mask (e.g. "2.2.2.2/8"),
-			// convert the low-level NumberFormatException into a user-friendly CLI-style error
-			// For other NumberFormatExceptions, rethrow so callers can see
-			// the original cause.
 			if (ipString.matches(".*/\\d{1,2}$")) {
-				String msg = String.format("%n\tError: %s is not a valid IPv4 prefix%n%n%n\tInvalid value%n\tValue validation failed%n\tSet failed%n%n[edit]", ipString);
-				throw new InvalidAddressException(msg);
+				// Pass a clean message; CLIErrorHandler will apply the VyOS CLI formatting
+				throw new InvalidAddressException(ipString + " is not a valid IPv4 prefix");
 			}
-			throw e; // preserve original behavior for other malformed inputs
+			throw e;
 		}
 	}
 
-	/**
-	 * Returns the string representation of this IP address in dotted-decimal notation.
-	 *
-	 * @return IP address as string (e.g., "192.168.1.1")
-	 */
 	@Override
 	public String toString() {
 		return octet1 + "." + octet2 + "." + octet3 + "." + octet4;
