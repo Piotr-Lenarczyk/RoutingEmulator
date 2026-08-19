@@ -25,19 +25,6 @@ public class RoutingTable {
 	}
 
 	/**
-	 * Copy constructor that creates a deep copy of the routing table.
-	 * Creates new StaticRoutingEntry objects to avoid sharing mutable state.
-	 *
-	 * @param other RoutingTable to copy
-	 */
-	public RoutingTable(RoutingTable other) {
-		this.routingEntries = new ArrayList<>();
-		for (StaticRoutingEntry entry : other.getRoutingEntries()) {
-			this.routingEntries.add(new StaticRoutingEntry(entry));
-		}
-	}
-
-	/**
 	 * Adds a route to the routing table.
 	 *
 	 * @param entry the routing entry to add

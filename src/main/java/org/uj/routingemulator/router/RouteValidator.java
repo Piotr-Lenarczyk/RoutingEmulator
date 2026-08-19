@@ -14,6 +14,8 @@ import java.util.logging.Logger;
  */
 public class RouteValidator {
 	private static final Logger logger = Logger.getLogger(RouteValidator.class.getName());
+	private static final String NEXT_HOP_INTERFACE = "Next-hop interface ";
+	private static final String TO_INTERFACE = " to interface ";
 
 	private RouteValidator() {
 	}
@@ -34,18 +36,18 @@ public class RouteValidator {
 		if (found != null) {
 			String nhFormatted = found.getInterfaceAddress().toString();
 			String msg = String.format("Next-hop interface %s is a local interface on the router%nPackets routed through this route will not be forwarded%nEnsure this action is deliberate", nhFormatted);
-			logger.info("Next-hop interface " + nh + " is a local interface on the router");
+			logger.info(NEXT_HOP_INTERFACE + nh + " is a local interface on the router");
 			logger.warning(msg);
 		} else {
 			Integer inferredMask = findNextHopFromStagedInterfaces(nh, stagedInterfaces);
 			if (inferredMask != null) {
 				String nhFormatted = nh + "/" + inferredMask;
 				String msg = String.format("Next-hop interface %s not found on the router%nPackets routed through this interface will be dropped%nEnsure this action is deliberate", nhFormatted);
-				logger.info("Next-hop interface " + nh + " not found on the router");
+				logger.info(NEXT_HOP_INTERFACE + nh + " not found on the router");
 				logger.warning(msg);
 			} else {
 				String msg = String.format("Next-hop interface %s is not a directly connected neighbor interface%nThis may be fine if configuration is not yet complete%nPackets routed through this route will be dropped until the next-hop is reachable%nEnsure this action is deliberate", nh);
-				logger.info("Next-hop interface " + nh + " not found on the router");
+				logger.info(NEXT_HOP_INTERFACE + nh + " not found on the router");
 				logger.warning(msg);
 			}
 		}
@@ -70,15 +72,15 @@ public class RouteValidator {
 
 	public static void validateInterfaceAddress(InterfaceAddress interfaceAddress, String routerInterfaceName) {
 		if (interfaceAddress.isNetworkAddress()) {
-			logger.warning("Attempted to assign network address " + interfaceAddress + " to interface " + routerInterfaceName);
+			logger.warning("Attempted to assign network address " + interfaceAddress + TO_INTERFACE + routerInterfaceName);
 			throw new InvalidAddressException(String.format("Cannot assign network address %s to the interface. Use a host address instead", interfaceAddress));
 		}
 		if (interfaceAddress.isBroadcastAddress()) {
-			logger.warning("Attempted to assign broadcast address " + interfaceAddress + " to interface " + routerInterfaceName);
+			logger.warning("Attempted to assign broadcast address " + interfaceAddress + TO_INTERFACE + routerInterfaceName);
 			throw new InvalidAddressException(String.format("Cannot assign broadcast address %s to the interface. Use a host address instead", interfaceAddress));
 		}
 		if (!interfaceAddress.isValidHostAddress()) {
-			logger.warning("Attempted to assign invalid host address " + interfaceAddress + " to interface " + routerInterfaceName);
+			logger.warning("Attempted to assign invalid host address " + interfaceAddress + TO_INTERFACE + routerInterfaceName);
 			throw new InvalidAddressException(interfaceAddress + " is not a valid host IP address");
 		}
 	}

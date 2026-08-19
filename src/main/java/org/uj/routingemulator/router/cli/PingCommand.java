@@ -82,8 +82,7 @@ public class PingCommand implements RouterCommand {
 
         int count = 4;
         int ttl = 64;
-        String ipArg = null;
-        PingParameters pingParameters = parsePingParameters(parts, count, out, ttl, ipArg);
+        PingParameters pingParameters = parsePingParameters(parts, count, out, ttl, null);
         if (pingParameters == null) return;
 
         if (pingParameters.ipArg() == null) {

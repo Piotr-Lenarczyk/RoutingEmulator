@@ -18,7 +18,7 @@ import java.util.List;
  * Parses VyOS hierarchical configuration format (output from "show configuration").
  */
 public class HierarchicalConfigurationParser implements ConfigurationParser {
-
+	private static final String DISABLE_COMMAND = "disable";
 	private List<String> lines;
 	private int position;
 
@@ -123,10 +123,7 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 	}
 
 	private static void disableRoute(Router router, StaticRoutingEntry entry) {
-		try {
-			router.disableRoute(entry);
-		} catch (DuplicateConfigurationException e) {
-		}
+		router.disableRoute(entry);
 	}
 
 	private static boolean addNextHopRoute(Router router, String nextHop, Subnet subnet, int distance) {
@@ -140,10 +137,7 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 	}
 
 	private static void disableInterface(Router router, String interfaceName) {
-		try {
-			router.disableInterface(interfaceName);
-		} catch (DuplicateConfigurationException e) {
-		}
+		router.disableInterface(interfaceName);
 	}
 
 	private static void configureInterface(Router router, String address, String interfaceName) {
@@ -154,7 +148,6 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 			InterfaceAddress interfaceAddress = new InterfaceAddress(ip, mask);
 
 			router.configureInterface(interfaceName, interfaceAddress);
-		} catch (DuplicateConfigurationException e) {
 		} catch (RuntimeException e) {
 			throw new ConfigurationParseException("Invalid interface address: " + e.getMessage());
 		}
@@ -192,13 +185,13 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 							throw new ConfigurationParseException("Invalid distance value: " + parts[1]);
 						}
 						break;
-					case "disable":
+					case DISABLE_COMMAND:
 						disabled = true;
 						break;
 					default:
 						throw new ConfigurationParseException("Unknown route configuration option: " + parts[0]);
 				}
-			} else if (parts.length == 1 && parts[0].equals("disable")) {
+			} else if (parts.length == 1 && parts[0].equals(DISABLE_COMMAND)) {
 				disabled = true;
 			}
 			position++;
@@ -233,7 +226,7 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 						return;
 					}
 					configureInterface(router, address, interfaceName);
-				} else if (path.get(3).equals("disable") && path.size() == 4) {
+				} else if (path.get(3).equals(DISABLE_COMMAND) && path.size() == 4) {
 					disableInterface(router, interfaceName);
 				}
 			}

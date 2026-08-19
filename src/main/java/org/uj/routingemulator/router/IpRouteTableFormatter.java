@@ -31,27 +31,31 @@ public class IpRouteTableFormatter {
 				continue;
 			}
 
-			String prefix = entry.isConnected() ? "C>*" : "S>*";
-			output.append(prefix).append(" ");
-			output.append(entry.subnet().networkAddress()).append("/");
-			output.append(entry.subnet().subnetMask().shortMask());
-
-			if (entry.isConnected()) {
-				output.append(" is directly connected, ").append(entry.interfaceName());
-			} else {
-				output.append(" [").append(entry.distance()).append("]");
-				if (entry.nextHop() != null) {
-					output.append(" via ").append(entry.nextHop());
-					if (entry.interfaceName() != null) {
-						output.append(", ").append(entry.interfaceName());
-					}
-				} else if (entry.interfaceName() != null) {
-					output.append(" via ").append(entry.interfaceName());
-				}
-			}
-			output.append("\n");
+			parseRouteFormatting(entry, output);
 		}
 		return output.toString();
+	}
+
+	private static void parseRouteFormatting(RouteDisplayEntry entry, StringBuilder output) {
+		String prefix = entry.isConnected() ? "C>*" : "S>*";
+		output.append(prefix).append(" ");
+		output.append(entry.subnet().networkAddress()).append("/");
+		output.append(entry.subnet().subnetMask().shortMask());
+
+		if (entry.isConnected()) {
+			output.append(" is directly connected, ").append(entry.interfaceName());
+		} else {
+			output.append(" [").append(entry.distance()).append("]");
+			if (entry.nextHop() != null) {
+				output.append(" via ").append(entry.nextHop());
+				if (entry.interfaceName() != null) {
+					output.append(", ").append(entry.interfaceName());
+				}
+			} else if (entry.interfaceName() != null) {
+				output.append(" via ").append(entry.interfaceName());
+			}
+		}
+		output.append("\n");
 	}
 
 	private static List<RouteDisplayEntry> getRouteDisplayEntries(Router router) {

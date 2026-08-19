@@ -8,7 +8,6 @@ import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.RouterInterface;
 import org.uj.routingemulator.router.RouterMode;
 import org.uj.routingemulator.router.StaticRoutingEntry;
-import org.uj.routingemulator.router.exceptions.DuplicateConfigurationException;
 
 import java.util.List;
 
@@ -16,22 +15,16 @@ import java.util.List;
  * Parses VyOS command-based configuration format ('set' commands).
  */
 public class CommandConfigurationParser implements ConfigurationParser {
-
+	private static final String DISABLE_COMMAND = "disable";
 	private List<Token> tokens;
 	private int position;
 
 	private static void disableNextHopRoute(Router router, StaticRoutingEntry subnet) {
-		try {
-			router.disableRoute(subnet);
-		} catch (DuplicateConfigurationException e) {
-		}
+		router.disableRoute(subnet);
 	}
 
 	private static void addNextHopRoute(Router router, StaticRoutingEntry subnet) {
-		try {
-			router.addRoute(subnet);
-		} catch (DuplicateConfigurationException e) {
-		}
+		router.addRoute(subnet);
 	}
 
 	@Override
@@ -113,19 +106,15 @@ public class CommandConfigurationParser implements ConfigurationParser {
 					SubnetMask mask = SubnetMask.fromString(addressValue[1]);
 					InterfaceAddress interfaceAddress = new InterfaceAddress(ipAddress, mask);
 					router.configureInterface(interfaceName, interfaceAddress);
-				} catch (DuplicateConfigurationException e) {
-					return; // Ignore Duplicate
 				} catch (RuntimeException e) {
 					throw new ConfigurationParseException("Invalid interface address: " + e.getMessage(), tokens.get(position - 1));
 				}
 				break;
 
-			case "disable":
+			case DISABLE_COMMAND:
 				advance();
 				try {
 					router.disableInterface(interfaceName);
-				} catch (DuplicateConfigurationException e) {
-					return; // Ignore Duplicate
 				} catch (RuntimeException e) {
 					throw new ConfigurationParseException("Failed to disable interface: " + e.getMessage(), token);
 				}
@@ -192,7 +181,7 @@ public class CommandConfigurationParser implements ConfigurationParser {
 			addNextHopRoute(router, new StaticRoutingEntry(subnet, routerInterface));
 		} else {
 			token = getCurrentToken();
-			if (token.value().equals("disable")) {
+			if (token.value().equals(DISABLE_COMMAND)) {
 				advance();
 				disableNextHopRoute(router, new StaticRoutingEntry(subnet, routerInterface));
 			} else if (token.value().equals("distance")) {
@@ -212,7 +201,7 @@ public class CommandConfigurationParser implements ConfigurationParser {
 			addNextHopRoute(router, new StaticRoutingEntry(subnet, nextHop));
 		} else {
 			token = getCurrentToken();
-			if (token.value().equals("disable")) {
+			if (token.value().equals(DISABLE_COMMAND)) {
 				advance();
 				disableNextHopRoute(router, new StaticRoutingEntry(subnet, nextHop));
 			} else if (token.value().equals("distance")) {

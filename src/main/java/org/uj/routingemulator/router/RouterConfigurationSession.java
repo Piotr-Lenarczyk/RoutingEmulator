@@ -1,5 +1,7 @@
 package org.uj.routingemulator.router;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.uj.routingemulator.router.exceptions.NoChangesToCommitException;
 
 import java.util.List;
@@ -8,28 +10,19 @@ import java.util.List;
  * Manages the staged state for a router undergoing configuration changes.
  */
 public class RouterConfigurationSession {
+	@Getter
 	private RoutingTable stagedRoutingTable;
+	@Getter
 	private List<RouterInterface> stagedInterfaces;
+	@Setter
 	private boolean hasUncommittedChanges;
 
 	public RouterConfigurationSession(Router router) {
 		discardChanges(router);
 	}
 
-	public RoutingTable getStagedRoutingTable() {
-		return stagedRoutingTable;
-	}
-
-	public List<RouterInterface> getStagedInterfaces() {
-		return stagedInterfaces;
-	}
-
 	public boolean hasUncommittedChanges() {
 		return hasUncommittedChanges;
-	}
-
-	public void setHasUncommittedChanges(boolean hasUncommittedChanges) {
-		this.hasUncommittedChanges = hasUncommittedChanges;
 	}
 
 	public void commitChanges(Router router) {
