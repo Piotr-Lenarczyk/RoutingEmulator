@@ -1,46 +1,29 @@
 package org.uj.routingemulator.router.cli.ethernet;
 
-import org.uj.routingemulator.router.Router;
-import org.uj.routingemulator.router.cli.CLIContext;
 import org.uj.routingemulator.router.cli.CLIErrorHandler;
+import org.uj.routingemulator.router.cli.CommandExecutionContext;
+import org.uj.routingemulator.router.cli.CommandOutput;
 import org.uj.routingemulator.router.cli.RouterCommand;
 
-import java.io.PrintWriter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Command to remove IP address configuration from an ethernet interface.
- * <p>
- * Command format: {@code delete interfaces ethernet <interface> address <address>}
- * <p>
- * Example: {@code delete interfaces ethernet eth0 address 192.168.1.1/24}
- * <p>
- * This command:
- * <ul>
- *   <li>Removes the IP address from the interface</li>
- *   <li>Does not disable the interface (admin state remains UP)</li>
- *   <li>Routing entries using this interface's subnet become invalid</li>
- *   <li>Cannot be executed if configuration doesn't exist</li>
- * </ul>
- */
 public class DeleteInterfaceEthernetCommand implements RouterCommand {
 	private static final Pattern PATTERN = Pattern.compile(
 			"delete\\s+interfaces\\s+ethernet\\s+(\\S+)\\s+address\\s+(\\S+)"
 	);
+
 	private String routerInterfaceName;
 	private String subnet;
 
 	@Override
-	public void execute(Router router) {
-		PrintWriter out = CLIContext.getWriter();
+	public void execute(CommandExecutionContext context) {
+		CommandOutput out = context.output();
 		try {
-			router.deleteInterfaceAddress(routerInterfaceName);
+			context.router().deleteInterfaceAddress(routerInterfaceName);
 			out.println("[edit]");
-			out.flush();
 		} catch (RuntimeException e) {
-			throw CLIErrorHandler.handleInterfaceException(e,
-				CLIErrorHandler.formatDeleteInterfaceEthernet(routerInterfaceName, subnet));
+			throw CLIErrorHandler.handleInterfaceException(e, CLIErrorHandler.formatDeleteInterfaceEthernet(routerInterfaceName, subnet));
 		}
 	}
 
@@ -65,4 +48,3 @@ public class DeleteInterfaceEthernetCommand implements RouterCommand {
 		return "Remove IP address from an ethernet interface";
 	}
 }
-

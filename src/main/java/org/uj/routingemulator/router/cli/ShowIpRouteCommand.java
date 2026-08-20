@@ -1,32 +1,22 @@
 package org.uj.routingemulator.router.cli;
 
-import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.RouterMode;
 
-import java.io.PrintWriter;
 import java.util.regex.Pattern;
 
-/**
- * Command to display the IP routing table.
- */
 public class ShowIpRouteCommand implements RouterCommand {
-
 	private static final Pattern PATTERN = Pattern.compile("^show\\s+ip\\s+route$");
 
 	@Override
-	public void execute(Router router) {
-		PrintWriter out = CLIContext.getWriter();
-
-		if (router.getMode() != RouterMode.OPERATIONAL) {
+	public void execute(CommandExecutionContext context) {
+		CommandOutput out = context.output();
+		if (context.router().getMode() != RouterMode.OPERATIONAL) {
 			out.println("Invalid command: show [ip]");
-			out.flush();
 			return;
 		}
 
-		// Call the router directly, respecting its encapsulation
-		String output = router.showIpRoute();
+		String output = context.router().showIpRoute();
 		out.println(output);
-		out.flush();
 	}
 
 	@Override

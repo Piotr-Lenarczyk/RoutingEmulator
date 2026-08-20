@@ -1,45 +1,28 @@
 package org.uj.routingemulator.router.cli.ethernet;
 
-import org.uj.routingemulator.router.Router;
-import org.uj.routingemulator.router.cli.CLIContext;
 import org.uj.routingemulator.router.cli.CLIErrorHandler;
+import org.uj.routingemulator.router.cli.CommandExecutionContext;
+import org.uj.routingemulator.router.cli.CommandOutput;
 import org.uj.routingemulator.router.cli.RouterCommand;
 
-import java.io.PrintWriter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Command to administratively disable an ethernet interface (shutdown).
- * <p>
- * Command format: {@code set interfaces ethernet <interface> disable}
- * <p>
- * Example: {@code set interfaces ethernet eth0 disable}
- * <p>
- * When an interface is disabled:
- * <ul>
- *   <li>Administrative state is set to ADMIN_DOWN</li>
- *   <li>Interface cannot pass traffic</li>
- *   <li>Routing entries using this interface remain but are inactive</li>
- *   <li>Configuration is preserved and can be re-enabled</li>
- * </ul>
- */
 public class DisableInterfaceEthernetCommand implements RouterCommand {
 	private static final Pattern PATTERN = Pattern.compile(
 			"set\\s+interfaces\\s+ethernet\\s+(\\S+)\\s+disable"
 	);
+
 	private String routerInterfaceName;
 
 	@Override
-	public void execute(Router router) {
-		PrintWriter out = CLIContext.getWriter();
+	public void execute(CommandExecutionContext context) {
+		CommandOutput out = context.output();
 		try {
-			router.disableInterface(routerInterfaceName);
+			context.router().disableInterface(routerInterfaceName);
 			out.println("[edit]");
-			out.flush();
 		} catch (RuntimeException e) {
-			throw CLIErrorHandler.handleInterfaceException(e,
-				CLIErrorHandler.formatDisableInterfaceEthernet(routerInterfaceName, ""));
+			throw CLIErrorHandler.handleInterfaceException(e, CLIErrorHandler.formatDisableInterfaceEthernet(routerInterfaceName, ""));
 		}
 	}
 
@@ -63,4 +46,3 @@ public class DisableInterfaceEthernetCommand implements RouterCommand {
 		return "Administratively disable an ethernet interface";
 	}
 }
-

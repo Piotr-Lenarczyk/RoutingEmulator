@@ -1,50 +1,32 @@
 package org.uj.routingemulator.router.cli.route;
 
 import org.uj.routingemulator.router.NextHopRouteParameters;
-import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.StaticRoutingEntry;
-import org.uj.routingemulator.router.cli.CLIContext;
 import org.uj.routingemulator.router.cli.CLIErrorHandler;
+import org.uj.routingemulator.router.cli.CommandExecutionContext;
+import org.uj.routingemulator.router.cli.CommandOutput;
 import org.uj.routingemulator.router.cli.RouterCommand;
 
-import java.io.PrintWriter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Command to add a static route with next-hop IP address.
- * <p>
- * Command format: {@code set protocols static route <destination> next-hop <next-hop>}
- * <p>
- * Example: {@code set protocols static route 192.168.1.0/24 next-hop 10.0.0.1}
- * <p>
- * This creates a static route with:
- * <ul>
- *   <li>Destination network in CIDR notation</li>
- *   <li>Next-hop IP address (must be reachable)</li>
- *   <li>Default administrative distance of 1</li>
- * </ul>
- * <p>
- * The next-hop address should be on a directly connected network.
- */
 public class SetRouteNextHopCommand implements RouterCommand {
 	private static final Pattern PATTERN = Pattern.compile(
 			"set\\s+protocols\\s+static\\s+route\\s+(\\S+)\\s+next-hop\\s+(\\S+)"
 	);
+
 	private String destinationSubnet;
 	private String nextHop;
 
 	@Override
-	public void execute(Router router) {
-		PrintWriter out = CLIContext.getWriter();
+	public void execute(CommandExecutionContext context) {
+		CommandOutput out = context.output();
 		try {
 			NextHopRouteParameters nextHopRouteParameters = NextHopRouteParameters.parseRouteParameters(destinationSubnet, nextHop);
-			router.addRoute(new StaticRoutingEntry(nextHopRouteParameters.dest(), nextHopRouteParameters.nh()));
+			context.router().addRoute(new StaticRoutingEntry(nextHopRouteParameters.dest(), nextHopRouteParameters.nh()));
 			out.println("[edit]");
-			out.flush();
 		} catch (RuntimeException e) {
-			throw CLIErrorHandler.handleRouteException(e,
-				CLIErrorHandler.formatRouteNextHop(destinationSubnet, nextHop));
+			throw CLIErrorHandler.handleRouteException(e, CLIErrorHandler.formatRouteNextHop(destinationSubnet, nextHop));
 		}
 	}
 

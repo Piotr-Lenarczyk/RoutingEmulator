@@ -4,36 +4,33 @@ import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
-import org.uj.routingemulator.common.*;
+import org.uj.routingemulator.common.PingStatistics;
 import org.uj.routingemulator.host.Host;
 import org.uj.routingemulator.host.HostInterface;
 
-/**
- * Dialog for configuring a Host (IP address, gateway) and issuing ping commands.
- */
 public class HostConfigDialog extends Dialog<Void> {
     private final Host host;
-    private final NetworkTopology topology;
+    private final HostConfigurationService hostConfigService;
+    private final PingApplicationService pingService;
 
     private final TextField ipField = new TextField();
     private final TextField prefixField = new TextField();
     private final TextField gatewayField = new TextField();
     private final TextArea outputArea = new TextArea();
 
-    public HostConfigDialog(Host host, NetworkTopology topology) {
+    public HostConfigDialog(Host host, HostConfigurationService hostConfigService, PingApplicationService pingService) {
         this.host = host;
-        this.topology = topology;
+        this.hostConfigService = hostConfigService;
+        this.pingService = pingService;
 
         setTitle("Host Configuration - " + host.getHostname());
         setHeaderText("Configure IP and Ping from host");
-
         getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
 
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
         grid.setPadding(new Insets(10));
-
         grid.add(new Label("IP address:"), 0, 0);
         grid.add(ipField, 1, 0);
         grid.add(new Label("Prefix (/24):"), 0, 1);
@@ -55,10 +52,8 @@ public class HostConfigDialog extends Dialog<Void> {
 
         outputArea.setEditable(false);
         outputArea.setPrefRowCount(10);
-
         getDialogPane().setContent(vbox);
 
-        // Initialize fields from current host interface
         HostInterface hi = host.getHostInterface();
         if (hi != null && hi.getInterfaceAddress() != null) {
             ipField.setText(hi.getInterfaceAddress().ipAddress().toString());
@@ -71,22 +66,12 @@ public class HostConfigDialog extends Dialog<Void> {
 
     private void applyConfiguration() {
         try {
-            String ipText = ipField.getText().trim();
-            int prefix = Integer.parseInt(prefixField.getText().trim());
-            IPAddress ip = IPAddress.fromString(ipText);
-            SubnetMask mask = new SubnetMask(prefix);
-            HostInterface hi = host.getHostInterface();
-            if (hi == null) {
-                hi = new HostInterface();
-                host.setHostInterface(hi);
-            }
-            hi.setInterfaceAddress(new InterfaceAddress(ip, mask));
-
-            String gw = gatewayField.getText().trim();
-            if (!gw.isEmpty()) {
-                hi.setDefaultGateway(IPAddress.fromString(gw));
-            }
-
+            hostConfigService.configureHost(
+                    host,
+                    ipField.getText().trim(),
+                    prefixField.getText().trim(),
+                    gatewayField.getText().trim()
+            );
             outputArea.appendText("Configuration applied.\n");
         } catch (Exception ex) {
             outputArea.appendText("Failed to apply configuration: " + ex.getMessage() + "\n");
@@ -95,7 +80,7 @@ public class HostConfigDialog extends Dialog<Void> {
 
     private void doPing(String target) {
         try {
-            PingStatistics stats = host.ping(target, topology);
+            PingStatistics stats = pingService.pingFromHost(host, target);
             outputArea.appendText(stats.toString() + "\n");
         } catch (Exception ex) {
             outputArea.appendText("Ping failed: " + ex.getMessage() + "\n");

@@ -1,15 +1,10 @@
 package org.uj.routingemulator.router.cli;
 
 import org.uj.routingemulator.common.*;
-import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.RouterMode;
 
-import java.io.PrintWriter;
 import java.util.regex.Pattern;
 
-/**
- * CLI command for ping: ping [-c count] [-t ttl] <IP>
- */
 public class PingCommand implements RouterCommand {
     private static final String PING_ERROR = "ping: %s: System error";
     private static final Pattern MASK_PATTERN = Pattern.compile(".*/\\d{1,2}$");
@@ -34,7 +29,7 @@ public class PingCommand implements RouterCommand {
         return true;
     }
 
-    private static PingParameters parsePingParameters(String[] parts, int count, PrintWriter out, int ttl, String ipArg) {
+    private static PingParameters parsePingParameters(String[] parts, int count, CommandOutput out, int ttl, String ipArg) {
         int i = 1;
         while (i < parts.length) {
             String p = parts[i];
@@ -43,7 +38,6 @@ public class PingCommand implements RouterCommand {
                     count = Integer.parseInt(parts[++i]);
                 } catch (NumberFormatException e) {
                     out.println("Invalid count value");
-                    out.flush();
                     return null;
                 }
             } else if ("-t".equals(p) && i + 1 < parts.length) {
@@ -51,12 +45,10 @@ public class PingCommand implements RouterCommand {
                     ttl = Integer.parseInt(parts[++i]);
                 } catch (NumberFormatException e) {
                     out.println("Invalid ttl value");
-                    out.flush();
                     return null;
                 }
             } else if (p.startsWith("-")) {
                 out.println("Invalid option: " + p);
-                out.flush();
                 return null;
             } else {
                 ipArg = p;
@@ -67,41 +59,34 @@ public class PingCommand implements RouterCommand {
     }
 
     @Override
-    public void execute(Router router) {
-        PrintWriter out = CLIContext.getWriter();
+    public void execute(CommandExecutionContext context) {
+        CommandOutput out = context.output();
 
-        // Only allowed in OPERATIONAL mode
-        if (router.getMode() != RouterMode.OPERATIONAL) {
+        if (context.router().getMode() != RouterMode.OPERATIONAL) {
             out.println("Invalid command: ping");
-            out.flush();
             return;
         }
 
         String input = rawInput == null ? "" : rawInput;
         String[] parts = input.trim().split("\\s+");
-
         int count = 4;
         int ttl = 64;
+
         PingParameters pingParameters = parsePingParameters(parts, count, out, ttl, null);
         if (pingParameters == null) return;
 
         if (pingParameters.ipArg() == null) {
             out.println("Invalid command: ping requires target IP");
-            out.flush();
             return;
         }
 
-        // Validation: reject masked addresses and invalid IPs with specific message
         if (MASK_PATTERN.matcher(pingParameters.ipArg()).matches()) {
             out.println(String.format(PING_ERROR, pingParameters.ipArg()));
-            out.flush();
             return;
         }
 
-        // Basic dotted-quad check: simple regex
         if (!pingParameters.ipArg().matches("\\d{1,3}(\\.\\d{1,3}){3}")) {
             out.println(String.format(PING_ERROR, pingParameters.ipArg()));
-            out.flush();
             return;
         }
 
@@ -110,23 +95,20 @@ public class PingCommand implements RouterCommand {
             dst = IPAddress.fromString(pingParameters.ipArg());
         } catch (RuntimeException e) {
             out.println(String.format(PING_ERROR, pingParameters.ipArg()));
-            out.flush();
             return;
         }
 
-        // Delegate to PingService adapter
         PingService svc = new PingService();
-        NetworkTopology topology = CLIContext.getNetworkTopology();
+        NetworkTopology topology = context.topology();
         if (topology == null) {
             out.println("ping: no network topology available");
-            out.flush();
             return;
         }
-        PingStatistics stats = svc.ping(router, dst, pingParameters.count(), pingParameters.ttl(), topology);
 
-        // Find source IP for display
+        PingStatistics stats = svc.ping(context.router(), dst, pingParameters.count(), pingParameters.ttl(), topology);
+
         IPAddress srcIp = null;
-        for (var ri : router.getInterfaces()) {
+        for (var ri : context.router().getInterfaces()) {
             if (ri.getSubnet() != null) {
                 srcIp = ri.getSubnet().networkAddress();
                 break;
@@ -136,7 +118,6 @@ public class PingCommand implements RouterCommand {
 
         String outText = PingFormatter.format(dst, srcIp, pingParameters.ttl(), stats);
         out.print(outText);
-        out.flush();
     }
 
     private record PingParameters(int count, int ttl, String ipArg) {

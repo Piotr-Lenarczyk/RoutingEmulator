@@ -1,26 +1,17 @@
 package org.uj.routingemulator.router.cli;
 
-import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.exceptions.NoChangesToCommitException;
 
-import java.io.PrintWriter;
-
-/**
- * Command to commit configuration changes.
- * Only works when router is in configuration mode.
- */
 public class CommitCommand implements RouterCommand {
 	@Override
-	public void execute(Router router) {
-		PrintWriter out = CLIContext.getWriter();
+	public void execute(CommandExecutionContext context) {
+		CommandOutput out = context.output();
 		try {
-			router.commitChanges();
+			context.router().commitChanges();
 			out.println("[edit]");
-			out.flush();
 		} catch (NoChangesToCommitException e) {
 			out.println("No configuration changes to commit");
 			out.println("[edit]");
-			out.flush();
 		}
 	}
 
@@ -39,4 +30,3 @@ public class CommitCommand implements RouterCommand {
 		return "Commit configuration changes";
 	}
 }
-

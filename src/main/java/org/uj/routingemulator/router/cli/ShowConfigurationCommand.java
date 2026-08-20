@@ -4,37 +4,26 @@ import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.config.ConfigurationFactory;
 import org.uj.routingemulator.router.config.ConfigurationGenerator;
 
-import java.io.PrintWriter;
 import java.util.regex.Pattern;
 
-/**
- * Command to display the router's configuration in hierarchical format.
- * Shows the current committed configuration.
- *
- * <p>Command format: {@code show configuration}
- *
- * <p>Can be executed in both OPERATIONAL and CONFIGURATION mode.
- * In CONFIGURATION mode, shows the committed configuration (not staged changes).
- */
 public class ShowConfigurationCommand implements RouterCommand {
 	private static final Pattern PATTERN = Pattern.compile("^show\\s+configuration$");
 
 	@Override
-	public void execute(Router router) {
-		PrintWriter out = CLIContext.getWriter();
+	public void execute(CommandExecutionContext context) {
+		CommandOutput out = context.output();
 		ConfigurationGenerator generator = ConfigurationFactory.getHierarchicalGenerator();
 
-		// Create a temporary router with committed state to generate configuration
+		Router router = context.router();
 		Router committedRouter = new Router(router.getName(), router.getInterfaces());
 		committedRouter.getRoutingTable().getRoutingEntries().addAll(router.getRoutingTable().getRoutingEntries());
 
 		String output = generator.generateConfiguration(committedRouter);
+
 		if (output.isEmpty()) {
 			out.println("/* No configuration */");
-			out.flush();
 		} else {
 			out.print(output);
-			out.flush();
 		}
 	}
 
@@ -53,4 +42,3 @@ public class ShowConfigurationCommand implements RouterCommand {
 		return "Display the current configuration";
 	}
 }
-

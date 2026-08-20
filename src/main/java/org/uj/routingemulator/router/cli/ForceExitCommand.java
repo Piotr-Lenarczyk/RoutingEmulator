@@ -1,21 +1,13 @@
 package org.uj.routingemulator.router.cli;
 
-import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.RouterMode;
 
-import java.io.PrintWriter;
-
-/**
- * Command to forcefully exit configuration mode and discard uncommitted changes.
- * Works regardless of current router mode.
- */
 public class ForceExitCommand implements RouterCommand {
 	@Override
-	public void execute(Router router) {
-		PrintWriter out = CLIContext.getWriter();
-		router.setModeForced(RouterMode.OPERATIONAL);
+	public void execute(CommandExecutionContext context) {
+		CommandOutput out = context.output();
+		context.router().setModeForced(RouterMode.OPERATIONAL);
 		out.println("exit");
-		out.flush();
 	}
 
 	@Override

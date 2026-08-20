@@ -2,38 +2,29 @@ package org.uj.routingemulator.router.cli.route;
 
 import org.uj.routingemulator.common.IPAddress;
 import org.uj.routingemulator.common.Subnet;
-import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.StaticRoutingEntry;
-import org.uj.routingemulator.router.cli.CLIContext;
 import org.uj.routingemulator.router.cli.CLIErrorHandler;
+import org.uj.routingemulator.router.cli.CommandExecutionContext;
+import org.uj.routingemulator.router.cli.CommandOutput;
 import org.uj.routingemulator.router.cli.RouterCommand;
 
-import java.io.PrintWriter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Command to disable a static route with next-hop IP address and custom administrative distance.
- * <p>
- * Command format: {@code set protocols static route <destination> next-hop <next-hop> distance <distance> disable}
- * <p>
- * Example: {@code set protocols static route 192.168.1.0/24 next-hop 10.0.0.1 distance 10 disable}
- * <p>
- * Disables the specific route matching both next-hop and distance values.
- */
 public class DisableRouteNextHopDistanceCommand implements RouterCommand {
 	private static final Pattern PATTERN = Pattern.compile(
 			"set\\s+protocols\\s+static\\s+route\\s+(\\S+)\\s+next-hop\\s+(\\S+)\\s+distance\\s+(\\d+)\\s+disable"
 	);
+
 	private String destinationSubnet;
 	private String nextHop;
 	private int distance;
 
 	@Override
-	public void execute(Router router) {
-		PrintWriter out = CLIContext.getWriter();
+	public void execute(CommandExecutionContext context) {
+		CommandOutput out = context.output();
 		try {
-			router.disableRoute(
+			context.router().disableRoute(
 					new StaticRoutingEntry(
 							Subnet.fromString(destinationSubnet),
 							IPAddress.fromString(nextHop),
@@ -41,10 +32,8 @@ public class DisableRouteNextHopDistanceCommand implements RouterCommand {
 					)
 			);
 			out.println("[edit]");
-			out.flush();
 		} catch (RuntimeException e) {
-			throw CLIErrorHandler.handleRouteException(e,
-					CLIErrorHandler.formatDisableRouteNextHopDistance(destinationSubnet, nextHop, distance));
+			throw CLIErrorHandler.handleRouteException(e, CLIErrorHandler.formatDisableRouteNextHopDistance(destinationSubnet, nextHop, distance));
 		}
 	}
 

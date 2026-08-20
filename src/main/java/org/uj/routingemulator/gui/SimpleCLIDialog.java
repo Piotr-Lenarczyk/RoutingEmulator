@@ -5,59 +5,38 @@ import javafx.geometry.Insets;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.layout.VBox;
-import org.jline.reader.Candidate;
-import org.jline.reader.ParsedLine;
-import org.uj.routingemulator.common.NetworkTopology;
 import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.RouterMode;
-import org.uj.routingemulator.router.cli.CLIContext;
-import org.uj.routingemulator.router.cli.RouterCLIParser;
-import org.uj.routingemulator.router.cli.RouterCommandCompleter;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Dialog window that provides CLI access to a router using SimpleTerminalTextArea.
- */
 public class SimpleCLIDialog extends Dialog<Void> {
-
-	// Manage GUI session state outside of the domain model
-	private static final Map<Router, RouterSessionState> sessionStates = new HashMap<>();
+    private static final Map<Router, RouterSessionState> sessionStates = new HashMap<>();
 
     private final Router router;
-    private final RouterCLIParser parser;
-    private final RouterCommandCompleter completer;
+    private final RouterCLIService cliService;
     private final SimpleTerminalTextArea terminal;
-    private final NetworkTopology topology;
 
-    public SimpleCLIDialog(Router router, NetworkTopology topology) {
+    public SimpleCLIDialog(Router router, RouterCLIService cliService) {
         this.router = router;
-        this.topology = topology;
-        this.parser = new RouterCLIParser();
-        this.completer = new RouterCommandCompleter(router);
+        this.cliService = cliService;
 
         setTitle("Router CLI - " + router.getName());
         setHeaderText("VyOS Command Line Interface");
 
-        // Create terminal widget
         terminal = new SimpleTerminalTextArea();
         terminal.setPrefRowCount(24);
         terminal.setPrefColumnCount(80);
 
-	    // Retrieve or generate session state
-	    RouterSessionState sessionState = sessionStates.computeIfAbsent(router, r -> new RouterSessionState());
-	    boolean hasExistingBuffer = !sessionState.getTerminalBuffer().isEmpty();
+        RouterSessionState sessionState = sessionStates.computeIfAbsent(router, r -> new RouterSessionState());
+        boolean hasExistingBuffer = !sessionState.getTerminalBuffer().isEmpty();
 
         if (hasExistingBuffer) {
-	        terminal.restoreFromBuffer(sessionState.getTerminalBuffer().toString());
+            terminal.restoreFromBuffer(sessionState.getTerminalBuffer().toString());
         }
 
-        // Setup handlers
         terminal.setOnCommandSubmit(this::processCommand);
         terminal.setOnTabComplete(this::handleTabCompletion);
 
@@ -67,7 +46,6 @@ public class SimpleCLIDialog extends Dialog<Void> {
         getDialogPane().setContent(content);
         getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
 
-        // Show initial prompt and focus terminal
         Platform.runLater(() -> {
             if (!hasExistingBuffer || !bufferEndsWithPrompt()) {
                 showPrompt();
@@ -75,7 +53,6 @@ public class SimpleCLIDialog extends Dialog<Void> {
             terminal.requestFocus();
         });
 
-        // Save terminal buffer when dialog is closed
         setOnCloseRequest(event -> saveTerminalBuffer());
     }
 
@@ -86,7 +63,7 @@ public class SimpleCLIDialog extends Dialog<Void> {
             return;
         }
 
-        String output = captureOutput(() -> parser.executeCommand(command, router));
+        String output = cliService.executeCommand(command, router);
         if (output != null && !output.isEmpty()) {
             terminal.appendColoredText(output);
         }
@@ -96,29 +73,8 @@ public class SimpleCLIDialog extends Dialog<Void> {
     }
 
     private void handleTabCompletion(String input, java.util.function.Consumer<List<String>> callback) {
-        ParsedLine parsedLine = new SimpleParsedLine(input);
-        List<org.jline.reader.Candidate> candidates = new ArrayList<>();
-        completer.complete(null, parsedLine, candidates);
-
-        List<String> completions = candidates.stream()
-                .map(Candidate::value)
-                .toList();
-
+        List<String> completions = cliService.getCompletions(input, router);
         callback.accept(completions);
-    }
-
-    private String captureOutput(Runnable command) {
-        StringWriter stringWriter = new StringWriter();
-        PrintWriter printWriter = new PrintWriter(stringWriter);
-        try {
-            CLIContext.setWriter(printWriter);
-            CLIContext.setNetworkTopology(this.topology);
-            command.run();
-            printWriter.flush();
-            return stringWriter.toString();
-        } finally {
-            CLIContext.clear();
-        }
     }
 
     private void showPrompt() {
@@ -134,7 +90,7 @@ public class SimpleCLIDialog extends Dialog<Void> {
     }
 
     private void saveTerminalBuffer() {
-	    sessionStates.get(router).updateBuffer(terminal.getText());
+        sessionStates.get(router).updateBuffer(terminal.getText());
     }
 
     private boolean bufferEndsWithPrompt() {
@@ -142,40 +98,5 @@ public class SimpleCLIDialog extends Dialog<Void> {
         return text.endsWith("vyos@vyos$ ") ||
                 text.endsWith("vyos@vyos# ") ||
                 text.endsWith("> ");
-    }
-
-    // Helper class for ParsedLine
-    private record SimpleParsedLine(String line) implements ParsedLine {
-        @Override
-        public String word() {
-            if (line.endsWith(" ") || line.endsWith("\t")) {
-                return "";
-            }
-            String[] words = line.split("\\s+");
-            return words.length > 0 ? words[words.length - 1] : "";
-        }
-
-        @Override
-        public int wordCursor() {
-            return word().length();
-        }
-
-        @Override
-        public int wordIndex() {
-            if (line.endsWith(" ") || line.endsWith("\t")) {
-                return line.split("\\s+").length;
-            }
-            return line.split("\\s+").length - 1;
-        }
-
-        @Override
-        public List<String> words() {
-            return List.of(line.split("\\s+"));
-        }
-
-        @Override
-        public int cursor() {
-            return line.length();
-        }
     }
 }

@@ -1,45 +1,33 @@
 package org.uj.routingemulator.router.cli.route;
 
 import org.uj.routingemulator.router.NextHopRouteParameters;
-import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.StaticRoutingEntry;
-import org.uj.routingemulator.router.cli.CLIContext;
 import org.uj.routingemulator.router.cli.CLIErrorHandler;
+import org.uj.routingemulator.router.cli.CommandExecutionContext;
+import org.uj.routingemulator.router.cli.CommandOutput;
 import org.uj.routingemulator.router.cli.RouterCommand;
 
-import java.io.PrintWriter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Command to add a static route with next-hop IP address and custom administrative distance.
- * <p>
- * Command format: {@code set protocols static route <destination> next-hop <next-hop> distance <distance>}
- * <p>
- * Example: {@code set protocols static route 192.168.1.0/24 next-hop 10.0.0.1 distance 10}
- * <p>
- * Administrative distance (1-255) is used for route selection when multiple routes
- * to the same destination exist. Lower values are preferred.
- */
 public class SetRouteNextHopDistanceCommand implements RouterCommand {
 	private static final Pattern PATTERN = Pattern.compile(
 			"set\\s+protocols\\s+static\\s+route\\s+(\\S+)\\s+next-hop\\s+(\\S+)\\s+distance\\s+(\\d+)"
 	);
+
 	private String destinationSubnet;
 	private String nextHop;
 	private int distance;
 
 	@Override
-	public void execute(Router router) {
-		PrintWriter out = CLIContext.getWriter();
+	public void execute(CommandExecutionContext context) {
+		CommandOutput out = context.output();
 		try {
 			NextHopRouteParameters nextHopRouteParameters = NextHopRouteParameters.parseRouteParameters(destinationSubnet, nextHop);
-			router.addRoute(new StaticRoutingEntry(nextHopRouteParameters.dest(), nextHopRouteParameters.nh(), distance));
+			context.router().addRoute(new StaticRoutingEntry(nextHopRouteParameters.dest(), nextHopRouteParameters.nh(), distance));
 			out.println("[edit]");
-			out.flush();
 		} catch (RuntimeException e) {
-			throw CLIErrorHandler.handleRouteException(e,
-				CLIErrorHandler.formatRouteNextHopDistance(destinationSubnet, nextHop, distance));
+			throw CLIErrorHandler.handleRouteException(e, CLIErrorHandler.formatRouteNextHopDistance(destinationSubnet, nextHop, distance));
 		}
 	}
 

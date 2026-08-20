@@ -1,47 +1,30 @@
 package org.uj.routingemulator.router.cli.ethernet;
 
 import org.uj.routingemulator.common.InterfaceAddress;
-import org.uj.routingemulator.router.Router;
-import org.uj.routingemulator.router.cli.CLIContext;
 import org.uj.routingemulator.router.cli.CLIErrorHandler;
+import org.uj.routingemulator.router.cli.CommandExecutionContext;
+import org.uj.routingemulator.router.cli.CommandOutput;
 import org.uj.routingemulator.router.cli.RouterCommand;
 
-import java.io.PrintWriter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Command to configure an IP address on an ethernet interface.
- * <p>
- * Command format: {@code set interfaces ethernet <interface> address <address>}
- * <p>
- * Example: {@code set interfaces ethernet eth0 address 192.168.1.1/24}
- * <p>
- * The command validates:
- * <ul>
- *   <li>Interface exists on the router</li>
- *   <li>IP address is in valid format (CIDR notation)</li>
- *   <li>IP is not a network or broadcast address</li>
- *   <li>Configuration doesn't already exist</li>
- * </ul>
- */
 public class SetInterfaceEthernetCommand implements RouterCommand {
 	private static final Pattern PATTERN = Pattern.compile(
 			"set\\s+interfaces\\s+ethernet\\s+(\\S+)\\s+address\\s+(\\S+)"
 	);
+
 	private String routerInterfaceName;
 	private String address;
 
 	@Override
-	public void execute(Router router) {
-		PrintWriter out = CLIContext.getWriter();
+	public void execute(CommandExecutionContext context) {
+		CommandOutput out = context.output();
 		try {
-			router.configureInterface(routerInterfaceName, InterfaceAddress.fromString(address));
+			context.router().configureInterface(routerInterfaceName, InterfaceAddress.fromString(address));
 			out.println("[edit]");
-			out.flush();
 		} catch (RuntimeException e) {
-			throw CLIErrorHandler.handleInterfaceException(e,
-				CLIErrorHandler.formatSetInterfaceEthernet(routerInterfaceName, address));
+			throw CLIErrorHandler.handleInterfaceException(e, CLIErrorHandler.formatSetInterfaceEthernet(routerInterfaceName, address));
 		}
 	}
 

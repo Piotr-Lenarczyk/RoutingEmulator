@@ -1,39 +1,33 @@
 package org.uj.routingemulator.router.cli.route;
 
 import org.uj.routingemulator.router.NextHopRouteParameters;
-import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.StaticRoutingEntry;
-import org.uj.routingemulator.router.cli.CLIContext;
 import org.uj.routingemulator.router.cli.CLIErrorHandler;
+import org.uj.routingemulator.router.cli.CommandExecutionContext;
+import org.uj.routingemulator.router.cli.CommandOutput;
 import org.uj.routingemulator.router.cli.RouterCommand;
 
-import java.io.PrintWriter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * CLI command to delete a static route with next-hop IP address and custom administrative distance.
- * Format: delete protocols static route <destination> next-hop <next-hop> distance <distance>
- */
 public class DeleteRouteNextHopDistanceCommand implements RouterCommand {
 	private static final Pattern PATTERN = Pattern.compile(
 			"delete\\s+protocols\\s+static\\s+route\\s+(\\S+)\\s+next-hop\\s+(\\S+)\\s+distance\\s+(\\d+)"
 	);
+
 	private String destinationSubnet;
 	private String nextHop;
 	private int distance;
 
 	@Override
-	public void execute(Router router) {
-		PrintWriter out = CLIContext.getWriter();
+	public void execute(CommandExecutionContext context) {
+		CommandOutput out = context.output();
 		try {
 			NextHopRouteParameters nextHopRouteParameters = NextHopRouteParameters.parseRouteParameters(destinationSubnet, nextHop);
-			router.removeRoute(new StaticRoutingEntry(nextHopRouteParameters.dest(), nextHopRouteParameters.nh(), distance));
+			context.router().removeRoute(new StaticRoutingEntry(nextHopRouteParameters.dest(), nextHopRouteParameters.nh(), distance));
 			out.println("[edit]");
-			out.flush();
 		} catch (RuntimeException e) {
-			throw CLIErrorHandler.handleRouteException(e,
-					CLIErrorHandler.formatDeleteRouteNextHopDistance(destinationSubnet, nextHop, distance));
+			throw CLIErrorHandler.handleRouteException(e, CLIErrorHandler.formatDeleteRouteNextHopDistance(destinationSubnet, nextHop, distance));
 		}
 	}
 
