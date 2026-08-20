@@ -1,24 +1,25 @@
 package org.uj.routingemulator.host;
 
 import lombok.Data;
-import org.uj.routingemulator.common.NetworkTopology;
-import org.uj.routingemulator.common.PingService;
-import org.uj.routingemulator.common.PingStatistics;
+import org.uj.routingemulator.common.Device;
+import org.uj.routingemulator.common.DeviceId;
+import org.uj.routingemulator.common.NetworkInterface;
 
+import java.util.List;
 import java.util.logging.Logger;
 
 /** Hosts are simplified network endpoints with a single network interface.
- * They can send and receive traffic but do not forward packets.
- */
+ * They can send and receive traffic but do not forward packets. */
 @Data
-public class Host {
+public class Host implements Device {
 	private static final Logger logger = Logger.getLogger(Host.class.getName());
+
+	private final DeviceId id = DeviceId.generate();
 	private String hostname;
 	private HostInterface hostInterface;
 
 	/**
 	 * Creates a new host with specified hostname and network interface.
-	 *
 	 * @param hostname the name of the host
 	 * @param hostInterface the network interface configuration
 	 */
@@ -28,18 +29,18 @@ public class Host {
 		logger.fine("Creating new host %s with interface %s".formatted(hostname, hostInterface));
 	}
 
-	/**
-	 * Convenience ping method used by tests and CLI. Sends 4 probes by default.
-	 *
-	 * @param dst      destination IPv4 string (dotted)
-	 * @param topology network topology
-	 * @return PingStatistics with results
-	 */
-	public PingStatistics ping(String dst, NetworkTopology topology) {
-		logger.info("Initializing new PingService for host %s".formatted(hostname));
-		PingService svc = new PingService();
-		logger.info("%s: Pinging %s with 4 probes...".formatted(hostname, dst));
-		return svc.ping(this, dst, 4, topology);
+	@Override
+	public DeviceId getId() {
+		return id;
 	}
 
+	@Override
+	public String getDeviceName() {
+		return hostname;
+	}
+
+	@Override
+	public List<? extends NetworkInterface> getInterfaces() {
+		return hostInterface != null ? List.of(hostInterface) : List.of();
+	}
 }

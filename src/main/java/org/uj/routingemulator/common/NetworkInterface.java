@@ -17,43 +17,46 @@ package org.uj.routingemulator.common;
 public interface NetworkInterface {
 	/**
 	 * Gets the name of this interface.
-	 *
 	 * @return interface name (e.g., "eth0", "GigabitEthernet0/1")
 	 */
 	String getInterfaceName();
 
 	/**
 	 * Sets the name of this interface.
-	 *
 	 * @param interfaceName the new interface name
 	 */
 	void setInterfaceName(String interfaceName);
 
 	/**
 	 * Gets the subnet configuration of this interface.
-	 *
 	 * @return subnet configuration, or null if not configured
 	 */
 	Subnet getSubnet();
 
 	/**
 	 * Sets the subnet configuration of this interface.
-	 *
 	 * @param subnet the subnet configuration
 	 */
 	void setSubnet(Subnet subnet);
 
 	/**
 	 * Gets the MAC address of this interface.
-	 *
 	 * @return MAC address
 	 */
 	MacAddress getMacAddress();
 
 	/**
 	 * Sets the MAC address of this interface.
-	 *
 	 * @param macAddress the new MAC address
 	 */
 	void setMacAddress(MacAddress macAddress);
+
+	/**
+	 * Returns true if the interface is fully operational and capable of forwarding traffic.
+	 *
+	 * @return true if operational, false otherwise
+	 */
+	default boolean isOperational() {
+		return true;
+	}
 }

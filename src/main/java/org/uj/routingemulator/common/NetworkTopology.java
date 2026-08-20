@@ -4,12 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.uj.routingemulator.common.exceptions.DuplicateConnectionException;
 import org.uj.routingemulator.common.exceptions.InterfaceAlreadyConnected;
-import org.uj.routingemulator.host.Host;
-import org.uj.routingemulator.host.HostInterface;
-import org.uj.routingemulator.router.AdminState;
-import org.uj.routingemulator.router.Router;
-import org.uj.routingemulator.router.RouterInterface;
-import org.uj.routingemulator.switching.Switch;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,72 +25,42 @@ import java.util.logging.Logger;
 @Setter
 public class NetworkTopology {
 	private static final Logger logger = Logger.getLogger(NetworkTopology.class.getName());
-	private List<Host> hosts;
-	private List<Switch> switches;
-	private List<Router> routers;
+
+	private List<Device> devices;
 	private List<Connection> connections;
 
 	/**
 	 * Creates an empty network topology.
 	 */
 	public NetworkTopology() {
-		this.hosts = new ArrayList<>();
-		this.switches = new ArrayList<>();
-		this.routers = new ArrayList<>();
+		this.devices = new ArrayList<>();
 		this.connections = new ArrayList<>();
 		logger.config("Initialized new empty network topology");
 	}
 
 	/**
 	 * Creates a network topology with specified devices and connections.
-	 *
-	 * @param hosts list of host devices
-	 * @param switches list of switch devices
-	 * @param routers list of router devices
+	 * @param devices list of devices
 	 * @param connections list of connections between interfaces
 	 */
-	public NetworkTopology(List<Host> hosts, List<Switch> switches, List<Router> routers, List<Connection> connections) {
-		this.hosts = hosts;
-		this.switches = switches;
-		this.routers = routers;
-		this.connections = connections;
+	public NetworkTopology(List<Device> devices, List<Connection> connections) {
+		this.devices = new ArrayList<>(devices);
+		this.connections = new ArrayList<>(connections);
 		logger.config("Initialized custom network topology with provided devices and connections");
 	}
 
 	/**
-	 * Adds a host to the topology.
-	 *
-	 * @param host the host to add
+	 * Adds a device to the topology.
+	 * @param device the device to add
 	 */
-	public void addHost(Host host) {
-		this.hosts.add(host);
-		logger.info("Host %s added to topology".formatted(host.getHostname()));
-	}
-
-	/**
-	 * Adds a switch to the topology.
-	 *
-	 * @param sw the switch to add
-	 */
-	public void addSwitch(Switch sw) {
-		this.switches.add(sw);
-		logger.info("Switch %s added to topology".formatted(sw.getName()));
-	}
-
-	/**
-	 * Adds a router to the topology.
-	 *
-	 * @param router the router to add
-	 */
-	public void addRouter(Router router) {
-		this.routers.add(router);
-		logger.info("Router %s added to topology".formatted(router.getName()));
+	public void addDevice(Device device) {
+		this.devices.add(device);
+		logger.info("Device %s added to topology".formatted(device.getDeviceName()));
 	}
 
 	/**
 	 * Adds a connection to the topology.
 	 * Validates that the connection doesn't already exist (in either direction).
-	 *
 	 * @param connection the connection to add
 	 * @throws RuntimeException if the connection already exists or if one of the interfaces is already connected
 	 */
@@ -119,107 +83,55 @@ public class NetworkTopology {
 		// Check if either interface is already connected to something else
 		for (Connection existingConnection : this.connections) {
 			logger.finest("Checking connection %s <-> %s".formatted(
-					existingConnection.interfaceA().getInterfaceName(),
-					existingConnection.interfaceB().getInterfaceName()));
+					existingConnection.interfaceA().getInterfaceName(), existingConnection.interfaceB().getInterfaceName()));
+
 			if (existingConnection.interfaceA().equals(connection.interfaceA()) ||
 					existingConnection.interfaceB().equals(connection.interfaceA())) {
 				logger.warning("Interface %s is already connected in connection between %s and %s".formatted(
-						connection.interfaceA().getInterfaceName(),
-						existingConnection.interfaceA().getInterfaceName(),
-						existingConnection.interfaceB().getInterfaceName()));
-				throw new InterfaceAlreadyConnected("Interface " + connection.interfaceA().getInterfaceName() +
-					" is already connected");
+						connection.interfaceA().getInterfaceName(), existingConnection.interfaceA().getInterfaceName(), existingConnection.interfaceB().getInterfaceName()));
+				throw new InterfaceAlreadyConnected("Interface " + connection.interfaceA().getInterfaceName() + " is already connected");
 			}
 			if (existingConnection.interfaceA().equals(connection.interfaceB()) ||
 					existingConnection.interfaceB().equals(connection.interfaceB())) {
 				logger.warning("Interface %s is already connected in connection between %s and %s".formatted(
-						connection.interfaceB().getInterfaceName(),
-						existingConnection.interfaceA().getInterfaceName(),
-						existingConnection.interfaceB().getInterfaceName()));
-				throw new InterfaceAlreadyConnected("Interface " + connection.interfaceB().getInterfaceName() +
-					" is already connected");
+						connection.interfaceB().getInterfaceName(), existingConnection.interfaceA().getInterfaceName(), existingConnection.interfaceB().getInterfaceName()));
+				throw new InterfaceAlreadyConnected("Interface " + connection.interfaceB().getInterfaceName() + " is already connected");
 			}
 		}
 
 		logger.info("Adding connection between %s and %s".formatted(
 				connection.interfaceA().getInterfaceName(), connection.interfaceB().getInterfaceName()));
 		this.connections.add(connection);
-
-		// Update link states for both interfaces
-		logger.finer("Updating link states for interface %s".formatted(connection.interfaceA().getInterfaceName()));
-		updateInterfaceLinkState(connection.interfaceA());
-		logger.finer("Updating link states for interface %s".formatted(connection.interfaceB().getInterfaceName()));
-		updateInterfaceLinkState(connection.interfaceB());
 	}
 
 	/**
-	 * Removes a host from the topology.
-	 * Also removes all connections involving this host's interface.
-	 *
-	 * @param host the host to remove
+	 * Removes a device from the topology.
+	 * Also removes all connections involving this device's interfaces.
+	 * @param deviceId the ID of the device to remove
 	 */
-	public void removeHost(Host host) {
-		logger.finer("Removing host %s connections".formatted(host.getHostname()));
-		connections.removeIf(conn ->
-				conn.interfaceA().equals(host.getHostInterface()) ||
-						conn.interfaceB().equals(host.getHostInterface())
-		);
-		logger.info("Removing host %s from topology".formatted(host.getHostname()));
-		this.hosts.remove(host);
-	}
-
-	/**
-	 * Removes a switch from the topology.
-	 * Also removes all connections involving this switch's ports.
-	 *
-	 * @param sw the switch to remove
-	 */
-	public void removeSwitch(Switch sw) {
-		logger.finer("Removing switch %s connections".formatted(sw.getName()));
-		connections.removeIf(conn ->
-				sw.getPorts().stream().anyMatch(port -> port.equals(conn.interfaceA())) ||
-						sw.getPorts().stream().anyMatch(port -> port.equals(conn.interfaceB()))
-		);
-		logger.info("Removing switch %s from topology".formatted(sw.getName()));
-		this.switches.remove(sw);
-	}
-
-	/**
-	 * Removes a router from the topology.
-	 * Also removes all connections involving this router's interfaces.
-	 *
-	 * @param router the router to remove
-	 */
-	public void removeRouter(Router router) {
-		logger.finer("Removing router %s connections".formatted(router.getName()));
-		connections.removeIf(conn ->
-				router.getInterfaces().stream().anyMatch(iface -> iface.equals(conn.interfaceA())) ||
-						router.getInterfaces().stream().anyMatch(iface -> iface.equals(conn.interfaceB()))
-		);
-		logger.info("Removing router %s from topology".formatted(router.getName()));
-		this.routers.remove(router);
+	public void removeDevice(DeviceId deviceId) {
+		Device device = getDevice(deviceId);
+		if (device != null) {
+			logger.finer("Removing device %s connections".formatted(device.getDeviceName()));
+			connections.removeIf(conn -> device.getInterfaces().contains(conn.interfaceA()) ||
+					device.getInterfaces().contains(conn.interfaceB()));
+			logger.info("Removing device %s from topology".formatted(device.getDeviceName()));
+			this.devices.remove(device);
+		}
 	}
 
 	/**
 	 * Removes a connection from the topology.
-	 *
 	 * @param connection the connection to remove
 	 */
 	public void removeConnection(Connection connection) {
 		logger.info("Removing connection between %s and %s".formatted(
 				connection.interfaceA().getInterfaceName(), connection.interfaceB().getInterfaceName()));
 		this.connections.remove(connection);
-
-		// Update link states for both interfaces
-		logger.finer("Updating link states for interface %s after connection removal".formatted(connection.interfaceA().getInterfaceName()));
-		updateInterfaceLinkState(connection.interfaceA());
-		logger.finer("Updating link states for interface %s after connection removal".formatted(connection.interfaceB().getInterfaceName()));
-		updateInterfaceLinkState(connection.interfaceB());
 	}
 
 	/**
 	 * Finds the connection associated with the given interface.
-	 *
 	 * @param iface the interface to find connection for
 	 * @return the connection containing this interface, or null if not connected
 	 */
@@ -237,14 +149,6 @@ public class NetworkTopology {
 
 	/**
 	 * Checks if an interface has an active physical connection.
-	 * <p>
-	 * An interface has an active connection if:
-	 * <ul>
-	 *   <li>It is part of a Connection</li>
-	 *   <li>The neighboring interface exists</li>
-	 *   <li>If neighbor is a RouterInterface, it must be administratively UP</li>
-	 * </ul>
-	 *
 	 * @param iface the interface to check
 	 * @return true if the interface has an active connection
 	 */
@@ -256,42 +160,11 @@ public class NetworkTopology {
 
 		// Get the neighbor interface
 		NetworkInterface neighbor = conn.getNeighborInterface(iface);
-
-		// If neighbor is a RouterInterface, check if it's administratively up
-		if (neighbor instanceof RouterInterface routerNeighbor) {
-			logger.finest("Checking if interface %s neighbor %s is administratively up".formatted(iface.getInterfaceName(), routerNeighbor.getInterfaceName()));
-			return routerNeighbor.getStatus().getAdmin() == AdminState.UP;
-		}
-
-		// For other interface types (Switch, Host), assume they're always up
-		return true;
-	}
-
-	/**
-	 * Updates the link state of an interface if it's a RouterInterface.
-	 * <p>
-	 * This method should be called automatically whenever connections change.
-	 *
-	 * @param iface the interface to update
-	 */
-	private void updateInterfaceLinkState(NetworkInterface iface) {
-		if (iface instanceof RouterInterface routerIface) {
-			logger.finest("Updating link state for router interface %s".formatted(routerIface.getInterfaceName()));
-			routerIface.updateLinkState(this);
-		}
+		return neighbor.isOperational();
 	}
 
 	/**
 	 * Generates a text-based visualization of the network topology.
-	 * <p>
-	 * The visualization includes:
-	 * <ul>
-	 *   <li>All hosts with their IP addresses and gateways</li>
-	 *   <li>All switches with their ports</li>
-	 *   <li>All routers with their interfaces</li>
-	 *   <li>All connections between interfaces</li>
-	 * </ul>
-	 *
 	 * @return text representation of the network topology
 	 */
 	public String visualize() {
@@ -300,14 +173,25 @@ public class NetworkTopology {
 
 	/**
 	 * Finds a host interface with exactly the given IP address that is reachable from the given starting interface using connections graph.
-	 * This performs a BFS across connections (through switches and other devices) starting at the provided interface.
-	 *
 	 * @param start the interface to start searching from (typically a router interface)
 	 * @param ip    the exact host IP to find
 	 * @return the HostInterface if found, otherwise null
 	 */
-	public HostInterface findHostInterfaceByIpConnectedToInterface(NetworkInterface start, IPAddress ip) {
+	public NetworkInterface findHostInterfaceByIpConnectedToInterface(NetworkInterface start, IPAddress ip) {
 		return TopologyGraphSearch.findHostInterfaceByIpConnectedToInterface(this, start, ip);
 	}
 
+	public Device findDeviceByInterface(NetworkInterface iface) {
+		for (Device device : devices) {
+			if (device.getInterfaces().contains(iface)) return device;
+		}
+		return null;
+	}
+
+	public Device getDevice(DeviceId id) {
+		for (Device device : devices) {
+			if (device.getId().equals(id)) return device;
+		}
+		return null;
+	}
 }

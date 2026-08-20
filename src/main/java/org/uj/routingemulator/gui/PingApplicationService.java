@@ -1,6 +1,7 @@
 package org.uj.routingemulator.gui;
 
 import org.uj.routingemulator.common.NetworkTopology;
+import org.uj.routingemulator.common.PingService;
 import org.uj.routingemulator.common.PingStatistics;
 import org.uj.routingemulator.host.Host;
 
@@ -12,6 +13,6 @@ public class PingApplicationService {
 	}
 
 	public PingStatistics pingFromHost(Host host, String targetIp) {
-		return host.ping(targetIp, topology);
+		return new PingService().ping(host, targetIp, 4, topology);
 	}
 }

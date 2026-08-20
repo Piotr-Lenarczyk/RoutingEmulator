@@ -3,7 +3,9 @@ package org.uj.routingemulator.router;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import org.uj.routingemulator.common.*;
+import org.uj.routingemulator.common.Device;
+import org.uj.routingemulator.common.DeviceId;
+import org.uj.routingemulator.common.InterfaceAddress;
 import org.uj.routingemulator.router.exceptions.*;
 
 import java.util.ArrayList;
@@ -13,15 +15,15 @@ import java.util.logging.Logger;
 @Getter
 @Setter
 @EqualsAndHashCode(exclude = {"configSession"})
-public class Router {
+public class Router implements Device {
 	private static final String INTERFACE_NOT_EXISTS = "WARN: interface %s does not exist, changes will not be commited";
 	private static final Logger logger = Logger.getLogger(Router.class.getName());
 
+	private final DeviceId id = DeviceId.generate();
 	private String name;
 	private RoutingTable routingTable;
 	private List<RouterInterface> interfaces;
 	private RouterMode mode;
-
 	private final RouterConfigurationSession configSession;
 
 	public Router(String name) {
@@ -31,7 +33,6 @@ public class Router {
 		this.interfaces.add(new RouterInterface("eth0"));
 		this.interfaces.add(new RouterInterface("lo"));
 		this.mode = RouterMode.OPERATIONAL;
-
 		this.configSession = new RouterConfigurationSession(this);
 		logger.fine("Creating new router %s with default configuration".formatted(name));
 	}
@@ -41,9 +42,18 @@ public class Router {
 		this.routingTable = new RoutingTable();
 		this.interfaces = interfaces;
 		this.mode = RouterMode.OPERATIONAL;
-
 		this.configSession = new RouterConfigurationSession(this);
 		logger.fine("Creating new router %s with custom interfaces: %s".formatted(name, interfaces));
+	}
+
+	@Override
+	public DeviceId getId() {
+		return id;
+	}
+
+	@Override
+	public String getDeviceName() {
+		return name;
 	}
 
 	public boolean hasUncommittedChanges() {
@@ -148,6 +158,7 @@ public class Router {
 			String msg = String.format("Interface %s is disabled%nPackets routed through this interface will be dropped%nEnsure this action is deliberate", routerInterface.getInterfaceName());
 			logger.warning(msg);
 		}
+
 		logger.info("%s: Interface %s configured with address %s in staged configuration".formatted(this.name, routerInterfaceName, interfaceAddress));
 	}
 
@@ -215,9 +226,11 @@ public class Router {
 		if (this.mode == RouterMode.CONFIGURATION && hasUncommittedChanges()) {
 			throw new UncommittedChangesException("Cannot exit: configuration modified.\nUse 'exit discard' to discard the changes and exit.\n[edit]");
 		}
+
 		if (mode == RouterMode.CONFIGURATION && this.mode == RouterMode.OPERATIONAL) {
 			configSession.discardChanges(this);
 		}
+
 		this.mode = mode;
 	}
 
@@ -228,21 +241,11 @@ public class Router {
 		this.mode = mode;
 	}
 
-	/**
-	 * Displays the IP routing table in VyOS format.
-	 * Shows both static routes and connected routes (directly connected networks).
-	 * Must be executed in OPERATIONAL mode.
-	 *
-	 * @return Formatted routing table output
-	 * @throws InvalidModeException if not in OPERATIONAL mode
-	 */
 	public String showIpRoute() {
 		if (mode != RouterMode.OPERATIONAL) {
 			logger.warning("Attempted to show IP route while in %s mode".formatted(mode));
 			throw new InvalidModeException("Invalid command: show [ip]");
 		}
-
-		// Delegate the heavy lifting to the presentation formatter
 		return IpRouteTableFormatter.format(this);
 	}
 
@@ -261,13 +264,6 @@ public class Router {
 				.filter(intf -> intf.getInterfaceName().equals(interfaceName))
 				.findFirst()
 				.orElse(null);
-	}
-
-	public PingStatistics ping(String dst, NetworkTopology topology) {
-		logger.info("Initializing new PingService for host %s".formatted(this.name));
-		PingService svc = new PingService();
-		logger.info("%s: Pinging %s with 4 probes...".formatted(this.name, dst));
-		return svc.ping(this, IPAddress.fromString(dst), 4, 64, topology);
 	}
 
 	@Override

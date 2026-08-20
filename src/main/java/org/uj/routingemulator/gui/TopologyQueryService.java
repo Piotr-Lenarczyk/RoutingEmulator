@@ -1,13 +1,9 @@
 package org.uj.routingemulator.gui;
 
-import org.uj.routingemulator.common.Connection;
-import org.uj.routingemulator.common.NetworkInterface;
-import org.uj.routingemulator.common.NetworkTopology;
+import org.uj.routingemulator.common.*;
 import org.uj.routingemulator.host.Host;
 import org.uj.routingemulator.router.Router;
-import org.uj.routingemulator.router.RouterInterface;
 import org.uj.routingemulator.switching.Switch;
-import org.uj.routingemulator.switching.SwitchPort;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,15 +16,25 @@ public class TopologyQueryService {
 	}
 
 	public TopologyViewModel getTopologyViewModel() {
+		List<Router> routers = new ArrayList<>();
+		List<Switch> switches = new ArrayList<>();
+		List<Host> hosts = new ArrayList<>();
+
+		for (Device d : topology.getDevices()) {
+			if (d instanceof Router r) routers.add(r);
+			else if (d instanceof Switch s) switches.add(s);
+			else if (d instanceof Host h) hosts.add(h);
+		}
+
 		return new TopologyViewModel(
-				List.copyOf(topology.getRouters()),
-				List.copyOf(topology.getSwitches()),
-				List.copyOf(topology.getHosts()),
+				routers,
+				switches,
+				hosts,
 				List.copyOf(topology.getConnections())
 		);
 	}
 
-	public List<Connection> getDeviceConnections(Object device) {
+	public List<Connection> getDeviceConnections(Device device) {
 		List<Connection> relatedConnections = new ArrayList<>();
 		for (Connection conn : topology.getConnections()) {
 			if (isDeviceInConnection(device, conn)) {
@@ -38,26 +44,13 @@ public class TopologyQueryService {
 		return relatedConnections;
 	}
 
-	public boolean isDeviceInConnection(Object device, Connection connection) {
-		if (device instanceof Router router) {
-			return router.getInterfaces().stream().anyMatch(iface -> iface.equals(connection.interfaceA()) || iface.equals(connection.interfaceB()));
-		} else if (device instanceof Switch sw) {
-			return sw.getPorts().stream().anyMatch(port -> port.equals(connection.interfaceA()) || port.equals(connection.interfaceB()));
-		} else if (device instanceof Host host) {
-			return host.getHostInterface().equals(connection.interfaceA()) || host.getHostInterface().equals(connection.interfaceB());
-		}
-		return false;
+	public boolean isDeviceInConnection(Device device, Connection connection) {
+		return device.getInterfaces().contains(connection.interfaceA()) ||
+				device.getInterfaces().contains(connection.interfaceB());
 	}
 
-	public List<NetworkInterface> getAvailableInterfaces(Object device) {
-		List<NetworkInterface> allInterfaces = new ArrayList<>();
-		if (device instanceof Router router) {
-			allInterfaces.addAll(router.getInterfaces());
-		} else if (device instanceof Switch sw) {
-			allInterfaces.addAll(sw.getPorts());
-		} else if (device instanceof Host host) {
-			allInterfaces.add(host.getHostInterface());
-		}
+	public List<NetworkInterface> getAvailableInterfaces(Device device) {
+		List<NetworkInterface> allInterfaces = new ArrayList<>(device.getInterfaces());
 
 		return allInterfaces.stream()
 				.filter(iface -> topology.getConnections().stream()
@@ -65,21 +58,17 @@ public class TopologyQueryService {
 				.toList();
 	}
 
-	public Object findDevice(NetworkInterface iface) {
-		for (Router router : topology.getRouters()) {
-			if (iface instanceof RouterInterface && router.getInterfaces().contains(iface)) {
-				return router;
-			}
-		}
-		for (Switch sw : topology.getSwitches()) {
-			if (iface instanceof SwitchPort && sw.getPorts().contains(iface)) {
-				return sw;
-			}
-		}
-		for (Host host : topology.getHosts()) {
-			if (host.getHostInterface().equals(iface)) {
-				return host;
-			}
+	public Device findDevice(NetworkInterface iface) {
+		return topology.findDeviceByInterface(iface);
+	}
+
+	public Device getDevice(DeviceId id) {
+		return topology.getDevice(id);
+	}
+
+	public Connection getConnection(ConnectionId id) {
+		for (Connection conn : topology.getConnections()) {
+			if (conn.id().equals(id)) return conn;
 		}
 		return null;
 	}

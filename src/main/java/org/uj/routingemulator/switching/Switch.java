@@ -2,6 +2,9 @@ package org.uj.routingemulator.switching;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.uj.routingemulator.common.Device;
+import org.uj.routingemulator.common.DeviceId;
+import org.uj.routingemulator.common.NetworkInterface;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -15,14 +18,15 @@ import java.util.logging.Logger;
  */
 @Getter
 @Setter
-public class Switch {
+public class Switch implements Device {
 	private static final Logger logger = Logger.getLogger(Switch.class.getName());
+
+	private final DeviceId id = DeviceId.generate();
 	private String name;
 	private LinkedList<SwitchPort> ports;
 
 	/**
 	 * Creates a switch with specified name and ports.
-	 *
 	 * @param name  the name of the switch
 	 * @param ports the list of switch ports
 	 */
@@ -36,7 +40,6 @@ public class Switch {
 	 * Creates a switch with specified name and empty port list.
 	 * Default behavior creates two ports (GigabitEthernet0/1 and GigabitEthernet0/2)
 	 * to make simple topologies easier to build in tests.
-	 *
 	 * @param name the name of the switch
 	 */
 	public Switch(String name) {
@@ -48,9 +51,23 @@ public class Switch {
 		logger.fine("Creating new switch: %s with default ports: %s".formatted(name, ports));
 	}
 
+	@Override
+	public DeviceId getId() {
+		return id;
+	}
+
+	@Override
+	public String getDeviceName() {
+		return name;
+	}
+
+	@Override
+	public List<? extends NetworkInterface> getInterfaces() {
+		return ports;
+	}
+
 	/**
 	 * Checks if this switch contains the specified port.
-	 *
 	 * @param port the port to check
 	 * @return true if the port exists on this switch
 	 */

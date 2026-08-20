@@ -22,29 +22,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class E2ETest {
 
-	private static String nthHostFromNetworkOrDefault(String cidr, int hostIndex, String defaultAddr) {
-		if (cidr == null || cidr.isBlank()) return defaultAddr;
-		try {
-			String[] parts = cidr.split("/");
-			IPAddress net = IPAddress.fromString(parts[0]);
-			int prefix = Integer.parseInt(parts[1]);
-			long netAsLong = ((long) net.getOctet1() << 24) | ((long) net.getOctet2() << 16) | ((long) net.getOctet3() << 8) | (net.getOctet4() & 0xffL);
-			long host = netAsLong + hostIndex;
-			long mask = (prefix == 0) ? 0 : (0xFFFFFFFFL << (32 - prefix)) & 0xFFFFFFFFL;
-			long broadcast = (netAsLong & mask) | (~mask & 0xFFFFFFFFL);
-			if (host >= broadcast) {
-				return defaultAddr;
-			}
-			int o1 = (int) ((host >> 24) & 0xFF);
-			int o2 = (int) ((host >> 16) & 0xFF);
-			int o3 = (int) ((host >> 8) & 0xFF);
-			int o4 = (int) (host & 0xFF);
-			return String.format("%d.%d.%d.%d/%d", o1, o2, o3, o4, prefix);
-		} catch (Exception e) {
-			return defaultAddr;
-		}
-	}
-
 	@Test
 	void testNextHopSubnetNotANetworkAddress() {
 		Router router = new Router("R1");
@@ -89,6 +66,29 @@ class E2ETest {
 				.contains("[edit]");
 	}
 
+	private static String nthHostFromNetworkOrDefault(String cidr, int hostIndex, String defaultAddr) {
+		if (cidr == null || cidr.isBlank()) return defaultAddr;
+		try {
+			String[] parts = cidr.split("/");
+			IPAddress net = IPAddress.fromString(parts[0]);
+			int prefix = Integer.parseInt(parts[1]);
+			long netAsLong = ((long) net.getOctet1() << 24) | ((long) net.getOctet2() << 16) | ((long) net.getOctet3() << 8) | (net.getOctet4() & 0xffL);
+			long host = netAsLong + hostIndex;
+			long mask = (prefix == 0) ? 0 : (0xFFFFFFFFL << (32 - prefix)) & 0xFFFFFFFFL;
+			long broadcast = (netAsLong & mask) | (~mask & 0xFFFFFFFFL);
+			if (host >= broadcast) {
+				return defaultAddr;
+			}
+			int o1 = (int) ((host >> 24) & 0xFF);
+			int o2 = (int) ((host >> 16) & 0xFF);
+			int o3 = (int) ((host >> 8) & 0xFF);
+			int o4 = (int) (host & 0xFF);
+			return String.format("%d.%d.%d.%d/%d", o1, o2, o3, o4, prefix);
+		} catch (Exception e) {
+			return defaultAddr;
+		}
+	}
+
 	@Test
 	void testTripleRouterSetup() {
 		NetworkTopology topology = new NetworkTopology();
@@ -98,11 +98,11 @@ class E2ETest {
 		Router r2 = new Router("R2", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
 		Router r3 = new Router("R3", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
 
-		topology.addHost(h1);
-		topology.addHost(h2);
-		topology.addRouter(r1);
-		topology.addRouter(r2);
-		topology.addRouter(r3);
+		topology.addDevice(h1);
+		topology.addDevice(h2);
+		topology.addDevice(r1);
+		topology.addDevice(r2);
+		topology.addDevice(r3);
 
 		topology.addConnection(new Connection(h1.getHostInterface(), r1.getInterfaces().getFirst()));
 		topology.addConnection(new Connection(r1.getInterfaces().get(1), r2.getInterfaces().getFirst()));
@@ -124,29 +124,29 @@ class E2ETest {
 		r3.configureInterface("eth1", InterfaceAddress.fromString("20.0.0.1/8"));
 		r3.commitChanges();
 
-		PingStatistics stats = r1.ping("192.168.0.2", topology);
+		PingStatistics stats = new PingService().ping(r1, IPAddress.fromString("192.168.0.2"), 4, 64, topology);
 		assertEquals(4, stats.getSent());
 		assertEquals(4, stats.getReceived(), "Should receive a reply from a directly connected router");
 
-		PingStatistics stats1 = r2.ping("192.168.0.130", topology);
+		PingStatistics stats1 = new PingService().ping(r2, IPAddress.fromString("192.168.0.130"), 4, 64, topology);
 		assertEquals(4, stats1.getSent());
 		assertEquals(4, stats1.getReceived(), "Should receive a reply from a directly connected router");
 
-		PingStatistics stats2 = r1.ping("192.168.0.130", topology);
+		PingStatistics stats2 = new PingService().ping(r1, IPAddress.fromString("192.168.0.130"), 4, 64, topology);
 		assertEquals(4, stats2.getSent());
 		assertEquals(0, stats2.getReceived(), "Should not receive a reply from an indirectly connected router");
 
 		r1.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 0, 128), new SubnetMask(26)), r1.findFromName("eth1")));
 		r1.commitChanges();
 
-		PingStatistics stats3 = r1.ping("192.168.0.130", topology);
+		PingStatistics stats3 = new PingService().ping(r1, IPAddress.fromString("192.168.0.130"), 4, 64, topology);
 		assertEquals(4, stats3.getSent());
 		assertEquals(0, stats3.getReceived(), "Should not receive a reply due to packet drop at R3 (no route back to R1)");
 
 		r3.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 0, 0), new SubnetMask(25)), r3.findFromName("eth0")));
 		r3.commitChanges();
 
-		PingStatistics stats4 = r1.ping("192.168.0.130", topology);
+		PingStatistics stats4 = new PingService().ping(r1, IPAddress.fromString("192.168.0.130"), 4, 64, topology);
 		assertEquals(4, stats4.getSent());
 		assertEquals(4, stats4.getReceived(), "Should succeed due to correct return route");
 	}
@@ -160,11 +160,11 @@ class E2ETest {
 		Router r2 = new Router("R2", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
 		Router r3 = new Router("R3", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
 
-		topology.addHost(h1);
-		topology.addHost(h2);
-		topology.addRouter(r1);
-		topology.addRouter(r2);
-		topology.addRouter(r3);
+		topology.addDevice(h1);
+		topology.addDevice(h2);
+		topology.addDevice(r1);
+		topology.addDevice(r2);
+		topology.addDevice(r3);
 
 		topology.addConnection(new Connection(h1.getHostInterface(), r1.getInterfaces().getFirst()));
 		topology.addConnection(new Connection(r1.getInterfaces().get(1), r2.getInterfaces().getFirst()));
@@ -186,15 +186,15 @@ class E2ETest {
 		r3.configureInterface("eth1", InterfaceAddress.fromString("20.0.0.1/8"));
 		r3.commitChanges();
 
-		PingStatistics stats = r1.ping("192.168.0.2", topology);
+		PingStatistics stats = new PingService().ping(r1, IPAddress.fromString("192.168.0.2"), 4, 64, topology);
 		assertEquals(4, stats.getSent());
 		assertEquals(4, stats.getReceived(), "Should receive a reply from a directly connected router");
 
-		PingStatistics stats1 = r2.ping("192.168.0.130", topology);
+		PingStatistics stats1 = new PingService().ping(r2, IPAddress.fromString("192.168.0.130"), 4, 64, topology);
 		assertEquals(4, stats1.getSent());
 		assertEquals(4, stats1.getReceived(), "Should receive a reply from a directly connected router");
 
-		PingStatistics stats2 = r1.ping("192.168.0.130", topology);
+		PingStatistics stats2 = new PingService().ping(r1, IPAddress.fromString("192.168.0.130"), 4, 64, topology);
 		assertEquals(4, stats2.getSent());
 		assertEquals(0, stats2.getReceived(), "Should not receive a reply from an indirectly connected router");
 
@@ -202,7 +202,7 @@ class E2ETest {
 		r1.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(20, 0, 0, 0), new SubnetMask(8)), r1.findFromName("eth1")));
 		r1.commitChanges();
 
-		PingStatistics stats3 = r1.ping("192.168.0.130", topology);
+		PingStatistics stats3 = new PingService().ping(r1, IPAddress.fromString("192.168.0.130"), 4, 64, topology);
 		assertEquals(4, stats3.getSent());
 		assertEquals(0, stats3.getReceived(), "Should not receive a reply due to packet drop at R3 (no route back to R1)");
 
@@ -214,11 +214,11 @@ class E2ETest {
 		r3.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(10, 0, 0, 0), new SubnetMask(8)), r3.findFromName("eth0")));
 		r3.commitChanges();
 
-		PingStatistics stats4 = r1.ping("192.168.0.130", topology);
+		PingStatistics stats4 = new PingService().ping(r1, IPAddress.fromString("192.168.0.130"), 4, 64, topology);
 		assertEquals(4, stats4.getSent());
 		assertEquals(4, stats4.getReceived(), "Should succeed due to correct return route");
 
-		PingStatistics e2estats = h1.ping("20.0.0.2", topology);
+		PingStatistics e2estats = new PingService().ping(h1, "20.0.0.2", 4, topology);
 		assertEquals(4, e2estats.getSent());
 		assertEquals(4, e2estats.getReceived(), "End-to-end ping should succeed with full static routing path");
 	}
@@ -232,11 +232,11 @@ class E2ETest {
 		Router r2 = new Router("R2", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
 		Router r3 = new Router("R3", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
 
-		topology.addHost(h1);
-		topology.addHost(h2);
-		topology.addRouter(r1);
-		topology.addRouter(r2);
-		topology.addRouter(r3);
+		topology.addDevice(h1);
+		topology.addDevice(h2);
+		topology.addDevice(r1);
+		topology.addDevice(r2);
+		topology.addDevice(r3);
 
 		topology.addConnection(new Connection(h1.getHostInterface(), r1.getInterfaces().getFirst()));
 		topology.addConnection(new Connection(r1.getInterfaces().get(1), r2.getInterfaces().getFirst()));
@@ -270,11 +270,11 @@ class E2ETest {
 		r3.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(10, 0, 0, 0), new SubnetMask(8)), r3.findFromName("eth0")));
 		r3.commitChanges();
 
-		PingStatistics stats = h1.ping("30.0.0.2", topology);
+		PingStatistics stats = new PingService().ping(h1, "30.0.0.2", 4, topology);
 		assertEquals(4, stats.getSent());
 		assertEquals(0, stats.getReceived(), "Should not receive a reply from a non-existent destination");
 
-		PingStatistics stats1 = r1.ping("30.0.0.2", topology);
+		PingStatistics stats1 = new PingService().ping(r1, IPAddress.fromString("30.0.0.2"), 4, 64, topology);
 		assertEquals(4, stats1.getSent());
 		assertEquals(0, stats1.getReceived(), "Should not receive a reply from a non-existent destination");
 
@@ -287,11 +287,11 @@ class E2ETest {
 		r3.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(30, 0, 0, 0), new SubnetMask(8)), r3.findFromName("eth0")));
 		r3.commitChanges();
 
-		PingStatistics stats2 = h1.ping("30.0.0.2", topology);
+		PingStatistics stats2 = new PingService().ping(h1, "30.0.0.2", 4, topology);
 		assertEquals(4, stats2.getSent());
 		assertEquals(0, stats2.getReceived(), "Should not receive a reply due to a routing loop and TTL expiry");
 
-		PingStatistics stats3 = r1.ping("30.0.0.2", topology);
+		PingStatistics stats3 = new PingService().ping(r1, IPAddress.fromString("30.0.0.2"), 4, 64, topology);
 		assertEquals(4, stats3.getSent());
 		assertEquals(0, stats3.getReceived(), "Should not receive a reply due to a routing loop and TTL expiry");
 	}
@@ -305,11 +305,11 @@ class E2ETest {
 		Router r2 = new Router("R2", List.of(new RouterInterface("eth0"), new RouterInterface("eth1"), new RouterInterface("eth2")));
 		Router r3 = new Router("R3", List.of(new RouterInterface("eth0"), new RouterInterface("eth1"), new RouterInterface("eth2")));
 
-		topology.addHost(h1);
-		topology.addHost(h2);
-		topology.addRouter(r1);
-		topology.addRouter(r2);
-		topology.addRouter(r3);
+		topology.addDevice(h1);
+		topology.addDevice(h2);
+		topology.addDevice(r1);
+		topology.addDevice(r2);
+		topology.addDevice(r3);
 
 		topology.addConnection(new Connection(h1.getHostInterface(), r1.getInterfaces().getFirst()));
 		topology.addConnection(new Connection(r1.getInterfaces().get(1), r2.getInterfaces().getFirst()));
@@ -353,15 +353,15 @@ class E2ETest {
 		r3.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(10, 0, 0, 0), new SubnetMask(8)), r3.findFromName("eth1"), 2));
 		r3.commitChanges();
 
-		PingStatistics stats = h1.ping("192.168.0.129", topology);
+		PingStatistics stats = new PingService().ping(h1, "192.168.0.129", 4, topology);
 		assertEquals(4, stats.getSent());
 		assertEquals(4, stats.getReceived(), "Should receive a reply from R2");
 
-		PingStatistics stats1 = h1.ping("192.168.0.130", topology);
+		PingStatistics stats1 = new PingService().ping(h1, "192.168.0.130", 4, topology);
 		assertEquals(4, stats1.getSent());
 		assertEquals(4, stats1.getReceived(), "Should receive a reply from R2");
 
-		PingStatistics stats2 = r2.ping("10.0.0.1", topology);
+		PingStatistics stats2 = new PingService().ping(r2, IPAddress.fromString("10.0.0.1"), 4, 64, topology);
 		assertEquals(4, stats2.getSent());
 		assertEquals(4, stats2.getReceived(), "Should receive a reply from H1");
 
@@ -370,7 +370,7 @@ class E2ETest {
 		r2.disableRoute(new StaticRoutingEntry(new Subnet(new IPAddress(10, 0, 0, 0), new SubnetMask(8)), r2.findFromName("eth0")));
 		r2.commitChanges();
 
-		PingStatistics stats3 = r2.ping("10.0.0.1", topology);
+		PingStatistics stats3 = new PingService().ping(r2, IPAddress.fromString("10.0.0.1"), 4, 64, topology);
 		assertEquals(4, stats3.getSent());
 		assertEquals(4, stats3.getReceived(), "Should receive a reply from H1");
 
@@ -413,12 +413,12 @@ class E2ETest {
 		Router rx = new Router("RX", List.of(new RouterInterface("eth0"), new RouterInterface("eth1"), new RouterInterface("eth2")));
 		Router rxx = new Router("RXX", List.of(new RouterInterface("eth0"), new RouterInterface("eth1"), new RouterInterface("eth2")));
 
-		topology.addRouter(ra);
-		topology.addRouter(rb);
-		topology.addRouter(rc);
-		topology.addRouter(rd);
-		topology.addRouter(rx);
-		topology.addRouter(rxx);
+		topology.addDevice(ra);
+		topology.addDevice(rb);
+		topology.addDevice(rc);
+		topology.addDevice(rd);
+		topology.addDevice(rx);
+		topology.addDevice(rxx);
 
 		topology.addConnection(new Connection(ra.getInterfaces().get(1), rb.getInterfaces().get(1)));
 		topology.addConnection(new Connection(rb.getInterfaces().getFirst(), rx.getInterfaces().getFirst()));
@@ -441,11 +441,11 @@ class E2ETest {
 		rxx.configureInterface("eth1", InterfaceAddress.fromString(rxxEth1));
 		rxx.commitChanges();
 
-		PingStatistics stats = rx.ping(trimAddressMask(rxxEth1), topology);
+		PingStatistics stats = new PingService().ping(rx, IPAddress.fromString(trimAddressMask(rxxEth1)), 4, 64, topology);
 		assertEquals(4, stats.getSent());
 		assertEquals(4, stats.getReceived(), "Should receive a reply between directly connected interfaces");
 
-		PingStatistics stats1 = rxx.ping(trimAddressMask(rxEth1), topology);
+		PingStatistics stats1 = new PingService().ping(rxx, IPAddress.fromString(trimAddressMask(rxEth1)), 4, 64, topology);
 		assertEquals(4, stats1.getSent());
 		assertEquals(4, stats1.getReceived(), "Should receive a reply between directly connected interfaces");
 
@@ -465,18 +465,18 @@ class E2ETest {
 		rc.configureInterface("eth2", InterfaceAddress.fromString(rcEth2));
 		rc.commitChanges();
 
-		PingStatistics stats2 = rx.ping(trimAddressMask(rbEth0), topology);
+		PingStatistics stats2 = new PingService().ping(rx, IPAddress.fromString(trimAddressMask(rbEth0)), 4, 64, topology);
 		assertEquals(4, stats2.getSent());
 		assertEquals(4, stats2.getReceived(), "Should receive a reply from RB");
 
-		PingStatistics stats3 = rxx.ping(trimAddressMask(rcEth2), topology);
+		PingStatistics stats3 = new PingService().ping(rxx, IPAddress.fromString(trimAddressMask(rcEth2)), 4, 64, topology);
 		assertEquals(4, stats3.getSent());
 		assertEquals(4, stats3.getReceived(), "Should receive a reply from RC");
 
 		Host h1 = new Host("H1", new HostInterface("Ethernet0", new InterfaceAddress(new IPAddress(192, 168, 2, 2), new SubnetMask(8)), new IPAddress(192, 168, 2, 1)));
 		Host h2 = new Host("H1", new HostInterface("Ethernet0", new InterfaceAddress(new IPAddress(192, 168, 4, 2), new SubnetMask(8)), new IPAddress(192, 168, 4, 1)));
-		topology.addHost(h1);
-		topology.addHost(h2);
+		topology.addDevice(h1);
+		topology.addDevice(h2);
 
 		topology.addConnection(new Connection(h1.getHostInterface(), ra.getInterfaces().getFirst()));
 		topology.addConnection(new Connection(rd.getInterfaces().getFirst(), h2.getHostInterface()));

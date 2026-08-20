@@ -39,7 +39,9 @@ import java.util.logging.Logger;
 @EqualsAndHashCode
 @ToString
 public class RouterInterface implements NetworkInterface {
+
 	private static final Logger logger = Logger.getLogger(RouterInterface.class.getName());
+
 	private String interfaceName;
 	private InterfaceAddress interfaceAddress;
 	private MacAddress macAddress;
@@ -59,7 +61,6 @@ public class RouterInterface implements NetworkInterface {
 	 *   <li>MTU based on interface type (1500 for eth*, 65536 for lo)</li>
 	 *   <li>Default VRF</li>
 	 * </ul>
-	 *
 	 * @param interfaceName the name of the interface (e.g., "eth0", "lo")
 	 */
 	public RouterInterface(String interfaceName) {
@@ -67,18 +68,19 @@ public class RouterInterface implements NetworkInterface {
 		this.interfaceAddress = null;
 		this.macAddress = new MacAddress();
 		this.description = null;
+
 		if (interfaceName.startsWith("eth")) {
 			this.mtu = 1500;
 		} else if (interfaceName.startsWith("lo")) {
 			this.mtu = 65536;
 		}
+
 		// Interface starts with admin UP but link DOWN (no physical connection yet)
 		this.status = InterfaceStatus.fromChars('u', 'D');
 	}
 
 	/**
 	 * Creates a router interface with full configuration.
-	 *
 	 * @param interfaceName the name of the interface
 	 * @param interfaceAddress the IP address and subnet mask
 	 * @param macAddress the MAC address
@@ -95,7 +97,6 @@ public class RouterInterface implements NetworkInterface {
 
 	/**
 	 * Creates a router interface with full configuration including VRF.
-	 *
 	 * @param interfaceName the name of the interface
 	 * @param interfaceAddress the IP address and subnet mask
 	 * @param macAddress the MAC address
@@ -115,7 +116,6 @@ public class RouterInterface implements NetworkInterface {
 	/**
 	 * Gets the subnet (network) this interface belongs to.
 	 * This is a convenience method that calculates the subnet from the interface address.
-	 *
 	 * @return Subnet this interface belongs to, or null if no address is configured
 	 */
 	public Subnet getSubnet() {
@@ -124,7 +124,6 @@ public class RouterInterface implements NetworkInterface {
 
 	/**
 	 * Sets the subnet by converting to interface address.
-	 *
 	 * @param subnet the subnet to set
 	 */
 	public void setSubnet(Subnet subnet) {
@@ -144,18 +143,17 @@ public class RouterInterface implements NetworkInterface {
 	public RouterInterface(RouterInterface other) {
 		this.interfaceName = other.interfaceName;
 		this.interfaceAddress = other.interfaceAddress; // InterfaceAddress is immutable
-		this.macAddress = other.macAddress; // MacAddress is immutable
+		this.macAddress = other.macAddress;             // MacAddress is immutable
 		this.description = other.description;
 		this.vrf = other.vrf;
 		this.mtu = other.mtu;
-		this.status = other.status; // InterfaceStatus is immutable
+		this.status = other.status;                     // InterfaceStatus is immutable
 	}
 
 	/**
 	 * Administratively disables the interface.
 	 * <p>
 	 * Sets administrative state to ADMIN_DOWN while preserving the current link state.
-	 *
 	 * @throws DuplicateConfigurationException if the interface is already administratively disabled
 	 */
 	public void disable() {
@@ -172,7 +170,6 @@ public class RouterInterface implements NetworkInterface {
 	 * Administratively enables the interface.
 	 * <p>
 	 * Sets administrative state to UP while preserving the current link state.
-	 *
 	 * @throws ConfigurationNotFoundException if the interface is already administratively enabled
 	 */
 	public void enable() {
@@ -190,11 +187,15 @@ public class RouterInterface implements NetworkInterface {
 	 * <p>
 	 * This only checks administrative state, not link state.
 	 * An interface with link DOWN but admin UP is not considered disabled.
-	 *
 	 * @return true if the interface is administratively disabled, false otherwise
 	 */
 	public boolean isDisabled() {
 		return this.status.getAdmin() == AdminState.ADMIN_DOWN;
+	}
+
+	@Override
+	public boolean isOperational() {
+		return status != null && status.getAdmin() == AdminState.UP;
 	}
 
 	/**
@@ -213,7 +214,6 @@ public class RouterInterface implements NetworkInterface {
 	 *   <li>A connection is added or removed</li>
 	 *   <li>A neighboring interface changes administrative state</li>
 	 * </ul>
-	 *
 	 * @param topology the network topology to check for connections
 	 */
 	public void updateLinkState(NetworkTopology topology) {

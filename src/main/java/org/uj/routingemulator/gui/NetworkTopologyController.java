@@ -14,14 +14,14 @@ import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
-import org.uj.routingemulator.common.Connection;
-import org.uj.routingemulator.common.DeviceLookup;
-import org.uj.routingemulator.common.NetworkInterface;
-import org.uj.routingemulator.common.NetworkTopology;
+import org.uj.routingemulator.common.*;
 import org.uj.routingemulator.host.Host;
 import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.RouterInterface;
+import org.uj.routingemulator.router.config.ConfigurationApplicationService;
 import org.uj.routingemulator.router.config.ConfigurationParseException;
+import org.uj.routingemulator.router.config.FileConfigurationLoader;
+import org.uj.routingemulator.router.config.FileConfigurationWriter;
 import org.uj.routingemulator.switching.Switch;
 
 import java.io.File;
@@ -61,13 +61,13 @@ public class NetworkTopologyController {
 	private NetworkTopology topology;
 	private TopologyApplicationService applicationService;
 	private TopologyQueryService queryService;
-	private RouterConfigurationService configurationService;
+	private ConfigurationApplicationService configurationApplicationService;
 	private PingApplicationService pingApplicationService;
 	private HostConfigurationService hostConfigurationService;
 	private RouterCLIService routerCLIService;
 
-	private Map<Object, DeviceNode> deviceNodes;
-	private Map<Connection, Line> connectionLines;
+	private Map<DeviceId, DeviceNode> deviceNodes;
+	private Map<ConnectionId, Line> connectionLines;
 
 	private DeviceNode selectedNode;
 	private DeviceNode connectionStartNode;
@@ -77,7 +77,10 @@ public class NetworkTopologyController {
 		this.topology = new NetworkTopology();
 		this.applicationService = new TopologyApplicationService(topology);
 		this.queryService = new TopologyQueryService(topology);
-		this.configurationService = new RouterConfigurationService();
+		this.configurationApplicationService = new ConfigurationApplicationService(
+				new FileConfigurationLoader(),
+				new FileConfigurationWriter()
+		);
 		this.pingApplicationService = new PingApplicationService(topology);
 		this.hostConfigurationService = new HostConfigurationService();
 		this.routerCLIService = new RouterCLIService(topology);
@@ -227,19 +230,20 @@ public class NetworkTopologyController {
 
 		Optional<ButtonType> result = confirmation.showAndWait();
 		if (result.isPresent() && result.get() == ButtonType.OK) {
-			Object device = selectedNode.device;
+			DeviceId deviceId = selectedNode.deviceId();
+			Device device = queryService.getDevice(deviceId);
 			List<Connection> connectionsToRemove = queryService.getDeviceConnections(device);
 
 			for (Connection conn : connectionsToRemove) {
-				Line line = connectionLines.remove(conn);
+				Line line = connectionLines.remove(conn.id());
 				if (line != null) {
 					canvasPane.getChildren().remove(line);
 				}
 			}
 
-			applicationService.removeDevice(device);
-			canvasPane.getChildren().remove(selectedNode.stackPane);
-			deviceNodes.remove(device);
+			applicationService.removeDevice(deviceId);
+			canvasPane.getChildren().remove(selectedNode.stackPane());
+			deviceNodes.remove(deviceId);
 			selectedNode = null;
 			updateDeviceList();
 		}
@@ -254,8 +258,8 @@ public class NetworkTopologyController {
 		showInfo("Now select the second device to complete the connection");
 	}
 
-	private void addDeviceNode(Object device, double x, double y, Color color, String label) {
-		String name = DeviceLookup.getDeviceNameFromObject(device);
+	private void addDeviceNode(Device device, double x, double y, Color color, String label) {
+		String name = device.getDeviceName();
 		Circle circle = new Circle(25, color);
 		circle.setStroke(Color.BLACK);
 		circle.setStrokeWidth(2);
@@ -278,8 +282,8 @@ public class NetworkTopologyController {
 		container.setLayoutX(x - 30);
 		container.setLayoutY(y - 30);
 
-		DeviceNode deviceNode = new DeviceNode(device, container, circle);
-		deviceNodes.put(device, deviceNode);
+		DeviceNode deviceNode = new DeviceNode(device.getId(), container, circle);
+		deviceNodes.put(device.getId(), deviceNode);
 
 		final Delta dragDelta = new Delta();
 
@@ -295,7 +299,7 @@ public class NetworkTopologyController {
 			if (e.getButton() == MouseButton.PRIMARY) {
 				container.setLayoutX(e.getSceneX() + dragDelta.x);
 				container.setLayoutY(e.getSceneY() + dragDelta.y);
-				updateConnectionLines(device);
+				updateConnectionLines(device.getId());
 				e.consume();
 			}
 		});
@@ -316,7 +320,8 @@ public class NetworkTopologyController {
 			return;
 		}
 
-		Object device = selectedNode.device;
+		DeviceId deviceId = selectedNode.deviceId();
+		Device device = queryService.getDevice(deviceId);
 		List<Connection> relatedConnections = queryService.getDeviceConnections(device);
 
 		if (relatedConnections.isEmpty()) {
@@ -349,7 +354,7 @@ public class NetworkTopologyController {
 
 		dialog.showAndWait().ifPresent(conn -> {
 			applicationService.removeConnection(conn);
-			Line line = connectionLines.remove(conn);
+			Line line = connectionLines.remove(conn.id());
 			if (line != null) {
 				canvasPane.getChildren().remove(line);
 			}
@@ -360,32 +365,39 @@ public class NetworkTopologyController {
 		if (connectionStartNode != null && connectionStartNode != node) {
 			createConnection(connectionStartNode, node);
 			connectionStartNode = null;
-		} else if (node.device instanceof Router router) {
-			if (selectedNode == node) {
-				openRouterCLI(router);
+		} else {
+			Device device = queryService.getDevice(node.deviceId());
+			if (device instanceof Router router) {
+				if (selectedNode == node) {
+					openRouterCLI(router);
+				} else {
+					selectedNode = node;
+					updateSelection();
+				}
+			} else if (device instanceof Host host && selectedNode == node) {
+				openHostDialog(host);
 			} else {
 				selectedNode = node;
 				updateSelection();
 			}
-		} else if (node.device instanceof Host host && selectedNode == node) {
-			openHostDialog(host);
-		} else {
-			selectedNode = node;
-			updateSelection();
 		}
 	}
 
-	private void updateConnectionLines(Object device) {
-		for (Map.Entry<Connection, Line> entry : connectionLines.entrySet()) {
-			Connection conn = entry.getKey();
+	private void updateConnectionLines(DeviceId deviceId) {
+		for (Map.Entry<ConnectionId, Line> entry : connectionLines.entrySet()) {
+			ConnectionId connId = entry.getKey();
 			Line line = entry.getValue();
 
-			Object deviceA = queryService.findDevice(conn.interfaceA());
-			Object deviceB = queryService.findDevice(conn.interfaceB());
+			Connection conn = queryService.getConnection(connId);
+			if (conn == null) continue;
 
-			if (device.equals(deviceA) || device.equals(deviceB)) {
-				DeviceNode nodeA = deviceNodes.get(deviceA);
-				DeviceNode nodeB = deviceNodes.get(deviceB);
+			Device deviceA = queryService.findDevice(conn.interfaceA());
+			Device deviceB = queryService.findDevice(conn.interfaceB());
+
+			if (deviceA != null && deviceB != null &&
+					(deviceId.equals(deviceA.getId()) || deviceId.equals(deviceB.getId()))) {
+				DeviceNode nodeA = deviceNodes.get(deviceA.getId());
+				DeviceNode nodeB = deviceNodes.get(deviceB.getId());
 
 				if (nodeA != null && nodeB != null) {
 					updateConnectionLine(line, nodeA, nodeB);
@@ -395,10 +407,10 @@ public class NetworkTopologyController {
 	}
 
 	private void updateConnectionLine(Line line, DeviceNode nodeA, DeviceNode nodeB) {
-		double startX = nodeA.stackPane.getLayoutX() + 30;
-		double startY = nodeA.stackPane.getLayoutY() + 30;
-		double endX = nodeB.stackPane.getLayoutX() + 30;
-		double endY = nodeB.stackPane.getLayoutY() + 30;
+		double startX = nodeA.stackPane().getLayoutX() + 30;
+		double startY = nodeA.stackPane().getLayoutY() + 30;
+		double endX = nodeB.stackPane().getLayoutX() + 30;
+		double endY = nodeB.stackPane().getLayoutY() + 30;
 
 		line.setStartX(startX);
 		line.setStartY(startY);
@@ -421,13 +433,13 @@ public class NetworkTopologyController {
 
 	private void updateSelection() {
 		for (DeviceNode node : deviceNodes.values()) {
-			node.circle.setStrokeWidth(2);
-			node.circle.setStroke(Color.BLACK);
+			node.circle().setStrokeWidth(2);
+			node.circle().setStroke(Color.BLACK);
 		}
 
 		if (selectedNode != null) {
-			selectedNode.circle.setStrokeWidth(4);
-			selectedNode.circle.setStroke(Color.BLUE);
+			selectedNode.circle().setStrokeWidth(4);
+			selectedNode.circle().setStroke(Color.BLUE);
 		}
 	}
 
@@ -480,15 +492,18 @@ public class NetworkTopologyController {
 	}
 
 	private void createConnection(DeviceNode startNode, DeviceNode endNode) {
-		List<NetworkInterface> startInterfaces = queryService.getAvailableInterfaces(startNode.device);
-		List<NetworkInterface> endInterfaces = queryService.getAvailableInterfaces(endNode.device);
+		Device startDevice = queryService.getDevice(startNode.deviceId());
+		Device endDevice = queryService.getDevice(endNode.deviceId());
+
+		List<NetworkInterface> startInterfaces = queryService.getAvailableInterfaces(startDevice);
+		List<NetworkInterface> endInterfaces = queryService.getAvailableInterfaces(endDevice);
 
 		if (startInterfaces.isEmpty()) {
-			showError("No available interfaces on " + DeviceLookup.getDeviceNameFromObject(startNode.device));
+			showError("No available interfaces on " + startDevice.getDeviceName());
 			return;
 		}
 		if (endInterfaces.isEmpty()) {
-			showError("No available interfaces on " + DeviceLookup.getDeviceNameFromObject(endNode.device));
+			showError("No available interfaces on " + endDevice.getDeviceName());
 			return;
 		}
 
@@ -505,7 +520,7 @@ public class NetworkTopologyController {
 
 		ChoiceDialog<NetworkInterface> startDialog = new ChoiceDialog<>(startInterfaces.getFirst(), startInterfaces);
 		startDialog.setTitle("Select Interface");
-		startDialog.setHeaderText("Select interface on " + DeviceLookup.getDeviceNameFromObject(startNode.device));
+		startDialog.setHeaderText("Select interface on " + startDevice.getDeviceName());
 		startDialog.setContentText("Interface:");
 
 		@SuppressWarnings("unchecked")
@@ -519,7 +534,7 @@ public class NetworkTopologyController {
 
 		ChoiceDialog<NetworkInterface> endDialog = new ChoiceDialog<>(endInterfaces.getFirst(), endInterfaces);
 		endDialog.setTitle("Select Interface");
-		endDialog.setHeaderText("Select interface on " + DeviceLookup.getDeviceNameFromObject(endNode.device));
+		endDialog.setHeaderText("Select interface on " + endDevice.getDeviceName());
 		endDialog.setContentText("Interface:");
 
 		@SuppressWarnings("unchecked")
@@ -539,14 +554,19 @@ public class NetworkTopologyController {
 
 			updateConnectionLine(line, startNode, endNode);
 			canvasPane.getChildren().addFirst(line);
-			connectionLines.put(connection, line);
+			connectionLines.put(connection.id(), line);
 		} catch (Exception ex) {
 			showError("Failed to create connection: " + ex.getMessage());
 		}
 	}
 
 	private void loadRouterConfiguration() {
-		if (selectedNode == null || !(selectedNode.device instanceof Router router)) {
+		if (selectedNode == null) {
+			showError("Please select a router first");
+			return;
+		}
+		Device device = queryService.getDevice(selectedNode.deviceId());
+		if (!(device instanceof Router router)) {
 			showError("Please select a router first");
 			return;
 		}
@@ -566,7 +586,7 @@ public class NetworkTopologyController {
 
 		if (file != null) {
 			try {
-				configurationService.loadConfigurationFromFile(router, file.toPath());
+				configurationApplicationService.loadConfiguration(router, file.toPath());
 				updateInterfaceStates(router);
 				showInfo("Configuration loaded successfully from " + file.getName());
 			} catch (ConfigurationParseException e) {
@@ -578,7 +598,12 @@ public class NetworkTopologyController {
 	}
 
 	private void saveRouterConfiguration() {
-		if (selectedNode == null || !(selectedNode.device instanceof Router router)) {
+		if (selectedNode == null) {
+			showError("Please select a router first");
+			return;
+		}
+		Device device = queryService.getDevice(selectedNode.deviceId());
+		if (!(device instanceof Router router)) {
 			showError("Please select a router first");
 			return;
 		}
@@ -618,7 +643,7 @@ public class NetworkTopologyController {
 
 		if (file != null) {
 			try {
-				configurationService.saveConfigurationToFile(router, file.toPath(), isCommandFormat);
+				configurationApplicationService.saveConfiguration(router, file.toPath(), isCommandFormat);
 				showInfo("Configuration saved successfully to " + file.getName());
 			} catch (Exception e) {
 				showError("Failed to save configuration: " + e.getMessage());
@@ -627,9 +652,12 @@ public class NetworkTopologyController {
 	}
 
 	private void updateInterfaceStates(Router router) {
-		for (Map.Entry<Connection, Line> entry : connectionLines.entrySet()) {
-			Connection conn = entry.getKey();
+		for (Map.Entry<ConnectionId, Line> entry : connectionLines.entrySet()) {
+			ConnectionId connId = entry.getKey();
 			Line line = entry.getValue();
+
+			Connection conn = queryService.getConnection(connId);
+			if (conn == null) continue;
 
 			boolean hasRouterInterface = false;
 			boolean allInterfacesUp = true;
@@ -649,7 +677,7 @@ public class NetworkTopologyController {
 		}
 	}
 
-	private record DeviceNode(Object device, VBox stackPane, Circle circle) {
+	private record DeviceNode(DeviceId deviceId, VBox stackPane, Circle circle) {
 	}
 
 	private static class Delta {

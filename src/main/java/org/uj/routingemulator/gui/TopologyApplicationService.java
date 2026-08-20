@@ -25,7 +25,7 @@ public class TopologyApplicationService {
 			interfaces.add(new RouterInterface("eth" + i));
 		}
 		Router router = new Router(name, interfaces);
-		topology.addRouter(router);
+		topology.addDevice(router);
 		return router;
 	}
 
@@ -35,7 +35,7 @@ public class TopologyApplicationService {
 			ports.add(new SwitchPort("GigabitEthernet0/" + (i + 1)));
 		}
 		Switch sw = new Switch(name, ports);
-		topology.addSwitch(sw);
+		topology.addDevice(sw);
 		return sw;
 	}
 
@@ -54,18 +54,12 @@ public class TopologyApplicationService {
 				gateway
 		);
 		Host host = new Host(name, hostInterface);
-		topology.addHost(host);
+		topology.addDevice(host);
 		return host;
 	}
 
-	public void removeDevice(Object device) {
-		if (device instanceof Router router) {
-			topology.removeRouter(router);
-		} else if (device instanceof Switch sw) {
-			topology.removeSwitch(sw);
-		} else if (device instanceof Host host) {
-			topology.removeHost(host);
-		}
+	public void removeDevice(DeviceId deviceId) {
+		topology.removeDevice(deviceId);
 	}
 
 	public Connection addConnection(NetworkInterface start, NetworkInterface end) {

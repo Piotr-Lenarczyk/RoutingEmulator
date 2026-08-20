@@ -62,25 +62,25 @@ public class Main extends Application {
 		Host h2 = new Host("PC2", new HostInterface("Ethernet0", new InterfaceAddress(new IPAddress(192, 168, 2, 1), new SubnetMask(24)), new IPAddress(192, 168, 2, 254)));
 		Host h3 = new Host("PC3", new HostInterface("Ethernet0", new InterfaceAddress(new IPAddress(192, 168, 3, 1), new SubnetMask(24)), new IPAddress(192, 168, 3, 254)));
 
-		topology.addHost(h1);
-		topology.addHost(h2);
-		topology.addHost(h3);
+		topology.addDevice(h1);
+		topology.addDevice(h2);
+		topology.addDevice(h3);
 
 		Switch sw1 = new Switch("SW1", List.of(new SwitchPort("GigabitEthernet0/1"), new SwitchPort("GigabitEthernet0/2"), new SwitchPort("GigabitEthernet0/3"), new SwitchPort("GigabitEthernet0/4")));
 		Switch sw2 = new Switch("SW2", List.of(new SwitchPort("GigabitEthernet0/1"), new SwitchPort("GigabitEthernet0/2"), new SwitchPort("GigabitEthernet0/3"), new SwitchPort("GigabitEthernet0/4")));
 		Switch sw3 = new Switch("SW3", List.of(new SwitchPort("GigabitEthernet0/1"), new SwitchPort("GigabitEthernet0/2"), new SwitchPort("GigabitEthernet0/3"), new SwitchPort("GigabitEthernet0/4")));
 
-		topology.addSwitch(sw1);
-		topology.addSwitch(sw2);
-		topology.addSwitch(sw3);
+		topology.addDevice(sw1);
+		topology.addDevice(sw2);
+		topology.addDevice(sw3);
 
 		Router r1 = new Router("R1", List.of(new RouterInterface("eth0"), new RouterInterface("eth1"), new RouterInterface("eth2")));
 		Router r2 = new Router("R2", List.of(new RouterInterface("eth0"), new RouterInterface("eth1"), new RouterInterface("eth2")));
 		Router r3 = new Router("R3", List.of(new RouterInterface("eth0"), new RouterInterface("eth1"), new RouterInterface("eth2")));
 
-		topology.addRouter(r1);
-		topology.addRouter(r2);
-		topology.addRouter(r3);
+		topology.addDevice(r1);
+		topology.addDevice(r2);
+		topology.addDevice(r3);
 
 		topology.addConnection(new Connection(h1.getHostInterface(), sw1.getPorts().getFirst()));
 		topology.addConnection(new Connection(h2.getHostInterface(), sw2.getPorts().getFirst()));
@@ -96,7 +96,7 @@ public class Main extends Application {
 
 		System.out.println(topology.visualize());
 
-		topology.removeHost(h1);
+		topology.removeDevice(h1.getId());
 		System.out.println(topology.visualize());
 
 		RouterCLI cli = new RouterCLI(r1, topology);
