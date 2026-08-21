@@ -1,11 +1,13 @@
 package org.uj.routingemulator.router.cli.ethernet;
 
+import org.uj.routingemulator.router.RouterConfigurationService;
 import org.uj.routingemulator.router.cli.*;
 
 import java.util.Optional;
 
 public class DeleteInterfaceEthernetCommand implements RouterCommand {
 	private static final CommandSyntax SYNTAX = new CommandSyntax("delete interfaces ethernet <interface> address <address>");
+	private final RouterConfigurationService service = new RouterConfigurationService();
 
 	@Override
 	public CommandSyntax getSyntax() {
@@ -14,16 +16,22 @@ public class DeleteInterfaceEthernetCommand implements RouterCommand {
 
 	@Override
 	public Optional<ParsedCommand> parse(String command) {
-		return SYNTAX.parseFully(command).map(args ->
-				new Invocation(args.get("interface"), args.get("address"))
-		);
+		return SYNTAX.parseFully(command).map(args -> new Invocation(args.get("interface"), args.get("address")));
 	}
 
-	private record Invocation(String routerInterfaceName, String subnet) implements ParsedCommand {
+	private class Invocation implements ParsedCommand {
+		private final String routerInterfaceName;
+		private final String subnet;
+
+		public Invocation(String routerInterfaceName, String subnet) {
+			this.routerInterfaceName = routerInterfaceName;
+			this.subnet = subnet;
+		}
+
 		@Override
 		public CommandResult execute(CommandExecutionContext context) {
 			try {
-				context.router().getConfigSession().deleteInterfaceAddress(routerInterfaceName);
+				service.deleteInterfaceAddress(context.router(), routerInterfaceName);
 				return new CommandSuccess("[edit]");
 			} catch (RuntimeException e) {
 				throw new RuntimeException(CLIErrorHandler.handleException(e, "delete interfaces ethernet " + routerInterfaceName + " address " + subnet));

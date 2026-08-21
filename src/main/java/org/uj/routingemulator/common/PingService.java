@@ -39,7 +39,6 @@ public class PingService {
 		logger.fine("%s: Pinging %s with %d probes...".formatted(src.getHostname(), dst, count));
 		List<PingResult> results = new ArrayList<>();
 		if (count <= 0) count = 4;
-
 		HostInterface hi = src.getHostInterface();
 		if (hi == null) {
 			for (int i = 1; i <= count; i++) {
@@ -59,7 +58,6 @@ public class PingService {
 			logger.finest("Probe %d: Sending ICMP Echo Request from %s to %s".formatted(seq, srcAddr, dst));
 			Packet p = new Packet(srcAddr, dst, Packet.PacketType.ICMP_ECHO_REQUEST, 64);
 			logger.finest("Forwarding packet %s to destination %s".formatted(p, dst));
-
 			ForwardingOutcome outcome = engine.forward(p, src, topology);
 			if (outcome.reached()) {
 				long rtt = BASE_MS + outcome.hopCount() * PER_HOP_MS;
@@ -67,7 +65,7 @@ public class PingService {
 				results.add(new PingResult(seq, true, outcome.hopCount(), rtt, null));
 			} else {
 				logger.finest("Probe %d failed: %s after %d hops".formatted(seq, outcome.reason(), outcome.hopCount()));
-				results.add(new PingResult(seq, false, outcome.hopCount(), 0, outcome.reason()));
+				results.add(new PingResult(seq, false, outcome.hopCount(), 0, outcome.reason() != null ? outcome.reason().name() : null));
 			}
 		}
 		return new PingStatistics(results);
@@ -88,7 +86,6 @@ public class PingService {
 					.findFirst()
 					.orElse(null);
 		}
-
 		IPAddress sourceIp = RouteSelector.determineSourceIp(ri);
 
 		for (int seq = 1; seq <= count; seq++) {
@@ -102,12 +99,11 @@ public class PingService {
 		logger.finest("Probe %d: Router %s sending ICMP Echo Request from %s to %s with ttl=%d".formatted(seq, srcRouter.getName(), srcAddr, dst, ttl));
 		Packet p = new Packet(srcAddr, dst, Packet.PacketType.ICMP_ECHO_REQUEST, ttl);
 		ForwardingOutcome outcome = engine.forward(p, srcRouter, topology);
-
 		if (outcome.reached()) {
 			long rtt = BASE_MS + outcome.hopCount() * PER_HOP_MS;
 			results.add(new PingResult(seq, true, outcome.hopCount(), rtt, null));
 		} else {
-			results.add(new PingResult(seq, false, outcome.hopCount(), 0, outcome.reason()));
+			results.add(new PingResult(seq, false, outcome.hopCount(), 0, outcome.reason() != null ? outcome.reason().name() : null));
 		}
 	}
 }

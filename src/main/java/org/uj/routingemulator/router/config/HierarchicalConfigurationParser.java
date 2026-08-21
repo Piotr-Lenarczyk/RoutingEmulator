@@ -15,14 +15,14 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 	private static final String DISABLE_COMMAND = "disable";
 	private List<String> lines;
 	private int position;
+	private final RouterConfigurationService service = new RouterConfigurationService();
 
-	private static void applyRouteConfiguration(Router router, RouterConfigurationSession session, String nextHop, Subnet subnet, int distance, String interfaceName, boolean disabled) {
-		if (addRoute(router, session, nextHop, subnet, distance, interfaceName)) return;
-
+	private void applyRouteConfiguration(Router router, String nextHop, Subnet subnet, int distance, String interfaceName, boolean disabled) {
+		if (addRoute(router, nextHop, subnet, distance, interfaceName)) return;
 		if (disabled) {
-			for (StaticRoutingEntry entry : session.getStagedRoutingTable().getRoutingEntries()) {
+			for (StaticRoutingEntry entry : router.getConfigSession().getStagedRoutingTable().getRoutingEntries()) {
 				if (entry.getSubnet().equals(subnet)) {
-					disableRoute(session, entry);
+					disableRoute(router, entry);
 					return;
 				}
 			}
@@ -41,56 +41,54 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 		return result;
 	}
 
-	private static boolean addRoute(Router router, RouterConfigurationSession session, String nextHop, Subnet subnet, int distance, String interfaceName) {
+	private boolean addRoute(Router router, String nextHop, Subnet subnet, int distance, String interfaceName) {
 		if (nextHop != null) {
-			return addNextHopRoute(session, nextHop, subnet, distance);
+			return addNextHopRoute(router, nextHop, subnet, distance);
 		} else if (interfaceName != null) {
 			RouterInterface iface = router.findFromName(interfaceName);
 			if (iface == null) {
 				throw new ConfigurationParseException(
-						String.format("Interface %s does not exist on this router", interfaceName)
-				);
+						String.format("Interface %s does not exist on this router", interfaceName));
 			}
-			return addInterfaceRoute(session, subnet, iface, distance);
+			return addInterfaceRoute(router, subnet, iface, distance);
 		}
 		return false;
 	}
 
-	private static boolean addInterfaceRoute(RouterConfigurationSession session, Subnet subnet, RouterInterface iface, int distance) {
+	private boolean addInterfaceRoute(Router router, Subnet subnet, RouterInterface iface, int distance) {
 		try {
-			session.addRoute(new StaticRoutingEntry(subnet, iface, distance));
+			service.addRoute(router, new StaticRoutingEntry(subnet, iface, distance));
 		} catch (DuplicateConfigurationException e) {
 			return true;
 		}
 		return false;
 	}
 
-	private static void disableRoute(RouterConfigurationSession session, StaticRoutingEntry entry) {
-		session.disableRoute(entry);
+	private void disableRoute(Router router, StaticRoutingEntry entry) {
+		service.disableRoute(router, entry);
 	}
 
-	private static boolean addNextHopRoute(RouterConfigurationSession session, String nextHop, Subnet subnet, int distance) {
+	private boolean addNextHopRoute(Router router, String nextHop, Subnet subnet, int distance) {
 		IPAddress nextHopAddress = IPAddress.fromString(nextHop);
 		try {
-			session.addRoute(new StaticRoutingEntry(subnet, nextHopAddress, distance));
+			service.addRoute(router, new StaticRoutingEntry(subnet, nextHopAddress, distance));
 		} catch (DuplicateConfigurationException e) {
 			return true;
 		}
 		return false;
 	}
 
-	private static void disableInterface(RouterConfigurationSession session, String interfaceName) {
-		session.disableInterface(interfaceName);
+	private void disableInterface(Router router, String interfaceName) {
+		service.disableInterface(router, interfaceName);
 	}
 
-	private static void configureInterface(RouterConfigurationSession session, String address, String interfaceName) {
+	private void configureInterface(Router router, String address, String interfaceName) {
 		try {
 			String[] parts = address.split("/");
 			IPAddress ip = IPAddress.fromString(parts[0]);
 			SubnetMask mask = SubnetMask.fromString(parts[1]);
 			InterfaceAddress interfaceAddress = new InterfaceAddress(ip, mask);
-
-			session.configureInterface(interfaceName, interfaceAddress);
+			service.configureInterface(router, interfaceName, interfaceAddress);
 		} catch (RuntimeException e) {
 			throw new ConfigurationParseException("Invalid interface address: " + e.getMessage());
 		}
@@ -100,70 +98,61 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 	public void loadConfiguration(Router router, String config) {
 		this.lines = preprocessConfig(config);
 		this.position = 0;
-
 		RouterMode originalMode = router.getMode();
-		router.setMode(RouterMode.CONFIGURATION);
-
-		RouterConfigurationSession session = router.getConfigSession();
-
+		RouterModeController.setModeForced(router, RouterMode.CONFIGURATION);
 		try {
-			session.resetCandidateConfiguration();
-			parseConfiguration(router, session, new ArrayList<>());
-			session.commit();
+			router.getConfigSession().resetCandidateConfiguration();
+			parseConfiguration(router, new ArrayList<>());
+			router.getConfigSession().commit();
 		} catch (RuntimeException e) {
-			session.discard();
+			router.getConfigSession().discard();
 			throw e;
 		} finally {
-			router.setModeForced(originalMode);
+			RouterModeController.setModeForced(router, originalMode);
 		}
 	}
 
-	private void parseConfiguration(Router router, RouterConfigurationSession session, List<String> path) {
+	private void parseConfiguration(Router router, List<String> path) {
 		while (position < lines.size()) {
 			String line = lines.get(position);
 			String trimmed = line.trim();
-
 			if (trimmed.equals("}")) {
 				position++;
 				return;
 			}
-
 			if (trimmed.endsWith("{")) {
 				String[] parts = trimmed.substring(0, trimmed.length() - 1).trim().split("\\s+");
 				List<String> newPath = new ArrayList<>(path);
 				Collections.addAll(newPath, parts);
 				position++;
 				if (path.size() >= 2 && path.get(0).equals("protocols") && path.get(1).equals("static") && parts[0].equals("route")) {
-					parseRouteBlock(router, session, newPath);
+					parseRouteBlock(router, newPath);
 				} else {
-					parseConfiguration(router, session, newPath);
+					parseConfiguration(router, newPath);
 				}
 			} else {
 				String[] parts = trimmed.split("\\s+");
 				List<String> fullPath = new ArrayList<>(path);
 				Collections.addAll(fullPath, parts);
-				applyConfiguration(router, session, fullPath);
+				applyConfiguration(router, fullPath);
 				position++;
 			}
 		}
 	}
 
-	private void parseRouteBlock(Router router, RouterConfigurationSession session, List<String> path) {
+	private void parseRouteBlock(Router router, List<String> path) {
 		String destination = path.get(3);
 		String nextHop = null;
 		String interfaceName = null;
 		int distance = 1;
 		boolean disabled = false;
-
 		while (position < lines.size()) {
 			String line = lines.get(position);
 			String trimmed = line.trim();
-
 			if (trimmed.equals("}")) {
 				position++;
 				break;
 			}
-
 			String[] parts = trimmed.split("\\s+");
 			if (parts.length >= 2) {
 				switch (parts[0]) {
@@ -191,38 +180,34 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 			}
 			position++;
 		}
-
 		try {
 			Subnet subnet = Subnet.fromString(destination);
-			applyRouteConfiguration(router, session, nextHop, subnet, distance, interfaceName, disabled);
+			applyRouteConfiguration(router, nextHop, subnet, distance, interfaceName, disabled);
 		} catch (ConfigurationParseException e) {
 			throw new ConfigurationParseException("Error parsing route: " + e.getMessage());
 		}
 	}
 
-	private void applyConfiguration(Router router, RouterConfigurationSession session, List<String> path) {
+	private void applyConfiguration(Router router, List<String> path) {
 		if (path.size() < 2) {
 			return;
 		}
-
 		try {
 			if (path.get(0).equals("interfaces") && path.size() >= 4 && path.get(1).equals("ethernet")) {
 				String interfaceName = path.get(2);
 				RouterInterface iface = router.findFromName(interfaceName);
 				if (iface == null) {
 					throw new ConfigurationParseException(
-							String.format("Interface %s does not exist on this router", interfaceName)
-					);
+							String.format("Interface %s does not exist on this router", interfaceName));
 				}
-
 				if (path.get(3).equals("address") && path.size() == 5) {
 					String address = path.get(4);
 					if (address.equals("dhcp")) {
 						return;
 					}
-					configureInterface(session, address, interfaceName);
+					configureInterface(router, address, interfaceName);
 				} else if (path.get(3).equals(DISABLE_COMMAND) && path.size() == 4) {
-					disableInterface(session, interfaceName);
+					disableInterface(router, interfaceName);
 				}
 			}
 		} catch (ConfigurationParseException e) {

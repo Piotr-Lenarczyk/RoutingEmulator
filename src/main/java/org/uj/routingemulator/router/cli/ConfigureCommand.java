@@ -1,6 +1,7 @@
 package org.uj.routingemulator.router.cli;
 
 import org.uj.routingemulator.router.RouterMode;
+import org.uj.routingemulator.router.RouterModeController;
 
 import java.util.Optional;
 
@@ -16,7 +17,7 @@ public class ConfigureCommand implements RouterCommand {
 	public Optional<ParsedCommand> parse(String command) {
 		return SYNTAX.parseFully(command).map(args -> context -> {
 			if (context.router().getMode() == RouterMode.OPERATIONAL) {
-				context.router().setMode(RouterMode.CONFIGURATION);
+				RouterModeController.setMode(context.router(), RouterMode.CONFIGURATION);
 				return new CommandSuccess("[edit]");
 			} else {
 				return new CommandFailure("\n\tInvalid command: [configure]\n\n[edit]");

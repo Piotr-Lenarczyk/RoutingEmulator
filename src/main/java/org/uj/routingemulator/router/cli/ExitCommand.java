@@ -1,6 +1,7 @@
 package org.uj.routingemulator.router.cli;
 
 import org.uj.routingemulator.router.RouterMode;
+import org.uj.routingemulator.router.RouterModeController;
 
 import java.util.Optional;
 
@@ -18,7 +19,7 @@ public class ExitCommand implements RouterCommand {
 			if (context.router().getMode() != RouterMode.CONFIGURATION) {
 				return new CommandFailure("\n\tInvalid command: [exit]\n");
 			} else {
-				context.router().setMode(RouterMode.OPERATIONAL);
+				RouterModeController.setMode(context.router(), RouterMode.OPERATIONAL);
 				return new CommandSuccess("exit");
 			}
 		});

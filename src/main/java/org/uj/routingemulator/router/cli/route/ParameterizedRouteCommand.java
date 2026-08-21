@@ -62,7 +62,7 @@ public class ParameterizedRouteCommand implements RouterCommand {
 			String destinationSubnet = args.get("destination");
 			try {
 				StaticRoutingEntry entry = targetStrategy.createEntry(router, destinationSubnet, args, distance);
-				operation.apply(router.getConfigSession(), entry);
+				operation.apply(router, entry);
 				return new CommandSuccess("[edit]");
 			} catch (RuntimeException e) {
 				throw new RuntimeException(CLIErrorHandler.handleException(e, targetStrategy.formatErrorPath(operation, destinationSubnet, args, distance)));

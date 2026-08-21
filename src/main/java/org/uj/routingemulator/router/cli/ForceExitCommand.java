@@ -1,6 +1,7 @@
 package org.uj.routingemulator.router.cli;
 
 import org.uj.routingemulator.router.RouterMode;
+import org.uj.routingemulator.router.RouterModeController;
 
 import java.util.Optional;
 
@@ -15,7 +16,7 @@ public class ForceExitCommand implements RouterCommand {
 	@Override
 	public Optional<ParsedCommand> parse(String command) {
 		return SYNTAX.parseFully(command).map(args -> context -> {
-			context.router().setModeForced(RouterMode.OPERATIONAL);
+			RouterModeController.setModeForced(context.router(), RouterMode.OPERATIONAL);
 			return new CommandSuccess("exit");
 		});
 	}

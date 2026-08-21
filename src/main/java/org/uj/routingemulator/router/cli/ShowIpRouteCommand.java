@@ -1,5 +1,7 @@
 package org.uj.routingemulator.router.cli;
 
+import org.uj.routingemulator.router.RoutingTablePresenter;
+
 import java.util.Optional;
 
 public class ShowIpRouteCommand implements RouterCommand {
@@ -13,7 +15,7 @@ public class ShowIpRouteCommand implements RouterCommand {
 	@Override
 	public Optional<ParsedCommand> parse(String command) {
 		return SYNTAX.parseFully(command).map(args -> context -> {
-			String output = context.router().showIpRoute();
+			String output = RoutingTablePresenter.showIpRoute(context.router());
 			return new CommandSuccess(output);
 		});
 	}

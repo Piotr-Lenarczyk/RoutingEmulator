@@ -12,13 +12,14 @@ public class CommandConfigurationParser implements ConfigurationParser {
 	private static final String DISABLE_COMMAND = "disable";
 	private List<Token> tokens;
 	private int position;
+	private final RouterConfigurationService service = new RouterConfigurationService();
 
-	private static void disableNextHopRoute(RouterConfigurationSession session, StaticRoutingEntry subnet) {
-		session.disableRoute(subnet);
+	private void disableNextHopRoute(Router router, StaticRoutingEntry subnet) {
+		service.disableRoute(router, subnet);
 	}
 
-	private static void addNextHopRoute(RouterConfigurationSession session, StaticRoutingEntry subnet) {
-		session.addRoute(subnet);
+	private void addNextHopRoute(Router router, StaticRoutingEntry subnet) {
+		service.addRoute(router, subnet);
 	}
 
 	@Override
@@ -26,64 +27,57 @@ public class CommandConfigurationParser implements ConfigurationParser {
 		ConfigurationTokenizer tokenizer = new ConfigurationTokenizer();
 		this.tokens = tokenizer.tokenize(config);
 		this.position = 0;
-
 		RouterMode originalMode = router.getMode();
-		router.setMode(RouterMode.CONFIGURATION);
-
-		RouterConfigurationSession session = router.getConfigSession();
-
+		RouterModeController.setModeForced(router, RouterMode.CONFIGURATION);
 		try {
-			session.resetCandidateConfiguration();
+			router.getConfigSession().resetCandidateConfiguration();
 			while (position < tokens.size()) {
-				parseCommand(router, session);
+				parseCommand(router);
 			}
-			session.commit();
+			router.getConfigSession().commit();
 		} catch (RuntimeException e) {
-			session.discard();
+			router.getConfigSession().discard();
 			throw e;
 		} finally {
-			router.setModeForced(originalMode);
+			RouterModeController.setModeForced(router, originalMode);
 		}
 	}
 
-	private void parseCommand(Router router, RouterConfigurationSession session) {
+	private void parseCommand(Router router) {
 		Token token = getCurrentToken();
 		if (!token.value().equals("set")) {
 			throw new ConfigurationParseException("Expected 'set' command at position ", token);
 		}
 		advance();
 		token = getCurrentToken();
-
 		switch (token.value()) {
 			case "interfaces":
-				parseInterfaces(router, session);
+				parseInterfaces(router);
 				break;
 			case "protocols":
-				parseProtocols(router, session);
+				parseProtocols(router);
 				break;
 			default:
 				throw new ConfigurationParseException("Unrecognized configuration path", token);
 		}
 	}
 
-	private void parseInterfaces(Router router, RouterConfigurationSession session) {
+	private void parseInterfaces(Router router) {
 		advance();
 		Token token = getCurrentToken();
 		if (!token.value().equals("ethernet")) {
 			throw new ConfigurationParseException("Expected 'ethernet'", token);
 		}
 		advance();
-
 		String interfaceName = getCurrentToken().value();
 		Token interfaceToken = getCurrentToken();
 		advance();
-
 		RouterInterface routerInterface = router.findFromName(interfaceName);
 		if (routerInterface == null) {
 			throw new ConfigurationParseException(
-					String.format("Interface %s does not exist on this router", interfaceName), interfaceToken);
+					String.format("Interface %s does not exist on this router", interfaceName),
+					interfaceToken);
 		}
-
 		token = getCurrentToken();
 		switch (token.value()) {
 			case "address":
@@ -94,7 +88,7 @@ public class CommandConfigurationParser implements ConfigurationParser {
 					IPAddress ipAddress = IPAddress.fromString(addressValue[0]);
 					SubnetMask mask = SubnetMask.fromString(addressValue[1]);
 					InterfaceAddress interfaceAddress = new InterfaceAddress(ipAddress, mask);
-					session.configureInterface(interfaceName, interfaceAddress);
+					service.configureInterface(router, interfaceName, interfaceAddress);
 				} catch (RuntimeException e) {
 					throw new ConfigurationParseException("Invalid interface address: " + e.getMessage(), tokens.get(position - 1));
 				}
@@ -102,7 +96,7 @@ public class CommandConfigurationParser implements ConfigurationParser {
 			case DISABLE_COMMAND:
 				advance();
 				try {
-					session.disableInterface(interfaceName);
+					service.disableInterface(router, interfaceName);
 				} catch (RuntimeException e) {
 					throw new ConfigurationParseException("Failed to disable interface: " + e.getMessage(), token);
 				}
@@ -112,38 +106,34 @@ public class CommandConfigurationParser implements ConfigurationParser {
 		}
 	}
 
-	private void parseProtocols(Router router, RouterConfigurationSession session) {
+	private void parseProtocols(Router router) {
 		advance();
 		Token token = getCurrentToken();
 		if (!token.value().equals("static")) {
 			throw new ConfigurationParseException("Expected 'static'", token);
 		}
 		advance();
-
 		token = getCurrentToken();
 		if (!token.value().equals("route")) {
 			throw new ConfigurationParseException("Expected 'route'", token);
 		}
 		advance();
-
 		String destination = getCurrentToken().value();
 		advance();
-
 		try {
 			Subnet subnet = Subnet.fromString(destination);
 			token = getCurrentToken();
-
 			if (token.value().equals("next-hop")) {
 				advance();
 				IPAddress nextHop = IPAddress.fromString(getCurrentToken().value());
 				advance();
-				parseNextHopRoute(session, subnet, nextHop);
+				parseNextHopRoute(router, subnet, nextHop);
 			} else if (token.value().equals("interface")) {
 				advance();
 				String interfaceName = getCurrentToken().value();
 				Token interfaceToken = getCurrentToken();
 				advance();
-				parseInterfaceRoute(router, session, interfaceName, interfaceToken, subnet);
+				parseInterfaceRoute(router, interfaceName, interfaceToken, subnet);
 			} else {
 				throw new ConfigurationParseException("Expected 'next-hop' or 'interface'", token);
 			}
@@ -154,46 +144,46 @@ public class CommandConfigurationParser implements ConfigurationParser {
 		}
 	}
 
-	private void parseInterfaceRoute(Router router, RouterConfigurationSession session, String interfaceName, Token interfaceToken, Subnet subnet) {
+	private void parseInterfaceRoute(Router router, String interfaceName, Token interfaceToken, Subnet subnet) {
 		Token token;
 		RouterInterface routerInterface = router.findFromName(interfaceName);
 		if (routerInterface == null) {
 			throw new ConfigurationParseException(
-					String.format("Interface %s does not exist on this router", interfaceName), interfaceToken);
+					String.format("Interface %s does not exist on this router", interfaceName),
+					interfaceToken);
 		}
-
 		if (position >= tokens.size() || getCurrentToken().value().equals("set")) {
-			addNextHopRoute(session, new StaticRoutingEntry(subnet, routerInterface));
+			addNextHopRoute(router, new StaticRoutingEntry(subnet, routerInterface));
 		} else {
 			token = getCurrentToken();
 			if (token.value().equals(DISABLE_COMMAND)) {
 				advance();
-				disableNextHopRoute(session, new StaticRoutingEntry(subnet, routerInterface));
+				disableNextHopRoute(router, new StaticRoutingEntry(subnet, routerInterface));
 			} else if (token.value().equals("distance")) {
 				advance();
 				int administrativeDistance = Integer.parseInt(getCurrentToken().value());
 				advance();
-				addNextHopRoute(session, new StaticRoutingEntry(subnet, routerInterface, administrativeDistance));
+				addNextHopRoute(router, new StaticRoutingEntry(subnet, routerInterface, administrativeDistance));
 			} else {
 				throw new ConfigurationParseException("Unrecognized route option", token);
 			}
 		}
 	}
 
-	private void parseNextHopRoute(RouterConfigurationSession session, Subnet subnet, IPAddress nextHop) {
+	private void parseNextHopRoute(Router router, Subnet subnet, IPAddress nextHop) {
 		Token token;
 		if (position >= tokens.size() || getCurrentToken().value().equals("set")) {
-			addNextHopRoute(session, new StaticRoutingEntry(subnet, nextHop));
+			addNextHopRoute(router, new StaticRoutingEntry(subnet, nextHop));
 		} else {
 			token = getCurrentToken();
 			if (token.value().equals(DISABLE_COMMAND)) {
 				advance();
-				disableNextHopRoute(session, new StaticRoutingEntry(subnet, nextHop));
+				disableNextHopRoute(router, new StaticRoutingEntry(subnet, nextHop));
 			} else if (token.value().equals("distance")) {
 				advance();
 				int administrativeDistance = Integer.parseInt(getCurrentToken().value());
 				advance();
-				addNextHopRoute(session, new StaticRoutingEntry(subnet, nextHop, administrativeDistance));
+				addNextHopRoute(router, new StaticRoutingEntry(subnet, nextHop, administrativeDistance));
 			} else {
 				throw new ConfigurationParseException("Unrecognized route option", token);
 			}
