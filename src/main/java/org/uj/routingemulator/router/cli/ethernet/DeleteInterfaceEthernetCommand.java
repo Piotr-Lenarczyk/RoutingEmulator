@@ -1,46 +1,34 @@
 package org.uj.routingemulator.router.cli.ethernet;
 
-import org.uj.routingemulator.router.cli.CLIErrorHandler;
-import org.uj.routingemulator.router.cli.CommandExecutionContext;
-import org.uj.routingemulator.router.cli.CommandOutput;
-import org.uj.routingemulator.router.cli.RouterCommand;
+import org.uj.routingemulator.router.cli.*;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Optional;
 
 public class DeleteInterfaceEthernetCommand implements RouterCommand {
-	private static final Pattern PATTERN = Pattern.compile(
-			"delete\\s+interfaces\\s+ethernet\\s+(\\S+)\\s+address\\s+(\\S+)"
-	);
-
-	private String routerInterfaceName;
-	private String subnet;
+	private static final CommandSyntax SYNTAX = new CommandSyntax("delete interfaces ethernet <interface> address <address>");
 
 	@Override
-	public void execute(CommandExecutionContext context) {
-		CommandOutput out = context.output();
-		try {
-			context.router().deleteInterfaceAddress(routerInterfaceName);
-			out.println("[edit]");
-		} catch (RuntimeException e) {
-			throw CLIErrorHandler.handleInterfaceException(e, CLIErrorHandler.formatDeleteInterfaceEthernet(routerInterfaceName, subnet));
-		}
+	public CommandSyntax getSyntax() {
+		return SYNTAX;
 	}
 
 	@Override
-	public boolean matches(String command) {
-		Matcher matcher = PATTERN.matcher(command.trim());
-		if (matcher.matches()) {
-			routerInterfaceName = matcher.group(1);
-			subnet = matcher.group(2);
-			return true;
-		}
-		return false;
+	public Optional<ParsedCommand> parse(String command) {
+		return SYNTAX.parseFully(command).map(args ->
+				new Invocation(args.get("interface"), args.get("address"))
+		);
 	}
 
-	@Override
-	public String getCommandPattern() {
-		return "delete interfaces ethernet <interface> address <address>";
+	private record Invocation(String routerInterfaceName, String subnet) implements ParsedCommand {
+		@Override
+		public CommandResult execute(CommandExecutionContext context) {
+			try {
+				context.router().getConfigSession().deleteInterfaceAddress(routerInterfaceName);
+				return new CommandSuccess("[edit]");
+			} catch (RuntimeException e) {
+				throw new RuntimeException(CLIErrorHandler.handleException(e, "delete interfaces ethernet " + routerInterfaceName + " address " + subnet));
+			}
+		}
 	}
 
 	@Override

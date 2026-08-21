@@ -30,7 +30,7 @@ class E2ETest {
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw, true);
 		CommandExecutionContext context = new CommandExecutionContext(router, new NetworkTopology(), new PrintWriterCommandOutput(pw));
-		CliSession session = new CliSession(new DefaultCommandExecutor(new RouterCLIParser()), context);
+		CliSession session = new CliSession(new DefaultCommandExecutor(new RouterCLIParser(CommandRegistry.defaultRegistry())), context);
 
 		session.execute("set protocols static route 1.1.1.1/8 next-hop 2.2.2.2");
 
@@ -54,7 +54,7 @@ class E2ETest {
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw, true);
 		CommandExecutionContext context = new CommandExecutionContext(router, new NetworkTopology(), new PrintWriterCommandOutput(pw));
-		CliSession session = new CliSession(new DefaultCommandExecutor(new RouterCLIParser()), context);
+		CliSession session = new CliSession(new DefaultCommandExecutor(new RouterCLIParser(CommandRegistry.defaultRegistry())), context);
 
 		session.execute("set protocols static route 1.1.1.0/8 next-hop 2.2.2.2/8");
 
@@ -110,19 +110,19 @@ class E2ETest {
 		topology.addConnection(new Connection(r3.getInterfaces().get(1), h2.getHostInterface()));
 
 		r1.setMode(RouterMode.CONFIGURATION);
-		r1.configureInterface("eth0", InterfaceAddress.fromString("10.0.0.1/8"));
-		r1.configureInterface("eth1", InterfaceAddress.fromString("192.168.0.1/25"));
-		r1.commitChanges();
+		r1.getConfigSession().configureInterface("eth0", InterfaceAddress.fromString("10.0.0.1/8"));
+		r1.getConfigSession().configureInterface("eth1", InterfaceAddress.fromString("192.168.0.1/25"));
+		r1.getConfigSession().commit();
 
 		r2.setMode(RouterMode.CONFIGURATION);
-		r2.configureInterface("eth0", InterfaceAddress.fromString("192.168.0.2/25"));
-		r2.configureInterface("eth1", InterfaceAddress.fromString("192.168.0.129/26"));
-		r2.commitChanges();
+		r2.getConfigSession().configureInterface("eth0", InterfaceAddress.fromString("192.168.0.2/25"));
+		r2.getConfigSession().configureInterface("eth1", InterfaceAddress.fromString("192.168.0.129/26"));
+		r2.getConfigSession().commit();
 
 		r3.setMode(RouterMode.CONFIGURATION);
-		r3.configureInterface("eth0", InterfaceAddress.fromString("192.168.0.130/26"));
-		r3.configureInterface("eth1", InterfaceAddress.fromString("20.0.0.1/8"));
-		r3.commitChanges();
+		r3.getConfigSession().configureInterface("eth0", InterfaceAddress.fromString("192.168.0.130/26"));
+		r3.getConfigSession().configureInterface("eth1", InterfaceAddress.fromString("20.0.0.1/8"));
+		r3.getConfigSession().commit();
 
 		PingStatistics stats = new PingService().ping(r1, IPAddress.fromString("192.168.0.2"), 4, 64, topology);
 		assertEquals(4, stats.getSent());
@@ -136,15 +136,15 @@ class E2ETest {
 		assertEquals(4, stats2.getSent());
 		assertEquals(0, stats2.getReceived(), "Should not receive a reply from an indirectly connected router");
 
-		r1.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 0, 128), new SubnetMask(26)), r1.findFromName("eth1")));
-		r1.commitChanges();
+		r1.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 0, 128), new SubnetMask(26)), r1.findFromName("eth1")));
+		r1.getConfigSession().commit();
 
 		PingStatistics stats3 = new PingService().ping(r1, IPAddress.fromString("192.168.0.130"), 4, 64, topology);
 		assertEquals(4, stats3.getSent());
 		assertEquals(0, stats3.getReceived(), "Should not receive a reply due to packet drop at R3 (no route back to R1)");
 
-		r3.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 0, 0), new SubnetMask(25)), r3.findFromName("eth0")));
-		r3.commitChanges();
+		r3.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 0, 0), new SubnetMask(25)), r3.findFromName("eth0")));
+		r3.getConfigSession().commit();
 
 		PingStatistics stats4 = new PingService().ping(r1, IPAddress.fromString("192.168.0.130"), 4, 64, topology);
 		assertEquals(4, stats4.getSent());
@@ -172,19 +172,19 @@ class E2ETest {
 		topology.addConnection(new Connection(r3.getInterfaces().get(1), h2.getHostInterface()));
 
 		r1.setMode(RouterMode.CONFIGURATION);
-		r1.configureInterface("eth0", InterfaceAddress.fromString("10.0.0.1/8"));
-		r1.configureInterface("eth1", InterfaceAddress.fromString("192.168.0.1/25"));
-		r1.commitChanges();
+		r1.getConfigSession().configureInterface("eth0", InterfaceAddress.fromString("10.0.0.1/8"));
+		r1.getConfigSession().configureInterface("eth1", InterfaceAddress.fromString("192.168.0.1/25"));
+		r1.getConfigSession().commit();
 
 		r2.setMode(RouterMode.CONFIGURATION);
-		r2.configureInterface("eth0", InterfaceAddress.fromString("192.168.0.2/25"));
-		r2.configureInterface("eth1", InterfaceAddress.fromString("192.168.0.129/26"));
-		r2.commitChanges();
+		r2.getConfigSession().configureInterface("eth0", InterfaceAddress.fromString("192.168.0.2/25"));
+		r2.getConfigSession().configureInterface("eth1", InterfaceAddress.fromString("192.168.0.129/26"));
+		r2.getConfigSession().commit();
 
 		r3.setMode(RouterMode.CONFIGURATION);
-		r3.configureInterface("eth0", InterfaceAddress.fromString("192.168.0.130/26"));
-		r3.configureInterface("eth1", InterfaceAddress.fromString("20.0.0.1/8"));
-		r3.commitChanges();
+		r3.getConfigSession().configureInterface("eth0", InterfaceAddress.fromString("192.168.0.130/26"));
+		r3.getConfigSession().configureInterface("eth1", InterfaceAddress.fromString("20.0.0.1/8"));
+		r3.getConfigSession().commit();
 
 		PingStatistics stats = new PingService().ping(r1, IPAddress.fromString("192.168.0.2"), 4, 64, topology);
 		assertEquals(4, stats.getSent());
@@ -198,21 +198,21 @@ class E2ETest {
 		assertEquals(4, stats2.getSent());
 		assertEquals(0, stats2.getReceived(), "Should not receive a reply from an indirectly connected router");
 
-		r1.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 0, 128), new SubnetMask(26)), r1.findFromName("eth1")));
-		r1.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(20, 0, 0, 0), new SubnetMask(8)), r1.findFromName("eth1")));
-		r1.commitChanges();
+		r1.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 0, 128), new SubnetMask(26)), r1.findFromName("eth1")));
+		r1.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(20, 0, 0, 0), new SubnetMask(8)), r1.findFromName("eth1")));
+		r1.getConfigSession().commit();
 
 		PingStatistics stats3 = new PingService().ping(r1, IPAddress.fromString("192.168.0.130"), 4, 64, topology);
 		assertEquals(4, stats3.getSent());
 		assertEquals(0, stats3.getReceived(), "Should not receive a reply due to packet drop at R3 (no route back to R1)");
 
-		r2.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(10, 0, 0, 0), new SubnetMask(8)), r2.findFromName("eth0")));
-		r2.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(20, 0, 0, 0), new SubnetMask(8)), r2.findFromName("eth1")));
-		r2.commitChanges();
+		r2.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(10, 0, 0, 0), new SubnetMask(8)), r2.findFromName("eth0")));
+		r2.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(20, 0, 0, 0), new SubnetMask(8)), r2.findFromName("eth1")));
+		r2.getConfigSession().commit();
 
-		r3.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 0, 0), new SubnetMask(25)), r3.findFromName("eth0")));
-		r3.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(10, 0, 0, 0), new SubnetMask(8)), r3.findFromName("eth0")));
-		r3.commitChanges();
+		r3.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 0, 0), new SubnetMask(25)), r3.findFromName("eth0")));
+		r3.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(10, 0, 0, 0), new SubnetMask(8)), r3.findFromName("eth0")));
+		r3.getConfigSession().commit();
 
 		PingStatistics stats4 = new PingService().ping(r1, IPAddress.fromString("192.168.0.130"), 4, 64, topology);
 		assertEquals(4, stats4.getSent());
@@ -244,31 +244,31 @@ class E2ETest {
 		topology.addConnection(new Connection(r3.getInterfaces().get(1), h2.getHostInterface()));
 
 		r1.setMode(RouterMode.CONFIGURATION);
-		r1.configureInterface("eth0", InterfaceAddress.fromString("10.0.0.1/8"));
-		r1.configureInterface("eth1", InterfaceAddress.fromString("192.168.0.1/25"));
-		r1.commitChanges();
+		r1.getConfigSession().configureInterface("eth0", InterfaceAddress.fromString("10.0.0.1/8"));
+		r1.getConfigSession().configureInterface("eth1", InterfaceAddress.fromString("192.168.0.1/25"));
+		r1.getConfigSession().commit();
 
 		r2.setMode(RouterMode.CONFIGURATION);
-		r2.configureInterface("eth0", InterfaceAddress.fromString("192.168.0.2/25"));
-		r2.configureInterface("eth1", InterfaceAddress.fromString("192.168.0.129/26"));
-		r2.commitChanges();
+		r2.getConfigSession().configureInterface("eth0", InterfaceAddress.fromString("192.168.0.2/25"));
+		r2.getConfigSession().configureInterface("eth1", InterfaceAddress.fromString("192.168.0.129/26"));
+		r2.getConfigSession().commit();
 
 		r3.setMode(RouterMode.CONFIGURATION);
-		r3.configureInterface("eth0", InterfaceAddress.fromString("192.168.0.130/26"));
-		r3.configureInterface("eth1", InterfaceAddress.fromString("20.0.0.1/8"));
-		r3.commitChanges();
+		r3.getConfigSession().configureInterface("eth0", InterfaceAddress.fromString("192.168.0.130/26"));
+		r3.getConfigSession().configureInterface("eth1", InterfaceAddress.fromString("20.0.0.1/8"));
+		r3.getConfigSession().commit();
 
-		r1.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 0, 128), new SubnetMask(26)), r1.findFromName("eth1")));
-		r1.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(20, 0, 0, 0), new SubnetMask(8)), r1.findFromName("eth1")));
-		r1.commitChanges();
+		r1.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 0, 128), new SubnetMask(26)), r1.findFromName("eth1")));
+		r1.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(20, 0, 0, 0), new SubnetMask(8)), r1.findFromName("eth1")));
+		r1.getConfigSession().commit();
 
-		r2.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(10, 0, 0, 0), new SubnetMask(8)), r2.findFromName("eth0")));
-		r2.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(20, 0, 0, 0), new SubnetMask(8)), r2.findFromName("eth1")));
-		r2.commitChanges();
+		r2.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(10, 0, 0, 0), new SubnetMask(8)), r2.findFromName("eth0")));
+		r2.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(20, 0, 0, 0), new SubnetMask(8)), r2.findFromName("eth1")));
+		r2.getConfigSession().commit();
 
-		r3.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 0, 0), new SubnetMask(25)), r3.findFromName("eth0")));
-		r3.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(10, 0, 0, 0), new SubnetMask(8)), r3.findFromName("eth0")));
-		r3.commitChanges();
+		r3.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 0, 0), new SubnetMask(25)), r3.findFromName("eth0")));
+		r3.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(10, 0, 0, 0), new SubnetMask(8)), r3.findFromName("eth0")));
+		r3.getConfigSession().commit();
 
 		PingStatistics stats = new PingService().ping(h1, "30.0.0.2", 4, topology);
 		assertEquals(4, stats.getSent());
@@ -278,14 +278,14 @@ class E2ETest {
 		assertEquals(4, stats1.getSent());
 		assertEquals(0, stats1.getReceived(), "Should not receive a reply from a non-existent destination");
 
-		r1.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(30, 0, 0, 0), new SubnetMask(8)), r1.findFromName("eth1")));
-		r1.commitChanges();
+		r1.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(30, 0, 0, 0), new SubnetMask(8)), r1.findFromName("eth1")));
+		r1.getConfigSession().commit();
 
-		r2.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(30, 0, 0, 0), new SubnetMask(8)), r2.findFromName("eth1")));
-		r2.commitChanges();
+		r2.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(30, 0, 0, 0), new SubnetMask(8)), r2.findFromName("eth1")));
+		r2.getConfigSession().commit();
 
-		r3.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(30, 0, 0, 0), new SubnetMask(8)), r3.findFromName("eth0")));
-		r3.commitChanges();
+		r3.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(30, 0, 0, 0), new SubnetMask(8)), r3.findFromName("eth0")));
+		r3.getConfigSession().commit();
 
 		PingStatistics stats2 = new PingService().ping(h1, "30.0.0.2", 4, topology);
 		assertEquals(4, stats2.getSent());
@@ -318,40 +318,40 @@ class E2ETest {
 		topology.addConnection(new Connection(r3.getInterfaces().get(2), h2.getHostInterface()));
 
 		r1.setMode(RouterMode.CONFIGURATION);
-		r1.configureInterface("eth0", InterfaceAddress.fromString("10.0.0.1/8"));
-		r1.configureInterface("eth1", InterfaceAddress.fromString("192.168.0.1/25"));
-		r1.configureInterface("eth2", InterfaceAddress.fromString("192.168.0.193/26"));
-		r1.commitChanges();
+		r1.getConfigSession().configureInterface("eth0", InterfaceAddress.fromString("10.0.0.1/8"));
+		r1.getConfigSession().configureInterface("eth1", InterfaceAddress.fromString("192.168.0.1/25"));
+		r1.getConfigSession().configureInterface("eth2", InterfaceAddress.fromString("192.168.0.193/26"));
+		r1.getConfigSession().commit();
 
 		r2.setMode(RouterMode.CONFIGURATION);
-		r2.configureInterface("eth0", InterfaceAddress.fromString("192.168.0.2/25"));
-		r2.configureInterface("eth1", InterfaceAddress.fromString("192.168.0.129/26"));
-		r2.commitChanges();
+		r2.getConfigSession().configureInterface("eth0", InterfaceAddress.fromString("192.168.0.2/25"));
+		r2.getConfigSession().configureInterface("eth1", InterfaceAddress.fromString("192.168.0.129/26"));
+		r2.getConfigSession().commit();
 
 		r3.setMode(RouterMode.CONFIGURATION);
-		r3.configureInterface("eth0", InterfaceAddress.fromString("192.168.0.194/26"));
-		r3.configureInterface("eth1", InterfaceAddress.fromString("192.168.0.130/26"));
-		r3.configureInterface("eth2", InterfaceAddress.fromString("20.0.0.1/8"));
-		r3.commitChanges();
+		r3.getConfigSession().configureInterface("eth0", InterfaceAddress.fromString("192.168.0.194/26"));
+		r3.getConfigSession().configureInterface("eth1", InterfaceAddress.fromString("192.168.0.130/26"));
+		r3.getConfigSession().configureInterface("eth2", InterfaceAddress.fromString("20.0.0.1/8"));
+		r3.getConfigSession().commit();
 
-		r1.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 0, 128), new SubnetMask(26)), r1.findFromName("eth1")));
-		r1.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 0, 128), new SubnetMask(26)), r1.findFromName("eth2")));
-		r1.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(20, 0, 0, 0), new SubnetMask(8)), r1.findFromName("eth2"), 1));
-		r1.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(20, 0, 0, 0), new SubnetMask(8)), r1.findFromName("eth1"), 2));
-		r1.commitChanges();
+		r1.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 0, 128), new SubnetMask(26)), r1.findFromName("eth1")));
+		r1.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 0, 128), new SubnetMask(26)), r1.findFromName("eth2")));
+		r1.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(20, 0, 0, 0), new SubnetMask(8)), r1.findFromName("eth2"), 1));
+		r1.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(20, 0, 0, 0), new SubnetMask(8)), r1.findFromName("eth1"), 2));
+		r1.getConfigSession().commit();
 
-		r2.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(10, 0, 0, 0), new SubnetMask(8)), r2.findFromName("eth0")));
-		r2.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(10, 0, 0, 0), new SubnetMask(8)), r2.findFromName("eth1"), 2));
-		r2.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(20, 0, 0, 0), new SubnetMask(8)), r2.findFromName("eth1")));
-		r2.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 0, 192), new SubnetMask(26)), r2.findFromName("eth0")));
-		r2.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 0, 192), new SubnetMask(26)), r2.findFromName("eth1")));
-		r2.commitChanges();
+		r2.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(10, 0, 0, 0), new SubnetMask(8)), r2.findFromName("eth0")));
+		r2.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(10, 0, 0, 0), new SubnetMask(8)), r2.findFromName("eth1"), 2));
+		r2.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(20, 0, 0, 0), new SubnetMask(8)), r2.findFromName("eth1")));
+		r2.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 0, 192), new SubnetMask(26)), r2.findFromName("eth0")));
+		r2.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 0, 192), new SubnetMask(26)), r2.findFromName("eth1")));
+		r2.getConfigSession().commit();
 
-		r3.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 0, 0), new SubnetMask(25)), r3.findFromName("eth0")));
-		r3.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 0, 0), new SubnetMask(25)), r3.findFromName("eth1")));
-		r3.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(10, 0, 0, 0), new SubnetMask(8)), r3.findFromName("eth0")));
-		r3.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(10, 0, 0, 0), new SubnetMask(8)), r3.findFromName("eth1"), 2));
-		r3.commitChanges();
+		r3.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 0, 0), new SubnetMask(25)), r3.findFromName("eth0")));
+		r3.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 0, 0), new SubnetMask(25)), r3.findFromName("eth1")));
+		r3.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(10, 0, 0, 0), new SubnetMask(8)), r3.findFromName("eth0")));
+		r3.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(10, 0, 0, 0), new SubnetMask(8)), r3.findFromName("eth1"), 2));
+		r3.getConfigSession().commit();
 
 		PingStatistics stats = new PingService().ping(h1, "192.168.0.129", 4, topology);
 		assertEquals(4, stats.getSent());
@@ -367,8 +367,8 @@ class E2ETest {
 
 		int initialHops = stats2.results().getFirst().hopCount();
 
-		r2.disableRoute(new StaticRoutingEntry(new Subnet(new IPAddress(10, 0, 0, 0), new SubnetMask(8)), r2.findFromName("eth0")));
-		r2.commitChanges();
+		r2.getConfigSession().disableRoute(new StaticRoutingEntry(new Subnet(new IPAddress(10, 0, 0, 0), new SubnetMask(8)), r2.findFromName("eth0")));
+		r2.getConfigSession().commit();
 
 		PingStatistics stats3 = new PingService().ping(r2, IPAddress.fromString("10.0.0.1"), 4, 64, topology);
 		assertEquals(4, stats3.getSent());
@@ -434,12 +434,12 @@ class E2ETest {
 		String rcEth2 = nthHostFromNetworkOrDefault(nodeXX_rc, 2, "2.2.10.90/29");
 
 		rx.setMode(RouterMode.CONFIGURATION);
-		rx.configureInterface("eth1", InterfaceAddress.fromString(rxEth1));
-		rx.commitChanges();
+		rx.getConfigSession().configureInterface("eth1", InterfaceAddress.fromString(rxEth1));
+		rx.getConfigSession().commit();
 
 		rxx.setMode(RouterMode.CONFIGURATION);
-		rxx.configureInterface("eth1", InterfaceAddress.fromString(rxxEth1));
-		rxx.commitChanges();
+		rxx.getConfigSession().configureInterface("eth1", InterfaceAddress.fromString(rxxEth1));
+		rxx.getConfigSession().commit();
 
 		PingStatistics stats = new PingService().ping(rx, IPAddress.fromString(trimAddressMask(rxxEth1)), 4, 64, topology);
 		assertEquals(4, stats.getSent());
@@ -450,20 +450,20 @@ class E2ETest {
 		assertEquals(4, stats1.getReceived(), "Should receive a reply between directly connected interfaces");
 
 		rb.setMode(RouterMode.CONFIGURATION);
-		rb.configureInterface("eth0", InterfaceAddress.fromString(rbEth0));
-		rb.commitChanges();
+		rb.getConfigSession().configureInterface("eth0", InterfaceAddress.fromString(rbEth0));
+		rb.getConfigSession().commit();
 
 		rx.setMode(RouterMode.CONFIGURATION);
-		rx.configureInterface("eth0", InterfaceAddress.fromString(rxEth0));
-		rx.commitChanges();
+		rx.getConfigSession().configureInterface("eth0", InterfaceAddress.fromString(rxEth0));
+		rx.getConfigSession().commit();
 
 		rxx.setMode(RouterMode.CONFIGURATION);
-		rxx.configureInterface("eth2", InterfaceAddress.fromString(rxxEth2));
-		rxx.commitChanges();
+		rxx.getConfigSession().configureInterface("eth2", InterfaceAddress.fromString(rxxEth2));
+		rxx.getConfigSession().commit();
 
 		rc.setMode(RouterMode.CONFIGURATION);
-		rc.configureInterface("eth2", InterfaceAddress.fromString(rcEth2));
-		rc.commitChanges();
+		rc.getConfigSession().configureInterface("eth2", InterfaceAddress.fromString(rcEth2));
+		rc.getConfigSession().commit();
 
 		PingStatistics stats2 = new PingService().ping(rx, IPAddress.fromString(trimAddressMask(rbEth0)), 4, 64, topology);
 		assertEquals(4, stats2.getSent());
@@ -482,55 +482,55 @@ class E2ETest {
 		topology.addConnection(new Connection(rd.getInterfaces().getFirst(), h2.getHostInterface()));
 
 		ra.setMode(RouterMode.CONFIGURATION);
-		ra.configureInterface("eth0", InterfaceAddress.fromString("192.168.2.1/24"));
-		ra.configureInterface("eth1", InterfaceAddress.fromString("192.168.1.1/30"));
-		ra.commitChanges();
+		ra.getConfigSession().configureInterface("eth0", InterfaceAddress.fromString("192.168.2.1/24"));
+		ra.getConfigSession().configureInterface("eth1", InterfaceAddress.fromString("192.168.1.1/30"));
+		ra.getConfigSession().commit();
 
 		rd.setMode(RouterMode.CONFIGURATION);
-		rd.configureInterface("eth0", InterfaceAddress.fromString("192.168.4.1/24"));
-		rd.configureInterface("eth1", InterfaceAddress.fromString("192.168.3.1/30"));
-		rd.commitChanges();
+		rd.getConfigSession().configureInterface("eth0", InterfaceAddress.fromString("192.168.4.1/24"));
+		rd.getConfigSession().configureInterface("eth1", InterfaceAddress.fromString("192.168.3.1/30"));
+		rd.getConfigSession().commit();
 
-		rb.configureInterface("eth1", InterfaceAddress.fromString("192.168.1.2/30"));
-		rb.commitChanges();
+		rb.getConfigSession().configureInterface("eth1", InterfaceAddress.fromString("192.168.1.2/30"));
+		rb.getConfigSession().commit();
 
-		rc.configureInterface("eth0", InterfaceAddress.fromString("192.168.3.2/30"));
-		rc.commitChanges();
+		rc.getConfigSession().configureInterface("eth0", InterfaceAddress.fromString("192.168.3.2/30"));
+		rc.getConfigSession().commit();
 
-		rx.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 2, 0), new SubnetMask(24)), IPAddress.fromString(trimAddressMask(rbEth0))));
-		rx.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(30)), IPAddress.fromString(trimAddressMask(rbEth0))));
+		rx.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 2, 0), new SubnetMask(24)), IPAddress.fromString(trimAddressMask(rbEth0))));
+		rx.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(30)), IPAddress.fromString(trimAddressMask(rbEth0))));
 		Subnet nodeXXSubnet = subnetFromCidrOrDefault(nodeXX_rc, "2.2.10.88/29");
-		rx.addRoute(new StaticRoutingEntry(new Subnet(nodeXXSubnet.networkAddress(), new SubnetMask(nodeXXSubnet.subnetMask().shortMask())), IPAddress.fromString(trimAddressMask(rxxEth1))));
-		rx.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 3, 0), new SubnetMask(30)), IPAddress.fromString(trimAddressMask(rxxEth1))));
-		rx.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 4, 0), new SubnetMask(24)), IPAddress.fromString(trimAddressMask(rxxEth1))));
-		rx.commitChanges();
+		rx.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(nodeXXSubnet.networkAddress(), new SubnetMask(nodeXXSubnet.subnetMask().shortMask())), IPAddress.fromString(trimAddressMask(rxxEth1))));
+		rx.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 3, 0), new SubnetMask(30)), IPAddress.fromString(trimAddressMask(rxxEth1))));
+		rx.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 4, 0), new SubnetMask(24)), IPAddress.fromString(trimAddressMask(rxxEth1))));
+		rx.getConfigSession().commit();
 
-		rxx.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 4, 0), new SubnetMask(24)), IPAddress.fromString(trimAddressMask(rcEth2))));
-		rxx.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 3, 0), new SubnetMask(30)), IPAddress.fromString(trimAddressMask(rcEth2))));
+		rxx.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 4, 0), new SubnetMask(24)), IPAddress.fromString(trimAddressMask(rcEth2))));
+		rxx.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 3, 0), new SubnetMask(30)), IPAddress.fromString(trimAddressMask(rcEth2))));
 		Subnet rbNodeXSubnet = subnetFromCidrOrDefault(rb_nodex, "1.1.10.24/29");
-		rxx.addRoute(new StaticRoutingEntry(new Subnet(rbNodeXSubnet.networkAddress(), new SubnetMask(rbNodeXSubnet.subnetMask().shortMask())), IPAddress.fromString(trimAddressMask(rxEth1))));
-		rxx.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(30)), IPAddress.fromString(trimAddressMask(rxEth1))));
-		rxx.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 2, 0), new SubnetMask(24)), IPAddress.fromString(trimAddressMask(rxEth1))));
-		rxx.commitChanges();
+		rxx.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(rbNodeXSubnet.networkAddress(), new SubnetMask(rbNodeXSubnet.subnetMask().shortMask())), IPAddress.fromString(trimAddressMask(rxEth1))));
+		rxx.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(30)), IPAddress.fromString(trimAddressMask(rxEth1))));
+		rxx.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 2, 0), new SubnetMask(24)), IPAddress.fromString(trimAddressMask(rxEth1))));
+		rxx.getConfigSession().commit();
 
 		Subnet xXxSubnet3 = subnetFromCidrOrDefault(x_xx, "192.168.10.0/24");
-		rb.addRoute(new StaticRoutingEntry(new Subnet(xXxSubnet3.networkAddress(), new SubnetMask(xXxSubnet3.subnetMask().shortMask())), IPAddress.fromString(trimAddressMask(rxEth0))));
+		rb.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(xXxSubnet3.networkAddress(), new SubnetMask(xXxSubnet3.subnetMask().shortMask())), IPAddress.fromString(trimAddressMask(rxEth0))));
 		Subnet nodeXXSubnet3 = subnetFromCidrOrDefault(nodeXX_rc, "2.2.10.88/29");
-		rb.addRoute(new StaticRoutingEntry(new Subnet(nodeXXSubnet3.networkAddress(), new SubnetMask(nodeXXSubnet3.subnetMask().shortMask())), IPAddress.fromString(trimAddressMask(rxEth0))));
-		rb.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 4, 0), new SubnetMask(24)), IPAddress.fromString(trimAddressMask(rxEth0))));
-		rb.commitChanges();
+		rb.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(nodeXXSubnet3.networkAddress(), new SubnetMask(nodeXXSubnet3.subnetMask().shortMask())), IPAddress.fromString(trimAddressMask(rxEth0))));
+		rb.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 4, 0), new SubnetMask(24)), IPAddress.fromString(trimAddressMask(rxEth0))));
+		rb.getConfigSession().commit();
 
 		Subnet xXxSubnet4 = subnetFromCidrOrDefault(x_xx, "192.168.10.0/24");
-		rc.addRoute(new StaticRoutingEntry(new Subnet(xXxSubnet4.networkAddress(), new SubnetMask(xXxSubnet4.subnetMask().shortMask())), IPAddress.fromString(trimAddressMask(rxxEth2))));
+		rc.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(xXxSubnet4.networkAddress(), new SubnetMask(xXxSubnet4.subnetMask().shortMask())), IPAddress.fromString(trimAddressMask(rxxEth2))));
 		Subnet rbNodeXSubnet4 = subnetFromCidrOrDefault(rb_nodex, "1.1.10.24/29");
-		rc.addRoute(new StaticRoutingEntry(new Subnet(rbNodeXSubnet4.networkAddress(), new SubnetMask(rbNodeXSubnet4.subnetMask().shortMask())), IPAddress.fromString(trimAddressMask(rxxEth2))));
-		rc.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 2, 0), new SubnetMask(24)), IPAddress.fromString(trimAddressMask(rxxEth2))));
-		rc.commitChanges();
+		rc.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(rbNodeXSubnet4.networkAddress(), new SubnetMask(rbNodeXSubnet4.subnetMask().shortMask())), IPAddress.fromString(trimAddressMask(rxxEth2))));
+		rc.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 2, 0), new SubnetMask(24)), IPAddress.fromString(trimAddressMask(rxxEth2))));
+		rc.getConfigSession().commit();
 
-		ra.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(0, 0, 0, 0), new SubnetMask(0)), IPAddress.fromString("192.168.1.2")));
-		ra.commitChanges();
+		ra.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(0, 0, 0, 0), new SubnetMask(0)), IPAddress.fromString("192.168.1.2")));
+		ra.getConfigSession().commit();
 
-		rd.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(0, 0, 0, 0), new SubnetMask(0)), IPAddress.fromString("192.168.3.2")));
-		rd.commitChanges();
+		rd.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(0, 0, 0, 0), new SubnetMask(0)), IPAddress.fromString("192.168.3.2")));
+		rd.getConfigSession().commit();
 	}
 }

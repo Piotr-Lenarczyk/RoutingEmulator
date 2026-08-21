@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CommandMatcher {
+
 	private CommandMatcher() {
 	}
 
@@ -18,7 +19,7 @@ public class CommandMatcher {
 		List<RouterCommand> matches = new ArrayList<>();
 
 		for (RouterCommand command : commands) {
-			String pattern = command.getCommandPattern();
+			String pattern = command.getSyntax().getPattern();
 			String[] patternWords = pattern.split("\\s+");
 
 			if (patternWords.length > 0 && patternWords[0].startsWith(firstWord)) {
@@ -32,6 +33,7 @@ public class CommandMatcher {
 				}
 			}
 		}
+
 		return matches.size() == 1 ? matches.getFirst() : null;
 	}
 
@@ -40,7 +42,6 @@ public class CommandMatcher {
 		if (words.length < wordCount) {
 			return null;
 		}
-
 		StringBuilder prefix = new StringBuilder();
 		for (int i = 0; i < wordCount; i++) {
 			if (words[i].contains("<") || words[i].contains(">")) {

@@ -1,32 +1,27 @@
 package org.uj.routingemulator.router.cli;
 
 import org.uj.routingemulator.router.RouterMode;
-import org.uj.routingemulator.router.exceptions.UncommittedChangesException;
+
+import java.util.Optional;
 
 public class ExitCommand implements RouterCommand {
+	private static final CommandSyntax SYNTAX = new CommandSyntax("exit");
+
 	@Override
-	public void execute(CommandExecutionContext context) {
-		CommandOutput out = context.output();
-		if (context.router().getMode() != RouterMode.CONFIGURATION) {
-			out.println("\n\tInvalid command: [exit]\n");
-		} else {
-			try {
+	public CommandSyntax getSyntax() {
+		return SYNTAX;
+	}
+
+	@Override
+	public Optional<ParsedCommand> parse(String command) {
+		return SYNTAX.parseFully(command).map(args -> context -> {
+			if (context.router().getMode() != RouterMode.CONFIGURATION) {
+				return new CommandFailure("\n\tInvalid command: [exit]\n");
+			} else {
 				context.router().setMode(RouterMode.OPERATIONAL);
-				out.println("exit");
-			} catch (UncommittedChangesException e) {
-				out.println(e.getMessage());
+				return new CommandSuccess("exit");
 			}
-		}
-	}
-
-	@Override
-	public boolean matches(String command) {
-		return command.trim().equals("exit");
-	}
-
-	@Override
-	public String getCommandPattern() {
-		return "exit";
+		});
 	}
 
 	@Override

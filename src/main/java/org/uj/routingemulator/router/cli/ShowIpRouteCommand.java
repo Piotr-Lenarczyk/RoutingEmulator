@@ -1,32 +1,21 @@
 package org.uj.routingemulator.router.cli;
 
-import org.uj.routingemulator.router.RouterMode;
-
-import java.util.regex.Pattern;
+import java.util.Optional;
 
 public class ShowIpRouteCommand implements RouterCommand {
-	private static final Pattern PATTERN = Pattern.compile("^show\\s+ip\\s+route$");
+	private static final CommandSyntax SYNTAX = new CommandSyntax("show ip route");
 
 	@Override
-	public void execute(CommandExecutionContext context) {
-		CommandOutput out = context.output();
-		if (context.router().getMode() != RouterMode.OPERATIONAL) {
-			out.println("Invalid command: show [ip]");
-			return;
-		}
-
-		String output = context.router().showIpRoute();
-		out.println(output);
+	public CommandSyntax getSyntax() {
+		return SYNTAX;
 	}
 
 	@Override
-	public boolean matches(String command) {
-		return PATTERN.matcher(command.trim()).matches();
-	}
-
-	@Override
-	public String getCommandPattern() {
-		return "show ip route";
+	public Optional<ParsedCommand> parse(String command) {
+		return SYNTAX.parseFully(command).map(args -> context -> {
+			String output = context.router().showIpRoute();
+			return new CommandSuccess(output);
+		});
 	}
 
 	@Override

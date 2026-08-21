@@ -37,9 +37,9 @@ class PingTest {
         Router r = new Router("R1", java.util.List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
 
         r.setMode(RouterMode.CONFIGURATION);
-        r.configureInterface("eth0", InterfaceAddress.fromString("192.168.1.1/24"));
-        r.configureInterface("eth1", InterfaceAddress.fromString("192.168.2.1/24"));
-        r.commitChanges();
+        r.getConfigSession().configureInterface("eth0", InterfaceAddress.fromString("192.168.1.1/24"));
+        r.getConfigSession().configureInterface("eth1", InterfaceAddress.fromString("192.168.2.1/24"));
+        r.getConfigSession().commit();
 
         topology.addDevice(h1);
         topology.addDevice(h2);
@@ -64,9 +64,9 @@ class PingTest {
         Router r = new Router("R1", java.util.List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
 
         r.setMode(RouterMode.CONFIGURATION);
-        r.configureInterface("eth0", InterfaceAddress.fromString("192.168.1.1/24"));
-        r.configureInterface("eth1", InterfaceAddress.fromString("192.168.2.1/24"));
-        r.commitChanges();
+        r.getConfigSession().configureInterface("eth0", InterfaceAddress.fromString("192.168.1.1/24"));
+        r.getConfigSession().configureInterface("eth1", InterfaceAddress.fromString("192.168.2.1/24"));
+        r.getConfigSession().commit();
 
         topology.addDevice(h1);
         topology.addDevice(h2);
@@ -90,16 +90,16 @@ class PingTest {
         Router r2 = new Router("R2", java.util.List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
 
         r1.setMode(RouterMode.CONFIGURATION);
-        r1.configureInterface("eth0", InterfaceAddress.fromString("192.168.1.254/24"));
-        r1.configureInterface("eth1", InterfaceAddress.fromString("192.168.2.1/24"));
-        r1.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 3, 0), new SubnetMask(24)), r1.findFromName("eth1")));
-        r1.commitChanges();
+        r1.getConfigSession().configureInterface("eth0", InterfaceAddress.fromString("192.168.1.254/24"));
+        r1.getConfigSession().configureInterface("eth1", InterfaceAddress.fromString("192.168.2.1/24"));
+        r1.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 3, 0), new SubnetMask(24)), r1.findFromName("eth1")));
+        r1.getConfigSession().commit();
 
         r2.setMode(RouterMode.CONFIGURATION);
-        r2.configureInterface("eth0", InterfaceAddress.fromString("192.168.2.2/24"));
-        r2.configureInterface("eth1", InterfaceAddress.fromString("192.168.3.254/24"));
-        r2.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(24)), r2.findFromName("eth0")));
-        r2.commitChanges();
+        r2.getConfigSession().configureInterface("eth0", InterfaceAddress.fromString("192.168.2.2/24"));
+        r2.getConfigSession().configureInterface("eth1", InterfaceAddress.fromString("192.168.3.254/24"));
+        r2.getConfigSession().addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(24)), r2.findFromName("eth0")));
+        r2.getConfigSession().commit();
 
         topology.addDevice(h1);
         topology.addDevice(h2);
@@ -123,9 +123,9 @@ class PingTest {
         Router r = new Router("R1", java.util.List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
 
         r.setMode(RouterMode.CONFIGURATION);
-        r.configureInterface("eth0", InterfaceAddress.fromString("192.168.1.1/24"));
-        r.configureInterface("eth1", InterfaceAddress.fromString("192.168.2.1/24"));
-        r.commitChanges();
+        r.getConfigSession().configureInterface("eth0", InterfaceAddress.fromString("192.168.1.1/24"));
+        r.getConfigSession().configureInterface("eth1", InterfaceAddress.fromString("192.168.2.1/24"));
+        r.getConfigSession().commit();
 
         topology.addDevice(h1);
         topology.addDevice(h2);

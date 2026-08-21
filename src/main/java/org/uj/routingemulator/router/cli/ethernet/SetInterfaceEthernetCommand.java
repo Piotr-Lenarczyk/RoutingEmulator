@@ -1,47 +1,35 @@
 package org.uj.routingemulator.router.cli.ethernet;
 
 import org.uj.routingemulator.common.InterfaceAddress;
-import org.uj.routingemulator.router.cli.CLIErrorHandler;
-import org.uj.routingemulator.router.cli.CommandExecutionContext;
-import org.uj.routingemulator.router.cli.CommandOutput;
-import org.uj.routingemulator.router.cli.RouterCommand;
+import org.uj.routingemulator.router.cli.*;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Optional;
 
 public class SetInterfaceEthernetCommand implements RouterCommand {
-	private static final Pattern PATTERN = Pattern.compile(
-			"set\\s+interfaces\\s+ethernet\\s+(\\S+)\\s+address\\s+(\\S+)"
-	);
-
-	private String routerInterfaceName;
-	private String address;
+	private static final CommandSyntax SYNTAX = new CommandSyntax("set interfaces ethernet <interface> address <address>");
 
 	@Override
-	public void execute(CommandExecutionContext context) {
-		CommandOutput out = context.output();
-		try {
-			context.router().configureInterface(routerInterfaceName, InterfaceAddress.fromString(address));
-			out.println("[edit]");
-		} catch (RuntimeException e) {
-			throw CLIErrorHandler.handleInterfaceException(e, CLIErrorHandler.formatSetInterfaceEthernet(routerInterfaceName, address));
-		}
+	public CommandSyntax getSyntax() {
+		return SYNTAX;
 	}
 
 	@Override
-	public boolean matches(String command) {
-		Matcher matcher = PATTERN.matcher(command.trim());
-		if (matcher.matches()) {
-			routerInterfaceName = matcher.group(1);
-			address = matcher.group(2);
-			return true;
-		}
-		return false;
+	public Optional<ParsedCommand> parse(String command) {
+		return SYNTAX.parseFully(command).map(args ->
+				new Invocation(args.get("interface"), args.get("address"))
+		);
 	}
 
-	@Override
-	public String getCommandPattern() {
-		return "set interfaces ethernet <interface> address <address>";
+	private record Invocation(String routerInterfaceName, String address) implements ParsedCommand {
+		@Override
+		public CommandResult execute(CommandExecutionContext context) {
+			try {
+				context.router().getConfigSession().configureInterface(routerInterfaceName, InterfaceAddress.fromString(address));
+				return new CommandSuccess("[edit]");
+			} catch (RuntimeException e) {
+				throw new RuntimeException(CLIErrorHandler.handleException(e, "set interfaces ethernet " + routerInterfaceName + " address " + address));
+			}
+		}
 	}
 
 	@Override

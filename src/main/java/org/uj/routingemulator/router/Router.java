@@ -5,8 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.uj.routingemulator.common.Device;
 import org.uj.routingemulator.common.DeviceId;
-import org.uj.routingemulator.common.InterfaceAddress;
-import org.uj.routingemulator.router.exceptions.*;
+import org.uj.routingemulator.router.exceptions.InvalidModeException;
+import org.uj.routingemulator.router.exceptions.UncommittedChangesException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +40,7 @@ public class Router implements Device {
 	public Router(String name, List<RouterInterface> interfaces) {
 		this.name = name;
 		this.routingTable = new RoutingTable();
-		this.interfaces = interfaces;
+		this.interfaces = new ArrayList<>(interfaces);
 		this.mode = RouterMode.OPERATIONAL;
 		this.configSession = new RouterConfigurationSession(this);
 		logger.fine("Creating new router %s with custom interfaces: %s".formatted(name, interfaces));
@@ -56,187 +56,49 @@ public class Router implements Device {
 		return name;
 	}
 
+	public void applyConfiguration(RouterConfiguration configuration) {
+		for (RouterInterface newIf : configuration.interfaces()) {
+			RouterInterface existing = this.interfaces.stream()
+					.filter(i -> i.getInterfaceName().equals(newIf.getInterfaceName()))
+					.findFirst()
+					.orElse(null);
+			if (existing != null) {
+				existing.setInterfaceAddress(newIf.getInterfaceAddress());
+				existing.setMacAddress(newIf.getMacAddress());
+				existing.setDescription(newIf.getDescription());
+				existing.setVrf(newIf.getVrf());
+				existing.setMtu(newIf.getMtu());
+				existing.setStatus(newIf.getStatus());
+			} else {
+				this.interfaces.add(newIf);
+			}
+		}
+
+		this.interfaces.removeIf(existing -> configuration.interfaces().stream()
+				.noneMatch(newIf -> newIf.getInterfaceName().equals(existing.getInterfaceName())));
+
+		this.routingTable = configuration.routingTable();
+	}
+
 	public boolean hasUncommittedChanges() {
 		return configSession.hasUncommittedChanges();
 	}
 
-	public RoutingTable getStagedRoutingTable() {
-		return configSession.getStagedRoutingTable();
-	}
-
-	public List<RouterInterface> getStagedInterfaces() {
-		return configSession.getStagedInterfaces();
-	}
-
-	public void addRoute(StaticRoutingEntry entry) {
-		if (mode != RouterMode.CONFIGURATION) {
-			logger.warning("Attempted to add route while in %s mode".formatted(mode));
-			throw new InvalidModeException("Invalid command: set [protocols]");
-		}
-
-		RouteValidator.validateSubnet(entry.getSubnet());
-
-		if (configSession.getStagedRoutingTable().contains(entry)) {
-			logger.warning("Attempted to add duplicate route: %s".formatted(entry));
-			throw new DuplicateConfigurationException("Route already exists");
-		}
-
-		if (entry.getNextHop() != null) {
-			logger.finer("Validating next-hop %s for the new route".formatted(entry.getNextHop()));
-			RouteValidator.validateNextHop(entry.getNextHop(), configSession.getStagedInterfaces());
-		}
-
-		configSession.getStagedRoutingTable().addRoute(entry);
-		configSession.setHasUncommittedChanges(true);
-		logger.info("%s: Creating static route %s".formatted(this.name, entry));
-	}
-
-	public void removeRoute(StaticRoutingEntry entry) {
-		if (mode != RouterMode.CONFIGURATION) {
-			logger.warning("Attempted to remove route while in %s mode".formatted(mode));
-			throw new InvalidModeException("Invalid command: delete [protocols]");
-		}
-
-		if (!configSession.getStagedRoutingTable().getRoutingEntries().contains(entry)) {
-			logger.warning("Attempted to remove non-existent route: %s".formatted(entry));
-			throw new ConfigurationNotFoundException("Nothing to delete");
-		}
-
-		configSession.getStagedRoutingTable().getRoutingEntries().remove(entry);
-		configSession.setHasUncommittedChanges(true);
-		logger.info("%s: Route %s removed from staged configuration".formatted(this.name, entry));
-	}
-
-	public void disableRoute(StaticRoutingEntry entry) {
-		if (mode != RouterMode.CONFIGURATION) {
-			logger.warning("Attempted to disable route while in %s mode".formatted(mode));
-			throw new InvalidModeException("Invalid command: set [protocols]");
-		}
-
-		List<StaticRoutingEntry> entries = configSession.getStagedRoutingTable().getRoutingEntries();
-		int idx = entries.indexOf(entry);
-
-		if (idx == -1) {
-			logger.warning("Attempted to disable non-existent route: %s".formatted(entry));
-			throw new ConfigurationNotFoundException("Route not found");
-		}
-
-		StaticRoutingEntry existing = entries.get(idx);
-		if (existing.isDisabled()) {
-			logger.warning("Attempted to disable an already disabled route: %s".formatted(entry));
-			throw new DuplicateConfigurationException("Route already exists");
-		}
-
-		existing.disable();
-		configSession.setHasUncommittedChanges(true);
-		logger.info("%s: Route %s disabled in staged configuration".formatted(this.name, entry));
-	}
-
-	public void configureInterface(String routerInterfaceName, InterfaceAddress interfaceAddress) {
-		if (mode != RouterMode.CONFIGURATION) {
-			logger.warning("Attempted to configure interface while in %s mode".formatted(mode));
-			throw new InvalidModeException("Invalid command: set [interfaces]");
-		}
-
-		RouteValidator.validateInterfaceAddress(interfaceAddress, routerInterfaceName);
-
-		RouterInterface routerInterface = configSession.getStagedInterfaces().stream()
-				.filter(intf -> intf.getInterfaceName().equals(routerInterfaceName))
-				.findFirst()
-				.orElseThrow(() -> new InterfaceNotFoundException(INTERFACE_NOT_EXISTS.formatted(routerInterfaceName)));
-
-		if (routerInterface.getInterfaceAddress() != null && routerInterface.getInterfaceAddress().equals(interfaceAddress)) {
-			logger.warning("Attempted to assign duplicate address %s to interface %s".formatted(interfaceAddress, routerInterfaceName));
-			throw new DuplicateConfigurationException("Configuration already exists");
-		}
-
-		routerInterface.setInterfaceAddress(interfaceAddress);
-		configSession.setHasUncommittedChanges(true);
-
-		if (routerInterface.isDisabled()) {
-			logger.info("Interface %s is disabled. Staged change applied but packets routed through this interface will be dropped".formatted(routerInterfaceName));
-			String msg = String.format("Interface %s is disabled%nPackets routed through this interface will be dropped%nEnsure this action is deliberate", routerInterface.getInterfaceName());
-			logger.warning(msg);
-		}
-
-		logger.info("%s: Interface %s configured with address %s in staged configuration".formatted(this.name, routerInterfaceName, interfaceAddress));
-	}
-
-	public void disableInterface(String routerInterfaceName) {
-		if (mode != RouterMode.CONFIGURATION) {
-			logger.warning("Attempted to disable interface while in %s mode".formatted(mode));
-			throw new InvalidModeException("Invalid command: set [interfaces]");
-		}
-
-		RouterInterface routerInterface = configSession.getStagedInterfaces().stream()
-				.filter(intf -> intf.getInterfaceName().equals(routerInterfaceName))
-				.findFirst()
-				.orElseThrow(() -> new InterfaceNotFoundException(INTERFACE_NOT_EXISTS.formatted(routerInterfaceName)));
-
-		logger.info("%s: Disabling interface %s in staged configuration".formatted(this.getName(), routerInterfaceName));
-		routerInterface.disable();
-		configSession.setHasUncommittedChanges(true);
-	}
-
-	public void deleteInterfaceAddress(String routerInterfaceName) {
-		if (mode != RouterMode.CONFIGURATION) {
-			logger.warning("Attempted to delete interface address while in %s mode".formatted(mode));
-			throw new InvalidModeException("Invalid command: delete [interfaces]");
-		}
-
-		RouterInterface routerInterface = configSession.getStagedInterfaces().stream()
-				.filter(intf -> intf.getInterfaceName().equals(routerInterfaceName))
-				.findFirst()
-				.orElseThrow(() -> new InterfaceNotFoundException(INTERFACE_NOT_EXISTS.formatted(routerInterfaceName)));
-
-		if (routerInterface.getInterfaceAddress() == null) {
-			logger.warning("Attempted to delete non-existent address from interface %s".formatted(routerInterfaceName));
-			throw new ConfigurationNotFoundException("No value to delete");
-		}
-
-		routerInterface.setInterfaceAddress(null);
-		configSession.setHasUncommittedChanges(true);
-		logger.info("%s: Address deleted from interface %s in staged configuration".formatted(this.name, routerInterfaceName));
-	}
-
-	public void commitChanges() {
-		if (mode != RouterMode.CONFIGURATION) {
-			logger.warning("Attempted to commit changes while in %s mode".formatted(mode));
-			throw new InvalidModeException("Invalid command: [commit]");
-		}
-		configSession.commitChanges(this);
-		logger.info("%s: Commit complete".formatted(this.name));
-	}
-
-	public void discardChanges() {
-		if (mode != RouterMode.CONFIGURATION) {
-			throw new InvalidModeException("Invalid command: [discard]");
-		}
-		configSession.discardChanges(this);
-	}
-
-	public void clearStagedConfiguration() {
-		if (mode != RouterMode.CONFIGURATION) {
-			throw new InvalidModeException("Cannot clear configuration in operational mode");
-		}
-		configSession.clearStagedConfiguration();
-	}
-
 	public void setMode(RouterMode mode) {
-		if (this.mode == RouterMode.CONFIGURATION && hasUncommittedChanges()) {
+		if (mode == RouterMode.OPERATIONAL && this.mode == RouterMode.CONFIGURATION && configSession.hasUncommittedChanges()) {
 			throw new UncommittedChangesException("Cannot exit: configuration modified.\nUse 'exit discard' to discard the changes and exit.\n[edit]");
 		}
 
 		if (mode == RouterMode.CONFIGURATION && this.mode == RouterMode.OPERATIONAL) {
-			configSession.discardChanges(this);
+			configSession.discard();
 		}
 
 		this.mode = mode;
 	}
 
 	public void setModeForced(RouterMode mode) {
-		if (this.mode == RouterMode.CONFIGURATION && hasUncommittedChanges()) {
-			discardChanges();
+		if (mode == RouterMode.OPERATIONAL && this.mode == RouterMode.CONFIGURATION && configSession.hasUncommittedChanges()) {
+			configSession.discard();
 		}
 		this.mode = mode;
 	}
@@ -255,7 +117,7 @@ public class Router implements Device {
 		this.interfaces.add(new RouterInterface("eth0"));
 		this.interfaces.add(new RouterInterface("lo"));
 		this.mode = RouterMode.OPERATIONAL;
-		this.configSession.discardChanges(this);
+		this.configSession.discard();
 	}
 
 	public RouterInterface findFromName(String interfaceName) {

@@ -4,37 +4,33 @@ import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.config.ConfigurationFactory;
 import org.uj.routingemulator.router.config.ConfigurationGenerator;
 
-import java.util.regex.Pattern;
+import java.util.Optional;
 
 public class ShowConfigurationCommand implements RouterCommand {
-	private static final Pattern PATTERN = Pattern.compile("^show\\s+configuration$");
+	private static final CommandSyntax SYNTAX = new CommandSyntax("show configuration");
 
 	@Override
-	public void execute(CommandExecutionContext context) {
-		CommandOutput out = context.output();
-		ConfigurationGenerator generator = ConfigurationFactory.getHierarchicalGenerator();
-
-		Router router = context.router();
-		Router committedRouter = new Router(router.getName(), router.getInterfaces());
-		committedRouter.getRoutingTable().getRoutingEntries().addAll(router.getRoutingTable().getRoutingEntries());
-
-		String output = generator.generateConfiguration(committedRouter);
-
-		if (output.isEmpty()) {
-			out.println("/* No configuration */");
-		} else {
-			out.print(output);
-		}
+	public CommandSyntax getSyntax() {
+		return SYNTAX;
 	}
 
 	@Override
-	public boolean matches(String command) {
-		return PATTERN.matcher(command.trim()).matches();
-	}
+	public Optional<ParsedCommand> parse(String command) {
+		return SYNTAX.parseFully(command).map(args -> context -> {
+			ConfigurationGenerator generator = ConfigurationFactory.getHierarchicalGenerator();
 
-	@Override
-	public String getCommandPattern() {
-		return "show configuration";
+			Router router = context.router();
+			Router committedRouter = new Router(router.getName(), router.getInterfaces());
+			committedRouter.getRoutingTable().getRoutingEntries().addAll(router.getRoutingTable().getRoutingEntries());
+
+			String output = generator.generateConfiguration(committedRouter);
+
+			if (output.isEmpty()) {
+				return new CommandSuccess("/* No configuration */");
+			} else {
+				return new CommandSuccess(output);
+			}
+		});
 	}
 
 	@Override

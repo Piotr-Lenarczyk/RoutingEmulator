@@ -24,7 +24,7 @@ class RouterCLITest {
 	@BeforeEach
 	void setUp() {
 		router = new Router("vyos");
-		CommandExecutor executor = new DefaultCommandExecutor(new RouterCLIParser());
+		CommandExecutor executor = new DefaultCommandExecutor(new RouterCLIParser(CommandRegistry.defaultRegistry()));
 		CommandExecutionContext context = new CommandExecutionContext(
 				router,
 				new NetworkTopology(),
@@ -151,7 +151,7 @@ class RouterCLITest {
 		session.execute("set protocols static route 192.168.1.0/24 next-hop 10.0.0.1");
 		assertTrue(router.hasUncommittedChanges());
 		assertTrue(outputStream.toString().contains("[edit]"));
-		assertEquals(1, router.getStagedRoutingTable().getRoutingEntries().size());
+		assertEquals(1, router.getConfigSession().getStagedRoutingTable().getRoutingEntries().size());
 	}
 
 	@Test
@@ -162,7 +162,7 @@ class RouterCLITest {
 		session.execute("set protocols static route 192.168.1.0/24 next-hop 10.0.0.1 distance 50");
 		assertTrue(router.hasUncommittedChanges());
 		assertTrue(outputStream.toString().contains("[edit]"));
-		assertEquals(1, router.getStagedRoutingTable().getRoutingEntries().size());
+		assertEquals(1, router.getConfigSession().getStagedRoutingTable().getRoutingEntries().size());
 	}
 
 	@Test
@@ -172,7 +172,7 @@ class RouterCLITest {
 		session.execute("set protocols static route 192.168.1.0/24 interface eth0");
 		assertTrue(router.hasUncommittedChanges());
 		assertTrue(outputStream.toString().contains("[edit]"));
-		assertEquals(1, router.getStagedRoutingTable().getRoutingEntries().size());
+		assertEquals(1, router.getConfigSession().getStagedRoutingTable().getRoutingEntries().size());
 	}
 
 	@Test
@@ -182,7 +182,7 @@ class RouterCLITest {
 		session.execute("set protocols static route 192.168.1.0/24 interface eth0 distance 100");
 		assertTrue(router.hasUncommittedChanges());
 		assertTrue(outputStream.toString().contains("[edit]"));
-		assertEquals(1, router.getStagedRoutingTable().getRoutingEntries().size());
+		assertEquals(1, router.getConfigSession().getStagedRoutingTable().getRoutingEntries().size());
 	}
 
 	@Test
@@ -204,7 +204,7 @@ class RouterCLITest {
 		outputStream.reset();
 		session.execute("delete protocols static route 192.168.1.0/24 next-hop 10.0.0.1");
 		assertTrue(outputStream.toString().contains("[edit]"));
-		assertEquals(0, router.getStagedRoutingTable().getRoutingEntries().size());
+		assertEquals(0, router.getConfigSession().getStagedRoutingTable().getRoutingEntries().size());
 	}
 
 	@Test
@@ -214,7 +214,7 @@ class RouterCLITest {
 		outputStream.reset();
 		session.execute("delete protocols static route 192.168.1.0/24 next-hop 10.0.0.1 distance 50");
 		assertTrue(outputStream.toString().contains("[edit]"));
-		assertEquals(0, router.getStagedRoutingTable().getRoutingEntries().size());
+		assertEquals(0, router.getConfigSession().getStagedRoutingTable().getRoutingEntries().size());
 	}
 
 	@Test
@@ -234,7 +234,7 @@ class RouterCLITest {
 		outputStream.reset();
 		session.execute("set protocols static route 192.168.1.0/24 next-hop 10.0.0.1 disable");
 		assertTrue(outputStream.toString().contains("[edit]"));
-		assertTrue(router.getStagedRoutingTable().getRoutingEntries().getFirst().isDisabled());
+		assertTrue(router.getConfigSession().getStagedRoutingTable().getRoutingEntries().getFirst().isDisabled());
 	}
 
 	@Test
@@ -244,7 +244,7 @@ class RouterCLITest {
 		outputStream.reset();
 		session.execute("set protocols static route 192.168.1.0/24 interface eth0 disable");
 		assertTrue(outputStream.toString().contains("[edit]"));
-		assertTrue(router.getStagedRoutingTable().getRoutingEntries().getFirst().isDisabled());
+		assertTrue(router.getConfigSession().getStagedRoutingTable().getRoutingEntries().getFirst().isDisabled());
 	}
 
 	@Test
@@ -266,7 +266,7 @@ class RouterCLITest {
 		session.execute("set interfaces ethernet eth0 address 192.168.1.1/24");
 		assertTrue(router.hasUncommittedChanges());
 		assertTrue(outputStream.toString().contains("[edit]"));
-		assertNotNull(router.getStagedInterfaces().getFirst().getSubnet());
+		assertNotNull(router.getConfigSession().getStagedInterfaces().getFirst().getSubnet());
 	}
 
 	@Test
@@ -310,7 +310,7 @@ class RouterCLITest {
 		outputStream.reset();
 		session.execute("delete interfaces ethernet eth0 address 192.168.1.1/24");
 		assertTrue(outputStream.toString().contains("[edit]"));
-		assertNull(router.getStagedInterfaces().getFirst().getSubnet());
+		assertNull(router.getConfigSession().getStagedInterfaces().getFirst().getSubnet());
 	}
 
 	@Test
@@ -354,8 +354,8 @@ class RouterCLITest {
 		session.execute("set protocols static route 192.168.1.0/24 next-hop 10.0.0.1");
 		session.execute("set interfaces ethernet eth0 address 10.0.0.2/24");
 		assertTrue(router.hasUncommittedChanges());
-		assertEquals(1, router.getStagedRoutingTable().getRoutingEntries().size());
-		assertNotNull(router.getStagedInterfaces().getFirst().getSubnet());
+		assertEquals(1, router.getConfigSession().getStagedRoutingTable().getRoutingEntries().size());
+		assertNotNull(router.getConfigSession().getStagedInterfaces().getFirst().getSubnet());
 
 		session.execute("commit");
 		assertFalse(router.hasUncommittedChanges());
@@ -475,7 +475,7 @@ class RouterCLITest {
 		outputStream.reset();
 		session.execute("delete protocols static route 192.168.1.0/24 interface eth0");
 		assertTrue(outputStream.toString().contains("[edit]"));
-		assertEquals(0, router.getStagedRoutingTable().getRoutingEntries().size());
+		assertEquals(0, router.getConfigSession().getStagedRoutingTable().getRoutingEntries().size());
 	}
 
 	@Test
@@ -485,7 +485,7 @@ class RouterCLITest {
 		outputStream.reset();
 		session.execute("delete protocols static route 192.168.1.0/24 interface eth0 distance 100");
 		assertTrue(outputStream.toString().contains("[edit]"));
-		assertEquals(0, router.getStagedRoutingTable().getRoutingEntries().size());
+		assertEquals(0, router.getConfigSession().getStagedRoutingTable().getRoutingEntries().size());
 	}
 
 	@Test
@@ -495,7 +495,7 @@ class RouterCLITest {
 		outputStream.reset();
 		session.execute("set protocols static route 192.168.1.0/24 interface eth0 distance 100 disable");
 		assertTrue(outputStream.toString().contains("[edit]"));
-		assertTrue(router.getStagedRoutingTable().getRoutingEntries().getFirst().isDisabled());
+		assertTrue(router.getConfigSession().getStagedRoutingTable().getRoutingEntries().getFirst().isDisabled());
 	}
 
 	@Test
@@ -505,7 +505,7 @@ class RouterCLITest {
 		outputStream.reset();
 		session.execute("set protocols static route 192.168.1.0/24 next-hop 10.0.0.1 distance 50 disable");
 		assertTrue(outputStream.toString().contains("[edit]"));
-		assertTrue(router.getStagedRoutingTable().getRoutingEntries().getFirst().isDisabled());
+		assertTrue(router.getConfigSession().getStagedRoutingTable().getRoutingEntries().getFirst().isDisabled());
 	}
 
 	@Test

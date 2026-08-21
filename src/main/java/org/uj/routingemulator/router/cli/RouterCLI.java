@@ -27,7 +27,7 @@ public class RouterCLI {
 	public RouterCLI(Router router, NetworkTopology topology) {
 		this.router = router;
 		this.topology = topology;
-		this.executor = new DefaultCommandExecutor(new RouterCLIParser());
+		this.executor = new DefaultCommandExecutor(new RouterCLIParser(CommandRegistry.defaultRegistry()));
 		try {
 			this.terminal = TerminalBuilder.builder().system(true).build();
 			this.writer = terminal.writer();

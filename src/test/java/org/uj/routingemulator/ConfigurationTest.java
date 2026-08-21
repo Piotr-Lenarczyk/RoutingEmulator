@@ -16,7 +16,7 @@ class ConfigurationTest {
 
 	private static Router getConfiguration() {
 		Router router = new Router("R1", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
-		CliSession session = new CliSession(new DefaultCommandExecutor(new RouterCLIParser()),
+		CliSession session = new CliSession(new DefaultCommandExecutor(new RouterCLIParser(CommandRegistry.defaultRegistry())),
 				new CommandExecutionContext(router, new NetworkTopology(), new PrintWriterCommandOutput(new PrintWriter(System.out))));
 
 		session.execute("configure");
@@ -31,7 +31,7 @@ class ConfigurationTest {
 
 	private static String getString() {
 		Router router = new Router("R1", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
-		CliSession session = new CliSession(new DefaultCommandExecutor(new RouterCLIParser()),
+		CliSession session = new CliSession(new DefaultCommandExecutor(new RouterCLIParser(CommandRegistry.defaultRegistry())),
 				new CommandExecutionContext(router, new NetworkTopology(), new PrintWriterCommandOutput(new PrintWriter(System.out))));
 
 		session.execute("configure");
@@ -47,7 +47,7 @@ class ConfigurationTest {
 	@Test
 	void testConfigurationWithDisabledInterface() {
 		Router router = new Router("R1", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
-		CliSession session = new CliSession(new DefaultCommandExecutor(new RouterCLIParser()),
+		CliSession session = new CliSession(new DefaultCommandExecutor(new RouterCLIParser(CommandRegistry.defaultRegistry())),
 				new CommandExecutionContext(router, new NetworkTopology(), new PrintWriterCommandOutput(new PrintWriter(System.out))));
 
 		session.execute("configure");
@@ -120,7 +120,7 @@ class ConfigurationTest {
 	@Test
 	void testOverwriteExistingConfiguration() {
 		Router router = new Router("R1", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
-		CliSession session = new CliSession(new DefaultCommandExecutor(new RouterCLIParser()),
+		CliSession session = new CliSession(new DefaultCommandExecutor(new RouterCLIParser(CommandRegistry.defaultRegistry())),
 				new CommandExecutionContext(router, new NetworkTopology(), new PrintWriterCommandOutput(new PrintWriter(System.out))));
 
 		session.execute("configure");
@@ -160,7 +160,7 @@ class ConfigurationTest {
 	@Test
 	void testConfigurationRollbackOnError() {
 		Router router = new Router("R1", List.of(new RouterInterface("eth0")));
-		CliSession session = new CliSession(new DefaultCommandExecutor(new RouterCLIParser()),
+		CliSession session = new CliSession(new DefaultCommandExecutor(new RouterCLIParser(CommandRegistry.defaultRegistry())),
 				new CommandExecutionContext(router, new NetworkTopology(), new PrintWriterCommandOutput(new PrintWriter(System.out))));
 
 		session.execute("configure");

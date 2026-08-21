@@ -2,27 +2,26 @@ package org.uj.routingemulator.router.cli;
 
 import org.uj.routingemulator.router.exceptions.NoChangesToCommitException;
 
+import java.util.Optional;
+
 public class CommitCommand implements RouterCommand {
+	private static final CommandSyntax SYNTAX = new CommandSyntax("commit");
+
 	@Override
-	public void execute(CommandExecutionContext context) {
-		CommandOutput out = context.output();
-		try {
-			context.router().commitChanges();
-			out.println("[edit]");
-		} catch (NoChangesToCommitException e) {
-			out.println("No configuration changes to commit");
-			out.println("[edit]");
-		}
+	public CommandSyntax getSyntax() {
+		return SYNTAX;
 	}
 
 	@Override
-	public boolean matches(String command) {
-		return command.trim().equals("commit");
-	}
-
-	@Override
-	public String getCommandPattern() {
-		return "commit";
+	public Optional<ParsedCommand> parse(String command) {
+		return SYNTAX.parseFully(command).map(args -> context -> {
+			try {
+				context.router().getConfigSession().commit();
+				return new CommandSuccess("[edit]");
+			} catch (NoChangesToCommitException e) {
+				return new CommandFailure("No configuration changes to commit\n[edit]");
+			}
+		});
 	}
 
 	@Override

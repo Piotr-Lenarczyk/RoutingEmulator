@@ -13,14 +13,18 @@ public class DefaultCommandExecutor implements CommandExecutor {
 	@Override
 	public void execute(String input, CommandExecutionContext context) {
 		logger.info("%s: Executing command: %s".formatted(context.router().getName(), input));
-		RouterCommand command = parser.parse(input);
+		ParsedCommand command = parser.parse(input);
 
 		if (command != null) {
 			try {
-				logger.info("%s: Command match found: %s for input string: %s".formatted(context.router().getName(), command.getCommandPattern(), input));
-				command.execute(context);
+				logger.info("%s: Command match found for input string: %s".formatted(context.router().getName(), input));
+				CommandResult result = command.execute(context);
+				if (result.getOutput() != null && !result.getOutput().isEmpty()) {
+					context.output().print(result.getOutput() + (result.getOutput().endsWith("\n") ? "" : "\n"));
+				}
 			} catch (RuntimeException e) {
-				context.output().println(e.getMessage());
+				String formattedError = CLIErrorHandler.handleException(e, input);
+				context.output().println(formattedError);
 			}
 		} else {
 			context.output().println("Command not recognized or not supported");

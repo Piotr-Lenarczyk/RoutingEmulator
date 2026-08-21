@@ -17,7 +17,7 @@ public class RouterCLIService {
 
 	public RouterCLIService(NetworkTopology topology) {
 		this.topology = topology;
-		this.executor = new DefaultCommandExecutor(new RouterCLIParser());
+		this.executor = new DefaultCommandExecutor(new RouterCLIParser(CommandRegistry.defaultRegistry()));
 	}
 
 	public String executeCommand(String command, Router router) {

@@ -2,22 +2,22 @@ package org.uj.routingemulator.router.cli;
 
 import org.uj.routingemulator.router.RouterMode;
 
+import java.util.Optional;
+
 public class ForceExitCommand implements RouterCommand {
+	private static final CommandSyntax SYNTAX = new CommandSyntax("exit discard");
+
 	@Override
-	public void execute(CommandExecutionContext context) {
-		CommandOutput out = context.output();
-		context.router().setModeForced(RouterMode.OPERATIONAL);
-		out.println("exit");
+	public CommandSyntax getSyntax() {
+		return SYNTAX;
 	}
 
 	@Override
-	public boolean matches(String command) {
-		return command.trim().equals("exit discard");
-	}
-
-	@Override
-	public String getCommandPattern() {
-		return "exit discard";
+	public Optional<ParsedCommand> parse(String command) {
+		return SYNTAX.parseFully(command).map(args -> context -> {
+			context.router().setModeForced(RouterMode.OPERATIONAL);
+			return new CommandSuccess("exit");
+		});
 	}
 
 	@Override
