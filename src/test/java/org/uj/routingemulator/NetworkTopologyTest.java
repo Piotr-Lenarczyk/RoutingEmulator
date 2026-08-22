@@ -2,11 +2,15 @@ package org.uj.routingemulator;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.uj.routingemulator.common.*;
+import org.uj.routingemulator.common.addressing.IPAddress;
+import org.uj.routingemulator.common.addressing.InterfaceAddress;
+import org.uj.routingemulator.common.addressing.SubnetMask;
+import org.uj.routingemulator.common.topology.Connection;
+import org.uj.routingemulator.common.topology.NetworkTopology;
 import org.uj.routingemulator.host.Host;
 import org.uj.routingemulator.host.HostInterface;
-import org.uj.routingemulator.router.Router;
-import org.uj.routingemulator.router.RouterInterface;
+import org.uj.routingemulator.router.model.Router;
+import org.uj.routingemulator.router.model.RouterInterface;
 import org.uj.routingemulator.switching.Switch;
 import org.uj.routingemulator.switching.SwitchPort;
 
@@ -47,31 +51,31 @@ class NetworkTopologyTest {
 	@Test
 	void testAddRouter() {
 		topology.addDevice(router1);
-		assertEquals(1, topology.getDevices().size());
-		assertTrue(topology.getDevices().contains(router1));
+		assertEquals(1, topology.devices().size());
+		assertTrue(topology.devices().contains(router1));
 	}
 
 	@Test
 	void testAddMultipleRouters() {
 		topology.addDevice(router1);
 		topology.addDevice(router2);
-		assertEquals(2, topology.getDevices().size());
-		assertTrue(topology.getDevices().contains(router1));
-		assertTrue(topology.getDevices().contains(router2));
+		assertEquals(2, topology.devices().size());
+		assertTrue(topology.devices().contains(router1));
+		assertTrue(topology.devices().contains(router2));
 	}
 
 	@Test
 	void testAddSwitch() {
 		topology.addDevice(switch1);
-		assertEquals(1, topology.getDevices().size());
-		assertTrue(topology.getDevices().contains(switch1));
+		assertEquals(1, topology.devices().size());
+		assertTrue(topology.devices().contains(switch1));
 	}
 
 	@Test
 	void testAddHost() {
 		topology.addDevice(host1);
-		assertEquals(1, topology.getDevices().size());
-		assertTrue(topology.getDevices().contains(host1));
+		assertEquals(1, topology.devices().size());
+		assertTrue(topology.devices().contains(host1));
 	}
 
 	@Test
@@ -83,8 +87,8 @@ class NetworkTopologyTest {
 				router2.getInterfaces().getFirst()
 		);
 		topology.addConnection(connection);
-		assertEquals(1, topology.getConnections().size());
-		assertTrue(topology.getConnections().contains(connection));
+		assertEquals(1, topology.connections().size());
+		assertTrue(topology.connections().contains(connection));
 	}
 
 	@Test
@@ -147,8 +151,8 @@ class NetworkTopologyTest {
 		topology.addConnection(connection);
 
 		topology.removeDevice(router1.getId());
-		assertFalse(topology.getDevices().contains(router1));
-		assertFalse(topology.getConnections().contains(connection));
+		assertFalse(topology.devices().contains(router1));
+		assertFalse(topology.connections().contains(connection));
 	}
 
 	@Test
@@ -162,8 +166,8 @@ class NetworkTopologyTest {
 		topology.addConnection(connection);
 
 		topology.removeDevice(switch1.getId());
-		assertFalse(topology.getDevices().contains(switch1));
-		assertFalse(topology.getConnections().contains(connection));
+		assertFalse(topology.devices().contains(switch1));
+		assertFalse(topology.connections().contains(connection));
 	}
 
 	@Test
@@ -177,8 +181,8 @@ class NetworkTopologyTest {
 		topology.addConnection(connection);
 
 		topology.removeDevice(host1.getId());
-		assertFalse(topology.getDevices().contains(host1));
-		assertFalse(topology.getConnections().contains(connection));
+		assertFalse(topology.devices().contains(host1));
+		assertFalse(topology.connections().contains(connection));
 	}
 
 	@Test
@@ -192,7 +196,7 @@ class NetworkTopologyTest {
 		topology.addConnection(connection);
 
 		topology.removeConnection(connection);
-		assertFalse(topology.getConnections().contains(connection));
+		assertFalse(topology.connections().contains(connection));
 	}
 
 	@Test
@@ -249,8 +253,8 @@ class NetworkTopologyTest {
 				switch1.getPorts().get(1)
 		));
 
-		assertEquals(4, topology.getDevices().size());
-		assertEquals(2, topology.getConnections().size());
+		assertEquals(4, topology.devices().size());
+		assertEquals(2, topology.connections().size());
 	}
 
 	@Test
@@ -260,8 +264,8 @@ class NetworkTopologyTest {
 				List.of()
 		);
 
-		assertEquals(3, topology2.getDevices().size());
-		assertEquals(0, topology2.getConnections().size());
+		assertEquals(3, topology2.devices().size());
+		assertEquals(0, topology2.connections().size());
 	}
 
 	@Test
@@ -288,7 +292,7 @@ class NetworkTopologyTest {
 		topology.addConnection(conn1);
 		topology.addConnection(conn2);
 
-		assertEquals(2, topology.getConnections().size());
+		assertEquals(2, topology.connections().size());
 	}
 
 	@Test
@@ -308,7 +312,7 @@ class NetworkTopologyTest {
 		);
 		topology.removeConnection(connectionToRemove);
 
-		assertEquals(0, topology.getConnections().size());
+		assertEquals(0, topology.connections().size());
 	}
 
 	@Test
@@ -329,10 +333,10 @@ class NetworkTopologyTest {
 		topology.addConnection(conn1);
 		topology.addConnection(conn2);
 
-		assertEquals(2, topology.getConnections().size());
+		assertEquals(2, topology.connections().size());
 
 		topology.removeDevice(router1.getId());
-		assertEquals(0, topology.getConnections().size());
+		assertEquals(0, topology.connections().size());
 	}
 
 	@Test

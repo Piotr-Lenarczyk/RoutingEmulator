@@ -1,8 +1,8 @@
 package org.uj.routingemulator.router.cli.ethernet;
 
-import org.uj.routingemulator.common.InterfaceAddress;
-import org.uj.routingemulator.router.RouterConfigurationService;
+import org.uj.routingemulator.common.addressing.InterfaceAddress;
 import org.uj.routingemulator.router.cli.*;
+import org.uj.routingemulator.router.session.RouterConfigurationService;
 
 import java.util.Optional;
 

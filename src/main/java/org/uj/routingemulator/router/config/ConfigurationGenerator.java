@@ -1,6 +1,6 @@
 package org.uj.routingemulator.router.config;
 
-import org.uj.routingemulator.router.Router;
+import org.uj.routingemulator.router.model.Router;
 
 /**
  * Interface for generating router configuration in various formats.

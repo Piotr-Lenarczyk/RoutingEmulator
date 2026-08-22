@@ -1,8 +1,8 @@
 package org.uj.routingemulator.router.cli;
 
-import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.config.ConfigurationFactory;
 import org.uj.routingemulator.router.config.ConfigurationGenerator;
+import org.uj.routingemulator.router.model.Router;
 
 import java.util.Optional;
 

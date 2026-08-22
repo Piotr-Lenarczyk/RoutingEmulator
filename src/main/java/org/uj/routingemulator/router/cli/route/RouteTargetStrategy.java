@@ -1,7 +1,7 @@
 package org.uj.routingemulator.router.cli.route;
 
-import org.uj.routingemulator.router.Router;
-import org.uj.routingemulator.router.StaticRoutingEntry;
+import org.uj.routingemulator.router.model.Router;
+import org.uj.routingemulator.router.model.StaticRoutingEntry;
 
 import java.util.Map;
 

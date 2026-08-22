@@ -1,7 +1,8 @@
 package org.uj.routingemulator.router.cli.route;
 
-import org.uj.routingemulator.router.Router;
-import org.uj.routingemulator.router.StaticRoutingEntry;
+import org.uj.routingemulator.router.model.NextHopRouteParameters;
+import org.uj.routingemulator.router.model.Router;
+import org.uj.routingemulator.router.model.StaticRoutingEntry;
 
 import java.util.Map;
 
@@ -14,7 +15,7 @@ public class NextHopTargetStrategy implements RouteTargetStrategy {
 
 	@Override
 	public StaticRoutingEntry createEntry(Router router, String destinationSubnet, Map<String, String> args, int distance) {
-		org.uj.routingemulator.router.NextHopRouteParameters params = org.uj.routingemulator.router.NextHopRouteParameters.parseRouteParameters(destinationSubnet, args.get("next-hop"));
+		NextHopRouteParameters params = NextHopRouteParameters.parseRouteParameters(destinationSubnet, args.get("next-hop"));
 		if (hasDistance) {
 			return new StaticRoutingEntry(params.dest(), params.nh(), distance);
 		} else {

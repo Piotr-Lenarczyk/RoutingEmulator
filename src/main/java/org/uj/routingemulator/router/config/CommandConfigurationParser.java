@@ -1,10 +1,11 @@
 package org.uj.routingemulator.router.config;
 
-import org.uj.routingemulator.common.IPAddress;
-import org.uj.routingemulator.common.InterfaceAddress;
-import org.uj.routingemulator.common.Subnet;
-import org.uj.routingemulator.common.SubnetMask;
-import org.uj.routingemulator.router.*;
+import org.uj.routingemulator.common.addressing.IPAddress;
+import org.uj.routingemulator.common.addressing.InterfaceAddress;
+import org.uj.routingemulator.common.addressing.Subnet;
+import org.uj.routingemulator.common.addressing.SubnetMask;
+import org.uj.routingemulator.router.model.*;
+import org.uj.routingemulator.router.session.RouterConfigurationService;
 
 import java.util.List;
 

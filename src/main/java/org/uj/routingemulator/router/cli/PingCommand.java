@@ -1,7 +1,11 @@
 package org.uj.routingemulator.router.cli;
 
-import org.uj.routingemulator.common.*;
-import org.uj.routingemulator.router.RouterMode;
+import org.uj.routingemulator.common.addressing.IPAddress;
+import org.uj.routingemulator.common.ping.PingFormatter;
+import org.uj.routingemulator.common.ping.PingService;
+import org.uj.routingemulator.common.ping.PingStatistics;
+import org.uj.routingemulator.common.topology.NetworkTopology;
+import org.uj.routingemulator.router.model.RouterMode;
 
 import java.util.Optional;
 import java.util.regex.Pattern;

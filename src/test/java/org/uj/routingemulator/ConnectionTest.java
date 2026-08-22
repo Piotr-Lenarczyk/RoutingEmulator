@@ -2,12 +2,12 @@ package org.uj.routingemulator;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.uj.routingemulator.common.Connection;
-import org.uj.routingemulator.common.IPAddress;
-import org.uj.routingemulator.common.InterfaceAddress;
-import org.uj.routingemulator.common.SubnetMask;
+import org.uj.routingemulator.common.addressing.IPAddress;
+import org.uj.routingemulator.common.addressing.InterfaceAddress;
+import org.uj.routingemulator.common.addressing.SubnetMask;
+import org.uj.routingemulator.common.topology.Connection;
 import org.uj.routingemulator.host.HostInterface;
-import org.uj.routingemulator.router.RouterInterface;
+import org.uj.routingemulator.router.model.RouterInterface;
 import org.uj.routingemulator.switching.SwitchPort;
 
 import static org.junit.jupiter.api.Assertions.*;

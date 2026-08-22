@@ -1,10 +1,18 @@
 package org.uj.routingemulator;
 
 import org.junit.jupiter.api.Test;
-import org.uj.routingemulator.common.*;
+import org.uj.routingemulator.common.addressing.IPAddress;
+import org.uj.routingemulator.common.addressing.InterfaceAddress;
+import org.uj.routingemulator.common.addressing.Subnet;
+import org.uj.routingemulator.common.addressing.SubnetMask;
+import org.uj.routingemulator.common.ping.PingService;
+import org.uj.routingemulator.common.ping.PingStatistics;
+import org.uj.routingemulator.common.topology.Connection;
+import org.uj.routingemulator.common.topology.NetworkTopology;
 import org.uj.routingemulator.host.Host;
 import org.uj.routingemulator.host.HostInterface;
-import org.uj.routingemulator.router.*;
+import org.uj.routingemulator.router.model.*;
+import org.uj.routingemulator.router.session.RouterConfigurationService;
 
 import java.util.List;
 

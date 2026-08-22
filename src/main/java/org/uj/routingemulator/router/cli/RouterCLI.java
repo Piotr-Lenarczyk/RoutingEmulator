@@ -6,9 +6,9 @@ import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.UserInterruptException;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
-import org.uj.routingemulator.common.NetworkTopology;
-import org.uj.routingemulator.router.Router;
-import org.uj.routingemulator.router.RouterMode;
+import org.uj.routingemulator.common.topology.NetworkTopology;
+import org.uj.routingemulator.router.model.Router;
+import org.uj.routingemulator.router.model.RouterMode;
 
 import java.io.File;
 import java.io.IOException;

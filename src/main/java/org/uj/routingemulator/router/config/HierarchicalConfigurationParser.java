@@ -1,11 +1,12 @@
 package org.uj.routingemulator.router.config;
 
-import org.uj.routingemulator.common.IPAddress;
-import org.uj.routingemulator.common.InterfaceAddress;
-import org.uj.routingemulator.common.Subnet;
-import org.uj.routingemulator.common.SubnetMask;
-import org.uj.routingemulator.router.*;
-import org.uj.routingemulator.router.exceptions.DuplicateConfigurationException;
+import org.uj.routingemulator.common.addressing.IPAddress;
+import org.uj.routingemulator.common.addressing.InterfaceAddress;
+import org.uj.routingemulator.common.addressing.Subnet;
+import org.uj.routingemulator.common.addressing.SubnetMask;
+import org.uj.routingemulator.router.exceptions.RouteAlreadyExistsException;
+import org.uj.routingemulator.router.model.*;
+import org.uj.routingemulator.router.session.RouterConfigurationService;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,6 +16,7 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 	private static final String DISABLE_COMMAND = "disable";
 	private List<String> lines;
 	private int position;
+
 	private final RouterConfigurationService service = new RouterConfigurationService();
 
 	private void applyRouteConfiguration(Router router, String nextHop, Subnet subnet, int distance, String interfaceName, boolean disabled) {
@@ -58,7 +60,7 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 	private boolean addInterfaceRoute(Router router, Subnet subnet, RouterInterface iface, int distance) {
 		try {
 			service.addRoute(router, new StaticRoutingEntry(subnet, iface, distance));
-		} catch (DuplicateConfigurationException e) {
+		} catch (RouteAlreadyExistsException e) {
 			return true;
 		}
 		return false;
@@ -72,7 +74,7 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 		IPAddress nextHopAddress = IPAddress.fromString(nextHop);
 		try {
 			service.addRoute(router, new StaticRoutingEntry(subnet, nextHopAddress, distance));
-		} catch (DuplicateConfigurationException e) {
+		} catch (RouteAlreadyExistsException e) {
 			return true;
 		}
 		return false;
@@ -98,6 +100,7 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 	public void loadConfiguration(Router router, String config) {
 		this.lines = preprocessConfig(config);
 		this.position = 0;
+
 		RouterMode originalMode = router.getMode();
 		RouterModeController.setModeForced(router, RouterMode.CONFIGURATION);
 		try {
@@ -116,15 +119,18 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 		while (position < lines.size()) {
 			String line = lines.get(position);
 			String trimmed = line.trim();
+
 			if (trimmed.equals("}")) {
 				position++;
 				return;
 			}
+
 			if (trimmed.endsWith("{")) {
 				String[] parts = trimmed.substring(0, trimmed.length() - 1).trim().split("\\s+");
 				List<String> newPath = new ArrayList<>(path);
 				Collections.addAll(newPath, parts);
 				position++;
+
 				if (path.size() >= 2 && path.get(0).equals("protocols") && path.get(1).equals("static") && parts[0].equals("route")) {
 					parseRouteBlock(router, newPath);
 				} else {
@@ -146,13 +152,16 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 		String interfaceName = null;
 		int distance = 1;
 		boolean disabled = false;
+
 		while (position < lines.size()) {
 			String line = lines.get(position);
 			String trimmed = line.trim();
+
 			if (trimmed.equals("}")) {
 				position++;
 				break;
 			}
+
 			String[] parts = trimmed.split("\\s+");
 			if (parts.length >= 2) {
 				switch (parts[0]) {
@@ -180,6 +189,7 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 			}
 			position++;
 		}
+
 		try {
 			Subnet subnet = Subnet.fromString(destination);
 			applyRouteConfiguration(router, nextHop, subnet, distance, interfaceName, disabled);
@@ -192,6 +202,7 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 		if (path.size() < 2) {
 			return;
 		}
+
 		try {
 			if (path.get(0).equals("interfaces") && path.size() >= 4 && path.get(1).equals("ethernet")) {
 				String interfaceName = path.get(2);
@@ -200,6 +211,7 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 					throw new ConfigurationParseException(
 							String.format("Interface %s does not exist on this router", interfaceName));
 				}
+
 				if (path.get(3).equals("address") && path.size() == 5) {
 					String address = path.get(4);
 					if (address.equals("dhcp")) {

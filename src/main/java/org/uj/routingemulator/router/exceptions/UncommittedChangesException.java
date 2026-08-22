@@ -16,5 +16,14 @@ public class UncommittedChangesException extends RouterException {
 	public UncommittedChangesException(String message) {
 		super(message);
 	}
-}
 
+	/**
+	 * Creates a new uncommitted changes exception with the specified message and cause.
+	 *
+	 * @param message the error message
+	 * @param cause   underlying cause
+	 */
+	public UncommittedChangesException(String message, Throwable cause) {
+		super(message, cause);
+	}
+}

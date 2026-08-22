@@ -1,6 +1,6 @@
 package org.uj.routingemulator.router.config;
 
-import org.uj.routingemulator.router.Router;
+import org.uj.routingemulator.router.model.Router;
 
 import java.io.IOException;
 import java.nio.file.Files;

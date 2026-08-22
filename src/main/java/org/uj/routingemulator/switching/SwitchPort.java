@@ -2,9 +2,9 @@ package org.uj.routingemulator.switching;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.uj.routingemulator.common.MacAddress;
-import org.uj.routingemulator.common.NetworkInterface;
-import org.uj.routingemulator.common.Subnet;
+import org.uj.routingemulator.common.addressing.MacAddress;
+import org.uj.routingemulator.common.addressing.Subnet;
+import org.uj.routingemulator.common.topology.NetworkInterface;
 
 /**
  * Represents a port on a network switch.

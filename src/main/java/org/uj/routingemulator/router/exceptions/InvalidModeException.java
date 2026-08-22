@@ -16,5 +16,14 @@ public class InvalidModeException extends RouterException {
 	public InvalidModeException(String message) {
 		super(message);
 	}
-}
 
+	/**
+	 * Creates a new invalid mode exception with the specified message and cause.
+	 *
+	 * @param message the error message
+	 * @param cause   underlying cause
+	 */
+	public InvalidModeException(String message, Throwable cause) {
+		super(message, cause);
+	}
+}

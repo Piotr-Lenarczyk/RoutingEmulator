@@ -1,18 +1,14 @@
 package org.uj.routingemulator.router.exceptions;
 
+import org.uj.routingemulator.common.addressing.InterfaceAddress;
+
 /**
  * Exception thrown when attempting to configure an invalid IP address on an interface.
- * <p>
- * This includes:
- * <ul>
- *   <li>Network addresses (e.g., 192.168.1.0/24)</li>
- *   <li>Broadcast addresses (e.g., 192.168.1.255/24)</li>
- *   <li>Malformed IP addresses</li>
- *   <li>IP addresses outside the valid range</li>
- * </ul>
  */
 public class InvalidAddressException extends RouterException {
 
+	private final Reason reason;
+	private final InterfaceAddress interfaceAddress;
 	/**
 	 * Creates a new invalid address exception with the specified message.
 	 *
@@ -20,6 +16,61 @@ public class InvalidAddressException extends RouterException {
 	 */
 	public InvalidAddressException(String message) {
 		super(message);
+		this.reason = Reason.INVALID_FORMAT;
+		this.interfaceAddress = null;
+	}
+
+	/**
+	 * Creates a new invalid address exception with the specified message and cause.
+	 *
+	 * @param message the error message
+	 * @param cause   underlying cause
+	 */
+	public InvalidAddressException(String message, Throwable cause) {
+		super(message, cause);
+		this.reason = Reason.INVALID_FORMAT;
+		this.interfaceAddress = null;
+	}
+
+	/**
+	 * Creates a new invalid address exception with structured reason details.
+	 *
+	 * @param message          the error message
+	 * @param reason           failure category
+	 * @param interfaceAddress target interface address
+	 */
+	public InvalidAddressException(String message, Reason reason, InterfaceAddress interfaceAddress) {
+		super(message);
+		this.reason = reason;
+		this.interfaceAddress = interfaceAddress;
+	}
+
+	/**
+	 * Creates a new invalid address exception with structured reason details and cause.
+	 *
+	 * @param message          the error message
+	 * @param reason           failure category
+	 * @param interfaceAddress target interface address
+	 * @param cause            underlying cause
+	 */
+	public InvalidAddressException(String message, Reason reason, InterfaceAddress interfaceAddress, Throwable cause) {
+		super(message, cause);
+		this.reason = reason;
+		this.interfaceAddress = interfaceAddress;
+	}
+
+	public Reason getReason() {
+		return reason;
+	}
+
+	public InterfaceAddress getInterfaceAddress() {
+		return interfaceAddress;
+	}
+
+	public enum Reason {
+		INVALID_FORMAT,
+		NETWORK_ADDRESS,
+		BROADCAST_ADDRESS,
+		INVALID_HOST
 	}
 }
-

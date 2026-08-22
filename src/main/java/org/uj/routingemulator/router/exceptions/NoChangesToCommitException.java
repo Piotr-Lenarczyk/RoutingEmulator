@@ -16,5 +16,14 @@ public class NoChangesToCommitException extends RouterException {
 	public NoChangesToCommitException(String message) {
 		super(message);
 	}
-}
 
+	/**
+	 * Creates a new no changes to commit exception with the specified message and cause.
+	 *
+	 * @param message the error message
+	 * @param cause   underlying cause
+	 */
+	public NoChangesToCommitException(String message, Throwable cause) {
+		super(message, cause);
+	}
+}

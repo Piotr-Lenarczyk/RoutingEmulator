@@ -1,18 +1,20 @@
 package org.uj.routingemulator;
 
 import org.junit.jupiter.api.Test;
-import org.uj.routingemulator.common.IPAddress;
-import org.uj.routingemulator.common.InterfaceAddress;
-import org.uj.routingemulator.common.Subnet;
-import org.uj.routingemulator.common.SubnetMask;
-import org.uj.routingemulator.router.*;
-import org.uj.routingemulator.router.exceptions.ConfigurationNotFoundException;
-import org.uj.routingemulator.router.exceptions.DuplicateConfigurationException;
+import org.uj.routingemulator.common.addressing.IPAddress;
+import org.uj.routingemulator.common.addressing.InterfaceAddress;
+import org.uj.routingemulator.common.addressing.Subnet;
+import org.uj.routingemulator.common.addressing.SubnetMask;
 import org.uj.routingemulator.router.exceptions.InvalidModeException;
+import org.uj.routingemulator.router.exceptions.RouteAlreadyExistsException;
+import org.uj.routingemulator.router.exceptions.RouteNotFoundException;
+import org.uj.routingemulator.router.model.*;
+import org.uj.routingemulator.router.session.RouterConfigurationService;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class RouterTest {
+
 	private final RouterConfigurationService routerConfigurationService = new RouterConfigurationService();
 
 	@Test
@@ -24,6 +26,7 @@ class RouterTest {
 		assertEquals("eth0", router.getInterfaces().get(0).getInterfaceName());
 		assertEquals("lo", router.getInterfaces().get(1).getInterfaceName());
 		assertEquals(RouterMode.OPERATIONAL, router.getMode());
+
 		assertEquals(router.getRoutingTable(), router.getConfigSession().getStagedRoutingTable());
 		assertEquals(router.getInterfaces(), router.getConfigSession().getStagedInterfaces());
 		assertFalse(router.hasUncommittedChanges());
@@ -40,6 +43,7 @@ class RouterTest {
 		assertEquals("eth1", router.getInterfaces().get(0).getInterfaceName());
 		assertEquals("eth2", router.getInterfaces().get(1).getInterfaceName());
 		assertEquals(RouterMode.OPERATIONAL, router.getMode());
+
 		assertEquals(router.getRoutingTable(), router.getConfigSession().getStagedRoutingTable());
 		assertEquals(router.getInterfaces(), router.getConfigSession().getStagedInterfaces());
 		assertFalse(router.hasUncommittedChanges());
@@ -50,7 +54,9 @@ class RouterTest {
 		RouterInterface iface = new RouterInterface("eth0");
 		RouterInterface iface1 = new RouterInterface("eth1");
 		RouterInterface iface2 = new RouterInterface("eth2");
+
 		Router router = new Router("Router", java.util.List.of(iface, iface1, iface2));
+
 		RouterModeController.setMode(router, RouterMode.CONFIGURATION);
 
 		routerConfigurationService.configureInterface(router, "eth0", new InterfaceAddress(new IPAddress(192, 168, 1, 1), new SubnetMask(24)));
@@ -58,11 +64,13 @@ class RouterTest {
 
 		StaticRoutingEntry unicastDefaultDistance = new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(24)), new IPAddress(192, 168, 1, 1));
 		StaticRoutingEntry unicastWithDistance = new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 2, 0), new SubnetMask(24)), new IPAddress(192, 168, 2, 1), 150);
+
 		StaticRoutingEntry nextHopDefaultDistance = new StaticRoutingEntry(new Subnet(new IPAddress(10, 0, 0, 0), new SubnetMask(8)), iface1);
 		StaticRoutingEntry nextHopWithDistance = new StaticRoutingEntry(new Subnet(new IPAddress(172, 16, 0, 0), new SubnetMask(12)), iface2, 200);
 
 		routerConfigurationService.addRoute(router, unicastDefaultDistance);
 		routerConfigurationService.addRoute(router, unicastWithDistance);
+
 		routerConfigurationService.addRoute(router, nextHopDefaultDistance);
 		routerConfigurationService.addRoute(router, nextHopWithDistance);
 
@@ -88,7 +96,7 @@ class RouterTest {
 		routerConfigurationService.configureInterface(router, "eth0", new InterfaceAddress(new IPAddress(192, 168, 1, 1), new SubnetMask(24)));
 		StaticRoutingEntry entry = new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(24)), new IPAddress(192, 168, 1, 1));
 		routerConfigurationService.addRoute(router, entry);
-		RuntimeException exception = assertThrows(DuplicateConfigurationException.class, () -> routerConfigurationService.addRoute(router, entry));
+		RuntimeException exception = assertThrows(RouteAlreadyExistsException.class, () -> routerConfigurationService.addRoute(router, entry));
 		assertEquals("Route already exists", exception.getMessage());
 	}
 
@@ -99,8 +107,11 @@ class RouterTest {
 		routerConfigurationService.configureInterface(router, "eth0", new InterfaceAddress(new IPAddress(192, 168, 1, 1), new SubnetMask(24)));
 		StaticRoutingEntry entry = new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(24)), new IPAddress(192, 168, 1, 1));
 		routerConfigurationService.addRoute(router, entry);
+
 		assertTrue(router.getConfigSession().getStagedRoutingTable().contains(entry));
+
 		routerConfigurationService.removeRoute(router, entry);
+
 		assertFalse(router.getConfigSession().getStagedRoutingTable().contains(entry));
 	}
 
@@ -117,7 +128,7 @@ class RouterTest {
 		Router router = new Router("Router");
 		RouterModeController.setMode(router, RouterMode.CONFIGURATION);
 		StaticRoutingEntry entry = new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(24)), new IPAddress(192, 168, 1, 1));
-		RuntimeException exception = assertThrows(ConfigurationNotFoundException.class, () -> routerConfigurationService.removeRoute(router, entry));
+		RuntimeException exception = assertThrows(RouteNotFoundException.class, () -> routerConfigurationService.removeRoute(router, entry));
 		assertEquals("Nothing to delete", exception.getMessage());
 	}
 
@@ -125,12 +136,16 @@ class RouterTest {
 	void testConfigureInterfaceUpdatesInterfaceConfiguration() {
 		Router router = new Router("Router");
 		RouterModeController.setMode(router, RouterMode.CONFIGURATION);
+
 		InterfaceAddress address = new InterfaceAddress(new IPAddress(192, 168, 1, 1), new SubnetMask(24));
+
 		routerConfigurationService.configureInterface(router, "eth0", address);
+
 		RouterInterface iface = router.getConfigSession().getStagedInterfaces().stream()
 				.filter(i -> i.getInterfaceName().equals("eth0"))
 				.findFirst()
 				.orElse(null);
+
 		assertNotNull(iface);
 		assertEquals(address, iface.getInterfaceAddress());
 	}

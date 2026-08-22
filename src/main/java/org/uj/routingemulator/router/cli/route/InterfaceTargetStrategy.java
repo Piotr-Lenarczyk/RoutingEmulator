@@ -1,7 +1,9 @@
 package org.uj.routingemulator.router.cli.route;
 
-import org.uj.routingemulator.router.Router;
-import org.uj.routingemulator.router.StaticRoutingEntry;
+import org.uj.routingemulator.common.addressing.Subnet;
+import org.uj.routingemulator.router.model.Router;
+import org.uj.routingemulator.router.model.RouterInterface;
+import org.uj.routingemulator.router.model.StaticRoutingEntry;
 
 import java.util.Map;
 
@@ -14,8 +16,8 @@ public class InterfaceTargetStrategy implements RouteTargetStrategy {
 
 	@Override
 	public StaticRoutingEntry createEntry(Router router, String destinationSubnet, Map<String, String> args, int distance) {
-		org.uj.routingemulator.common.Subnet dest = org.uj.routingemulator.common.Subnet.fromString(destinationSubnet);
-		org.uj.routingemulator.router.RouterInterface iface = router.findFromName(args.get("interface"));
+		Subnet dest = Subnet.fromString(destinationSubnet);
+		RouterInterface iface = router.findFromName(args.get("interface"));
 		if (hasDistance) {
 			return new StaticRoutingEntry(dest, iface, distance);
 		} else {

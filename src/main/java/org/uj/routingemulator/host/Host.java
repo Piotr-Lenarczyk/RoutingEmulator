@@ -1,9 +1,9 @@
 package org.uj.routingemulator.host;
 
 import lombok.Data;
-import org.uj.routingemulator.common.Device;
-import org.uj.routingemulator.common.DeviceId;
-import org.uj.routingemulator.common.NetworkInterface;
+import org.uj.routingemulator.common.topology.Device;
+import org.uj.routingemulator.common.topology.DeviceId;
+import org.uj.routingemulator.common.topology.NetworkInterface;
 
 import java.util.List;
 import java.util.logging.Logger;

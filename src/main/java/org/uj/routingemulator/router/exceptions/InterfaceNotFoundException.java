@@ -16,5 +16,14 @@ public class InterfaceNotFoundException extends RouterException {
 	public InterfaceNotFoundException(String message) {
 		super(message);
 	}
-}
 
+	/**
+	 * Creates a new interface not found exception with the specified message and cause.
+	 *
+	 * @param message the error message
+	 * @param cause   underlying cause
+	 */
+	public InterfaceNotFoundException(String message, Throwable cause) {
+		super(message, cause);
+	}
+}

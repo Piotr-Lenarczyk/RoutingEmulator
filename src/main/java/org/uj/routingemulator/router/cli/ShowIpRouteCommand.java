@@ -1,6 +1,6 @@
 package org.uj.routingemulator.router.cli;
 
-import org.uj.routingemulator.router.RoutingTablePresenter;
+import org.uj.routingemulator.router.model.RoutingTablePresenter;
 
 import java.util.Optional;
 

@@ -1,7 +1,7 @@
 package org.uj.routingemulator.router.cli;
 
-import org.uj.routingemulator.router.RouterMode;
-import org.uj.routingemulator.router.RouterModeController;
+import org.uj.routingemulator.router.model.RouterMode;
+import org.uj.routingemulator.router.model.RouterModeController;
 
 import java.util.Optional;
 

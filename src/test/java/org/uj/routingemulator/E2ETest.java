@@ -3,11 +3,20 @@ package org.uj.routingemulator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
-import org.uj.routingemulator.common.*;
+import org.uj.routingemulator.common.addressing.IPAddress;
+import org.uj.routingemulator.common.addressing.InterfaceAddress;
+import org.uj.routingemulator.common.addressing.Subnet;
+import org.uj.routingemulator.common.addressing.SubnetMask;
+import org.uj.routingemulator.common.ping.PingResult;
+import org.uj.routingemulator.common.ping.PingService;
+import org.uj.routingemulator.common.ping.PingStatistics;
+import org.uj.routingemulator.common.topology.Connection;
+import org.uj.routingemulator.common.topology.NetworkTopology;
 import org.uj.routingemulator.host.Host;
 import org.uj.routingemulator.host.HostInterface;
-import org.uj.routingemulator.router.*;
 import org.uj.routingemulator.router.cli.*;
+import org.uj.routingemulator.router.model.*;
+import org.uj.routingemulator.router.session.RouterConfigurationService;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -27,10 +36,10 @@ class E2ETest {
 			IPAddress net = IPAddress.fromString(parts[0]);
 			int prefix = Integer.parseInt(parts[1]);
 
-			long netAsLong = ((long) net.getOctet1() << 24)
-					| ((long) net.getOctet2() << 16)
-					| ((long) net.getOctet3() << 8)
-					| (net.getOctet4() & 0xffL);
+			long netAsLong = ((long) net.octet1() << 24)
+					| ((long) net.octet2() << 16)
+					| ((long) net.octet3() << 8)
+					| (net.octet4() & 0xffL);
 
 			long host = netAsLong + hostIndex;
 

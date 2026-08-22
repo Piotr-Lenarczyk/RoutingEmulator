@@ -1,11 +1,11 @@
 package org.uj.routingemulator;
 
 import org.junit.jupiter.api.Test;
-import org.uj.routingemulator.common.NetworkTopology;
-import org.uj.routingemulator.router.Router;
-import org.uj.routingemulator.router.RouterInterface;
+import org.uj.routingemulator.common.topology.NetworkTopology;
 import org.uj.routingemulator.router.cli.*;
 import org.uj.routingemulator.router.config.*;
+import org.uj.routingemulator.router.model.Router;
+import org.uj.routingemulator.router.model.RouterInterface;
 
 import java.io.PrintWriter;
 import java.util.List;

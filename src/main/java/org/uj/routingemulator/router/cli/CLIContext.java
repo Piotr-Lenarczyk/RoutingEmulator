@@ -1,6 +1,6 @@
 package org.uj.routingemulator.router.cli;
 
-import org.uj.routingemulator.common.NetworkTopology;
+import org.uj.routingemulator.common.topology.NetworkTopology;
 
 import java.io.PrintWriter;
 

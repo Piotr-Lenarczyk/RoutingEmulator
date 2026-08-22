@@ -4,9 +4,9 @@ import org.jline.reader.Candidate;
 import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
-import org.uj.routingemulator.router.Router;
-import org.uj.routingemulator.router.RouterInterface;
-import org.uj.routingemulator.router.RouterMode;
+import org.uj.routingemulator.router.model.Router;
+import org.uj.routingemulator.router.model.RouterInterface;
+import org.uj.routingemulator.router.model.RouterMode;
 
 import java.util.List;
 

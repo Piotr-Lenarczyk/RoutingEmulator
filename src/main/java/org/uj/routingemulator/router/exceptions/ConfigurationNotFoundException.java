@@ -2,15 +2,11 @@ package org.uj.routingemulator.router.exceptions;
 
 /**
  * Exception thrown when attempting to modify or delete configuration that doesn't exist.
- * <p>
- * This includes:
- * <ul>
- *   <li>Deleting a route that doesn't exist</li>
- *   <li>Deleting an interface address that isn't configured</li>
- *   <li>Disabling a route that doesn't exist</li>
- *   <li>Enabling an interface that is already enabled</li>
- * </ul>
+ *
+ * @deprecated Replaced by specific exceptions like {@link RouteNotFoundException},
+ * {@link InterfaceAddressNotFoundException}, or {@link InterfaceAlreadyEnabledException}.
  */
+@Deprecated
 public class ConfigurationNotFoundException extends RouterException {
 
 	/**
@@ -21,5 +17,14 @@ public class ConfigurationNotFoundException extends RouterException {
 	public ConfigurationNotFoundException(String message) {
 		super(message);
 	}
-}
 
+	/**
+	 * Creates a new configuration not found exception with the specified message and cause.
+	 *
+	 * @param message the error message
+	 * @param cause   underlying cause
+	 */
+	public ConfigurationNotFoundException(String message, Throwable cause) {
+		super(message, cause);
+	}
+}

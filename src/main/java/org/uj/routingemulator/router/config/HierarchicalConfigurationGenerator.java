@@ -1,8 +1,8 @@
 package org.uj.routingemulator.router.config;
 
-import org.uj.routingemulator.router.Router;
-import org.uj.routingemulator.router.RouterInterface;
-import org.uj.routingemulator.router.StaticRoutingEntry;
+import org.uj.routingemulator.router.model.Router;
+import org.uj.routingemulator.router.model.RouterInterface;
+import org.uj.routingemulator.router.model.StaticRoutingEntry;
 
 /**
  * Generates VyOS hierarchical configuration format (output from "show configuration").

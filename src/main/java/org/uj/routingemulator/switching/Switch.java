@@ -2,9 +2,9 @@ package org.uj.routingemulator.switching;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.uj.routingemulator.common.Device;
-import org.uj.routingemulator.common.DeviceId;
-import org.uj.routingemulator.common.NetworkInterface;
+import org.uj.routingemulator.common.topology.Device;
+import org.uj.routingemulator.common.topology.DeviceId;
+import org.uj.routingemulator.common.topology.NetworkInterface;
 
 import java.util.LinkedList;
 import java.util.List;

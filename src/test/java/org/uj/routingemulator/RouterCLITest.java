@@ -3,10 +3,10 @@ package org.uj.routingemulator;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.uj.routingemulator.common.NetworkTopology;
-import org.uj.routingemulator.router.Router;
-import org.uj.routingemulator.router.RouterMode;
+import org.uj.routingemulator.common.topology.NetworkTopology;
 import org.uj.routingemulator.router.cli.*;
+import org.uj.routingemulator.router.model.Router;
+import org.uj.routingemulator.router.model.RouterMode;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;

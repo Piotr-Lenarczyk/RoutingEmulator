@@ -2,7 +2,11 @@ package org.uj.routingemulator.host;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.uj.routingemulator.common.*;
+import org.uj.routingemulator.common.addressing.IPAddress;
+import org.uj.routingemulator.common.addressing.InterfaceAddress;
+import org.uj.routingemulator.common.addressing.MacAddress;
+import org.uj.routingemulator.common.addressing.Subnet;
+import org.uj.routingemulator.common.topology.NetworkInterface;
 
 /**
  * Represents a network interface on a host device.
