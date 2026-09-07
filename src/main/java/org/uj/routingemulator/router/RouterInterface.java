@@ -67,11 +67,12 @@ public class RouterInterface implements NetworkInterface {
 		this.interfaceAddress = null;
 		this.macAddress = new MacAddress();
 		this.description = null;
-		if (interfaceName.startsWith("eth")) {
+		if (interfaceName.startsWith("eth") || interfaceName.startsWith("dum")) {
 			this.mtu = 1500;
 		} else if (interfaceName.startsWith("lo")) {
 			this.mtu = 65536;
 		}
+
 		// Interface starts with admin UP but link DOWN (no physical connection yet)
 		this.status = InterfaceStatus.fromChars('u', 'D');
 	}

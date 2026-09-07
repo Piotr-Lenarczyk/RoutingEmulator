@@ -4,6 +4,11 @@ import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.RouterInterface;
 import org.uj.routingemulator.router.StaticRoutingEntry;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Generates VyOS hierarchical configuration format (output from "show configuration").
  * <p>
@@ -70,11 +75,51 @@ public class HierarchicalConfigurationGenerator implements ConfigurationGenerato
 	public String generateConfiguration(Router router) {
 		StringBuilder config = new StringBuilder();
 
-		// Generate interfaces block
-		if (router.getInterfaces().stream().anyMatch(i -> i.getInterfaceAddress() != null || i.isDisabled())) {
+		Map<String, List<RouterInterface>> ethMap = new LinkedHashMap<>();
+		List<RouterInterface> dummies = new ArrayList<>();
+
+		for (RouterInterface iface : router.getInterfaces()) {
+			if (iface.getInterfaceAddress() == null && !iface.isDisabled()) continue;
+
+			if (iface.getInterfaceName().startsWith("dum")) {
+				dummies.add(iface);
+			} else if (iface.getInterfaceName().startsWith("eth")) {
+				String base = iface.getInterfaceName().split("\\.")[0];
+				ethMap.computeIfAbsent(base, k -> new ArrayList<>()).add(iface);
+			}
+		}
+
+		if (!ethMap.isEmpty() || !dummies.isEmpty()) {
 			config.append("interfaces {\n");
-			for (RouterInterface iface : router.getInterfaces()) {
-				buildInterface(iface, config);
+
+			// Dummy Interfaces
+			for (RouterInterface dum : dummies) {
+				config.append("    dummy ").append(dum.getInterfaceName()).append(" {\n");
+				if (dum.getInterfaceAddress() != null) {
+					config.append("        address ").append(dum.getInterfaceAddress()).append("\n");
+				}
+				if (dum.isDisabled()) config.append("        disable\n");
+				config.append("    }\n");
+			}
+
+			// Ethernet and VIF Interfaces
+			for (Map.Entry<String, List<RouterInterface>> entry : ethMap.entrySet()) {
+				config.append("    ethernet ").append(entry.getKey()).append(" {\n");
+				for (RouterInterface iface : entry.getValue()) {
+					if (iface.getInterfaceName().contains(".")) {
+						String vif = iface.getInterfaceName().split("\\.")[1];
+						config.append("        vif ").append(vif).append(" {\n");
+						if (iface.getInterfaceAddress() != null)
+							config.append("            address ").append(iface.getInterfaceAddress()).append("\n");
+						if (iface.isDisabled()) config.append("            disable\n");
+						config.append("        }\n");
+					} else {
+						if (iface.getInterfaceAddress() != null)
+							config.append("        address ").append(iface.getInterfaceAddress()).append("\n");
+						if (iface.isDisabled()) config.append("        disable\n");
+					}
+				}
+				config.append("    }\n");
 			}
 			config.append("}\n");
 		}

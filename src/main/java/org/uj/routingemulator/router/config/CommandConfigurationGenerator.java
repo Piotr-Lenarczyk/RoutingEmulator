@@ -28,14 +28,23 @@ public class CommandConfigurationGenerator implements ConfigurationGenerator {
 		StringBuilder configBuilder = new StringBuilder();
 
 		for (RouterInterface iface: router.getInterfaces()) {
+			String name = iface.getInterfaceName();
+			String prefix;
+
+			if (name.startsWith("dum")) {
+				prefix = "set interfaces dummy " + name;
+			} else if (name.contains(".")) {
+				String[] parts = name.split("\\.");
+				prefix = "set interfaces ethernet " + parts[0] + " vif " + parts[1];
+			} else {
+				prefix = "set interfaces ethernet " + name;
+			}
+
 			if (iface.getInterfaceAddress() != null) {
-				configBuilder.append(String.format("set interfaces ethernet %s address %s%n",
-						iface.getInterfaceName(),
-						iface.getInterfaceAddress()));
+				configBuilder.append(String.format("%s address %s%n", prefix, iface.getInterfaceAddress()));
 			}
 			if (iface.isDisabled()) {
-				configBuilder.append(String.format("set interfaces ethernet %s disable%n",
-						iface.getInterfaceName()));
+				configBuilder.append(String.format("%s disable%n", prefix));
 			}
 		}
 

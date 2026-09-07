@@ -1,4 +1,4 @@
-package org.uj.routingemulator.router.cli.ethernet;
+package org.uj.routingemulator.router.cli.dummy;
 
 import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.cli.CLIContext;
@@ -9,25 +9,11 @@ import java.io.PrintWriter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Command to remove IP address configuration from an ethernet interface.
- * <p>
- * Command format: {@code delete interfaces ethernet <interface> address <address>}
- * <p>
- * Example: {@code delete interfaces ethernet eth0 address 192.168.1.1/24}
- * <p>
- * This command:
- * <ul>
- *   <li>Removes the IP address from the interface</li>
- *   <li>Does not disable the interface (admin state remains UP)</li>
- *   <li>Routing entries using this interface's address become invalid</li>
- *   <li>Cannot be executed if configuration doesn't exist</li>
- * </ul>
- */
-public class DeleteInterfaceEthernetCommand implements RouterCommand {
+public class DeleteInterfaceDummyCommand implements RouterCommand {
 	private static final Pattern PATTERN = Pattern.compile(
-			"delete\\s+interfaces\\s+ethernet\\s+(\\S+)(?:\\s+vif\\s+(\\d+))?\\s+address\\s+(\\S+)"
+			"delete\\s+interfaces\\s+dummy\\s+(\\S+)\\s+address\\s+(\\S+)"
 	);
+
 	private String routerInterfaceName;
 	private String address;
 
@@ -48,10 +34,8 @@ public class DeleteInterfaceEthernetCommand implements RouterCommand {
 	public boolean matches(String command) {
 		Matcher matcher = PATTERN.matcher(command.trim());
 		if (matcher.matches()) {
-			String base = matcher.group(1);
-			String vif = matcher.group(2);
-			routerInterfaceName = vif != null ? base + "." + vif : base;
-			address = matcher.group(3);
+			routerInterfaceName = matcher.group(1);
+			address = matcher.group(2);
 			return true;
 		}
 		return false;
@@ -59,12 +43,11 @@ public class DeleteInterfaceEthernetCommand implements RouterCommand {
 
 	@Override
 	public String getCommandPattern() {
-		return "delete interfaces ethernet <interface> [vif <id>] address <address>";
+		return "delete interfaces dummy <interface> address <address>";
 	}
 
 	@Override
 	public String getDescription() {
-		return "Remove IP address from an ethernet interface";
+		return "Remove IP address from a dummy interface";
 	}
 }
-

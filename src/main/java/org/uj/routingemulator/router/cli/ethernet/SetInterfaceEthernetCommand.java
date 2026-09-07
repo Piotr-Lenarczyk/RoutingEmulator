@@ -27,21 +27,21 @@ import java.util.regex.Pattern;
  */
 public class SetInterfaceEthernetCommand implements RouterCommand {
 	private static final Pattern PATTERN = Pattern.compile(
-			"set\\s+interfaces\\s+ethernet\\s+(\\S+)\\s+address\\s+(\\S+)"
+			"set\\s+interfaces\\s+ethernet\\s+(\\S+)(?:\\s+vif\\s+(\\d+))?\\s+address\\s+(\\S+)"
 	);
 	private String routerInterfaceName;
-	private String address;
+	private String subnet;
 
 	@Override
 	public void execute(Router router) {
 		PrintWriter out = CLIContext.getWriter();
 		try {
-			router.configureInterface(routerInterfaceName, InterfaceAddress.fromString(address));
+			router.configureInterface(routerInterfaceName, InterfaceAddress.fromString(subnet));
 			out.println("[edit]");
 			out.flush();
 		} catch (RuntimeException e) {
 			throw CLIErrorHandler.handleInterfaceException(e,
-				CLIErrorHandler.formatSetInterfaceEthernet(routerInterfaceName, address));
+					CLIErrorHandler.formatSetInterfaceEthernet(routerInterfaceName, subnet));
 		}
 	}
 
@@ -49,8 +49,10 @@ public class SetInterfaceEthernetCommand implements RouterCommand {
 	public boolean matches(String command) {
 		Matcher matcher = PATTERN.matcher(command.trim());
 		if (matcher.matches()) {
-			routerInterfaceName = matcher.group(1);
-			address = matcher.group(2);
+			String base = matcher.group(1);
+			String vif = matcher.group(2);
+			routerInterfaceName = vif != null ? base + "." + vif : base;
+			subnet = matcher.group(3);
 			return true;
 		}
 		return false;
@@ -58,11 +60,11 @@ public class SetInterfaceEthernetCommand implements RouterCommand {
 
 	@Override
 	public String getCommandPattern() {
-		return "set interfaces ethernet <interface> address <address>";
+		return "set interfaces ethernet <interface> [vif <id>] address <address>";
 	}
 
 	@Override
 	public String getDescription() {
-		return "Configure interface with one IP address";
+		return "Configure interface or VLAN with one IP address";
 	}
 }

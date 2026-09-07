@@ -6,6 +6,9 @@ import org.jline.reader.LineReaderBuilder;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.uj.routingemulator.router.Router;
+import org.uj.routingemulator.router.cli.dummy.DeleteInterfaceDummyCommand;
+import org.uj.routingemulator.router.cli.dummy.DisableInterfaceDummyCommand;
+import org.uj.routingemulator.router.cli.dummy.SetInterfaceDummyCommand;
 import org.uj.routingemulator.router.cli.ethernet.DeleteInterfaceEthernetCommand;
 import org.uj.routingemulator.router.cli.ethernet.DisableInterfaceEthernetCommand;
 import org.uj.routingemulator.router.cli.ethernet.SetInterfaceEthernetCommand;
@@ -114,10 +117,15 @@ public class RouterCLIParser {
 		commands.add(new SetRouteInterfaceDistanceCommand());
 		commands.add(new SetRouteNextHopCommand());
 		commands.add(new SetRouteInterfaceCommand());
-		// Interface commands
+		// Interface commands (Ethernet)
 		commands.add(new DeleteInterfaceEthernetCommand());
 		commands.add(new DisableInterfaceEthernetCommand());
 		commands.add(new SetInterfaceEthernetCommand());
+
+		// Interface commands (Dummy)
+		commands.add(new DeleteInterfaceDummyCommand());
+		commands.add(new DisableInterfaceDummyCommand());
+		commands.add(new SetInterfaceDummyCommand());
 	}
 
 	public void executeCommand(String input, Router router) {

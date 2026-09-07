@@ -300,34 +300,32 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 	 * @throws ConfigurationParseException if configuration cannot be applied
 	 */
 	private void applyConfiguration(Router router, List<String> path) {
-		if (path.size() < 2) {
-			return; // Invalid path
-		}
+		if (path.size() < 2) return;
 
 		try {
-			// interfaces ethernet eth0 address 192.168.1.1/24
-			if (path.get(0).equals("interfaces") && path.size() >= 4 && path.get(1).equals("ethernet")) {
+			if (path.get(0).equals("interfaces")) {
+				if (path.get(1).equals("ethernet") && path.size() >= 4) {
 					String interfaceName = path.get(2);
+					int propIdx = 3;
 
-					// Check if interface exists
-					RouterInterface iface = router.findFromName(interfaceName);
-					if (iface == null) {
-						throw new ConfigurationParseException(
-							String.format("Interface %s does not exist on this router", interfaceName)
-						);
+					if (path.get(3).equals("vif") && path.size() >= 6) {
+						interfaceName += "." + path.get(4);
+						propIdx = 5;
 					}
 
-					if (path.get(3).equals("address") && path.size() == 5) {
-						String address = path.get(4);
-						// Skip dhcp addresses
-						if (address.equals("dhcp")) {
-							return;
-						}
-						configureInterface(router, address, interfaceName);
-					} else if (path.get(3).equals("disable") && path.size() == 4) {
+					if (path.get(propIdx).equals("address")) {
+						configureInterface(router, path.get(propIdx + 1), interfaceName);
+					} else if (path.get(propIdx).equals("disable")) {
 						disableInterface(router, interfaceName);
 					}
-
+				} else if (path.get(1).equals("dummy") && path.size() >= 4) {
+					String interfaceName = path.get(2);
+					if (path.get(3).equals("address")) {
+						configureInterface(router, path.get(4), interfaceName);
+					} else if (path.get(3).equals("disable")) {
+						disableInterface(router, interfaceName);
+					}
+				}
 			}
 		} catch (ConfigurationParseException e) {
 			throw e;

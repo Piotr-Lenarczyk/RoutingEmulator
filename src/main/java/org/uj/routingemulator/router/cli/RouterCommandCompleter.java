@@ -207,20 +207,58 @@ public class RouterCommandCompleter implements Completer {
 
 	private void completeInterfaces(String[] words, String currentWord, List<Candidate> candidates) {
 		if (words.length == 3) {
+			// e.g., "set interfaces <type>"
 			addCandidateIfMatches(candidates, ETHERNET, "Configure Ethernet interface", currentWord);
-		} else if (words.length == 4 && words[2].equalsIgnoreCase(ETHERNET)) {
-			for (RouterInterface iface : router.getInterfaces()) {
-				addCandidateIfMatches(candidates, iface.getInterfaceName(), "Interface " + iface.getInterfaceName(), currentWord);
+			addCandidateIfMatches(candidates, "dummy", "Configure Dummy interface", currentWord);
+
+		} else if (words.length == 4) {
+			// e.g., "set interfaces ethernet/dummy <interface>"
+			if (words[2].equalsIgnoreCase(ETHERNET)) {
+				for (RouterInterface iface : router.getInterfaces()) {
+					if (iface.getInterfaceName().startsWith("eth")) {
+						addCandidateIfMatches(candidates, iface.getInterfaceName(), "Interface " + iface.getInterfaceName(), currentWord);
+					}
+				}
+			} else if (words[2].equalsIgnoreCase("dummy")) {
+				for (RouterInterface iface : router.getInterfaces()) {
+					if (iface.getInterfaceName().startsWith("dum")) {
+						addCandidateIfMatches(candidates, iface.getInterfaceName(), "Interface " + iface.getInterfaceName(), currentWord);
+					}
+				}
+				// Suggest a default one to guide the user if none exist yet
+				addCandidateIfMatches(candidates, "dum0", "Dummy Interface 0", currentWord);
 			}
+
 		} else if (words.length == 5) {
-			// After interface name (e.g., "set interfaces ethernet eth0 ...")
+			// e.g., "set interfaces ethernet eth0 <command>"
 			addCandidateIfMatches(candidates, "address", "Set IP address", currentWord);
 			addCandidateIfMatches(candidates, "disable", "Disable interface", currentWord);
-		} else if (words.length == 6 && words[4].equalsIgnoreCase("address") && currentWord.isEmpty()) {
-			// After "address" keyword - user needs to enter IP address
-			// Show hint about IP address format
-			candidates.add(new Candidate(ADDRESS_FORMAT, ADDRESS_FORMAT, null,
-					"Enter IP address with prefix (e.g., 192.168.1.1/24)", null, null, false));
+
+			// Only ethernet interfaces support VLAN sub-interfaces
+			if (words[2].equalsIgnoreCase(ETHERNET)) {
+				addCandidateIfMatches(candidates, "vif", "Virtual Local Area Network (VLAN) ID", currentWord);
+			}
+
+		} else if (words.length == 6) {
+			// e.g., "set interfaces ethernet eth0 address <ip>" OR "set interfaces ethernet eth0 vif <id>"
+			if (words[4].equalsIgnoreCase("address") && currentWord.isEmpty()) {
+				candidates.add(new Candidate(ADDRESS_FORMAT, ADDRESS_FORMAT, null, "Enter IP address with prefix (e.g., 192.168.1.1/24)", null, null, false));
+			} else if (words[4].equalsIgnoreCase("vif") && currentWord.isEmpty()) {
+				candidates.add(new Candidate("<1-4094>", "<1-4094>", null, "Enter VLAN ID (1-4094)", null, null, false));
+			}
+
+		} else if (words.length == 7) {
+			// e.g., "set interfaces ethernet eth0 vif 1000 <command>"
+			if (words[4].equalsIgnoreCase("vif")) {
+				addCandidateIfMatches(candidates, "address", "Set IP address", currentWord);
+				addCandidateIfMatches(candidates, "disable", "Disable interface", currentWord);
+			}
+
+		} else if (words.length == 8) {
+			// e.g., "set interfaces ethernet eth0 vif 1000 address <ip>"
+			if (words[4].equalsIgnoreCase("vif") && words[6].equalsIgnoreCase("address") && currentWord.isEmpty()) {
+				candidates.add(new Candidate(ADDRESS_FORMAT, ADDRESS_FORMAT, null, "Enter IP address with prefix (e.g., 192.168.10.1/24)", null, null, false));
+			}
 		}
 	}
 

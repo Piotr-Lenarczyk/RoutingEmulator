@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
  */
 public class DisableInterfaceEthernetCommand implements RouterCommand {
 	private static final Pattern PATTERN = Pattern.compile(
-			"set\\s+interfaces\\s+ethernet\\s+(\\S+)\\s+disable"
+			"set\\s+interfaces\\s+ethernet\\s+(\\S+)(?:\\s+vif\\s+(\\d+))?\\s+disable"
 	);
 	private String routerInterfaceName;
 
@@ -47,7 +47,9 @@ public class DisableInterfaceEthernetCommand implements RouterCommand {
 	public boolean matches(String command) {
 		Matcher matcher = PATTERN.matcher(command.trim());
 		if (matcher.matches()) {
-			routerInterfaceName = matcher.group(1);
+			String base = matcher.group(1);
+			String vif = matcher.group(2);
+			routerInterfaceName = vif != null ? base + "." + vif : base;
 			return true;
 		}
 		return false;
@@ -55,12 +57,12 @@ public class DisableInterfaceEthernetCommand implements RouterCommand {
 
 	@Override
 	public String getCommandPattern() {
-		return "set interfaces ethernet <interface> disable";
+		return "set interfaces ethernet <interface> [vif <id>] disable";
 	}
 
 	@Override
 	public String getDescription() {
-		return "Administratively disable an ethernet interface";
+		return "Administratively disable an ethernet or VLAN interface";
 	}
 }
 
