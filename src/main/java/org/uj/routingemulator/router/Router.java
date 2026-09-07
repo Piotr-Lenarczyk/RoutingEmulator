@@ -124,7 +124,7 @@ public class Router {
 		// Validate that the subnet represents a proper network address (host bits == 0)
 		Subnet routeSubnet = entry.getSubnet();
 		if (routeSubnet == null || !routeSubnet.isValidNetworkAddress()) {
-			String msg = String.format("\n\tError: %s is not a valid IPv4 prefix\n\n\n\tInvalid value\n\tValue validation failed\n\tSet failed\n\n[edit]", routeSubnet == null ? "null" : routeSubnet.toString());
+			String msg = String.format("%n\tError: %s is not a valid IPv4 prefix%n%n%n\tInvalid value%n\tValue validation failed%n\tSet failed%n%n[edit]", routeSubnet == null ? "null" : routeSubnet.toString());
 			logger.warning("Invalid subnet (not a network address) provided for route: %s".formatted(routeSubnet));
 			throw new InvalidSubnetException(msg);
 		}

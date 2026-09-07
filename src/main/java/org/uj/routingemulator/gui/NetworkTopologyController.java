@@ -1,9 +1,11 @@
 package org.uj.routingemulator.gui;
 
 import javafx.fxml.FXML;
+import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -42,31 +44,22 @@ public class NetworkTopologyController {
 
 	@FXML
 	private Pane canvasPane;
-
 	@FXML
 	private ListView<String> deviceListView;
-
 	@FXML
 	private Button addRouterButton;
-
 	@FXML
 	private Button addSwitchButton;
-
 	@FXML
 	private Button addHostButton;
-
 	@FXML
 	private Button removeDeviceButton;
-
 	@FXML
 	private Button addConnectionButton;
-
 	@FXML
 	private Button removeConnectionButton;
-
 	@FXML
 	private Button loadConfigButton;
-
 	@FXML
 	private Button saveConfigButton;
 
@@ -83,9 +76,9 @@ public class NetworkTopologyController {
 	@FXML
 	public void initialize() {
 		topology = new NetworkTopology();
-		deviceNodes = new HashMap<>();
-		connectionLines = new HashMap<>();
-
+		// Use IdentityHashMap to prevent lookup failures when object hashCodes change dynamically
+		deviceNodes = new IdentityHashMap<>();
+		connectionLines = new IdentityHashMap<>();
 		updateDeviceList();
 		setupEventHandlers();
 	}
@@ -225,6 +218,7 @@ public class NetworkTopologyController {
 		Optional<String> result = dialog.showAndWait();
 		result.ifPresent(name -> {
 			// Ask for IP address
+			@SuppressWarnings("java:S1313") // Suggested placeholder value
 			TextInputDialog ipDialog = new TextInputDialog("192.168.1.1");
 			ipDialog.setTitle(HOST_CONFIGURATION);
 			ipDialog.setHeaderText("Configure host IP address");
@@ -238,12 +232,11 @@ public class NetworkTopologyController {
 						showError("Invalid IP address format");
 						return;
 					}
-
 					IPAddress ip = new IPAddress(
-						Integer.parseInt(parts[0]),
-						Integer.parseInt(parts[1]),
-						Integer.parseInt(parts[2]),
-						Integer.parseInt(parts[3])
+							Integer.parseInt(parts[0]),
+							Integer.parseInt(parts[1]),
+							Integer.parseInt(parts[2]),
+							Integer.parseInt(parts[3])
 					);
 
 					// Ask for subnet mask
@@ -267,6 +260,7 @@ public class NetworkTopologyController {
 			SubnetMask mask = new SubnetMask(maskLength);
 
 			// Ask for default gateway
+			@SuppressWarnings("java:S1313") // Suggested placeholder value
 			TextInputDialog gwDialog = new TextInputDialog("192.168.1.254");
 			gwDialog.setTitle("Host Configuration");
 			gwDialog.setHeaderText("Configure default gateway");
@@ -280,7 +274,6 @@ public class NetworkTopologyController {
 						showError("Invalid gateway IP address format");
 						return;
 					}
-
 					IPAddress gateway = new IPAddress(
 							Integer.parseInt(gwParts[0]),
 							Integer.parseInt(gwParts[1]),
@@ -353,7 +346,6 @@ public class NetworkTopologyController {
 
 	/**
 	 * Checks if a device is part of a connection.
-	 *
 	 * @param device the device to check
 	 * @param connection the connection to check
 	 * @return true if the device is part of the connection
@@ -380,7 +372,6 @@ public class NetworkTopologyController {
 			showError("Please select the first device for the connection");
 			return;
 		}
-
 		connectionStartNode = selectedNode;
 		showInfo("Now select the second device to complete the connection");
 	}
@@ -403,7 +394,6 @@ public class NetworkTopologyController {
 
 	/**
 	 * Adds a visual node for a device to the canvas.
-	 *
 	 * @param device the device to add
 	 * @param x the x coordinate
 	 * @param y the y coordinate
@@ -416,22 +406,25 @@ public class NetworkTopologyController {
 		Circle circle = new Circle(25, color);
 		circle.setStroke(Color.BLACK);
 		circle.setStrokeWidth(2);
+		circle.setMouseTransparent(true);
 
 		Text text = new Text(label);
 		text.setStyle("-fx-font-weight: bold;");
-
-		VBox vbox = new VBox(5);
-		vbox.setAlignment(Pos.CENTER);
-		vbox.getChildren().addAll(circle, new Text(name));
+		text.setMouseTransparent(true);
 
 		StackPane stackPane = new StackPane();
 		stackPane.getChildren().addAll(circle, text);
-		stackPane.setLayoutX(x);
-		stackPane.setLayoutY(y);
+		stackPane.setMouseTransparent(true);
 
 		VBox container = new VBox(5);
 		container.setAlignment(Pos.CENTER);
-		container.getChildren().addAll(stackPane, new Text(name));
+
+		Text nameText = new Text(name);
+		nameText.setMouseTransparent(true);
+
+		container.getChildren().addAll(stackPane, nameText);
+		container.setManaged(false);
+		container.setPickOnBounds(true);
 		container.setLayoutX(x - 30);
 		container.setLayoutY(y - 30);
 
@@ -442,18 +435,23 @@ public class NetworkTopologyController {
 		final Delta dragDelta = new Delta();
 		container.setOnMousePressed(e -> {
 			if (e.getButton() == MouseButton.PRIMARY) {
-				dragDelta.x = container.getLayoutX() - e.getSceneX();
-				dragDelta.y = container.getLayoutY() - e.getSceneY();
+				Point2D mousePosition = canvasPane.sceneToLocal(e.getSceneX(), e.getSceneY());
+				dragDelta.x = container.getLayoutX() - mousePosition.getX();
+				dragDelta.y = container.getLayoutY() - mousePosition.getY();
 				e.consume();
 			}
 		});
 
 		container.setOnMouseDragged(e -> {
-			if (e.getButton() == MouseButton.PRIMARY) {
-				container.setLayoutX(e.getSceneX() + dragDelta.x);
-				container.setLayoutY(e.getSceneY() + dragDelta.y);
-				updateConnectionLines(device);
+			if (e.isPrimaryButtonDown()) {
+				updateDraggedDevice(device, container, e, dragDelta);
 				e.consume();
+			}
+		});
+
+		container.setOnMouseReleased(e -> {
+			if (e.getButton() == MouseButton.PRIMARY) {
+				updateDraggedDevice(device, container, e, dragDelta);
 			}
 		});
 
@@ -465,6 +463,13 @@ public class NetworkTopologyController {
 		});
 
 		canvasPane.getChildren().add(container);
+	}
+
+	private void updateDraggedDevice(Object device, VBox container, MouseEvent event, Delta dragDelta) {
+		Point2D mousePosition = canvasPane.sceneToLocal(event.getSceneX(), event.getSceneY());
+		container.setLayoutX(mousePosition.getX() + dragDelta.x);
+		container.setLayoutY(mousePosition.getY() + dragDelta.y);
+		updateConnectionLines(device);
 	}
 
 	/**
@@ -479,7 +484,6 @@ public class NetworkTopologyController {
 		// Find all connections related to this device
 		List<Connection> relatedConnections = new ArrayList<>();
 		Object device = selectedNode.device;
-
 		for (Connection conn : topology.getConnections()) {
 			if (isDeviceInConnection(device, conn)) {
 				relatedConnections.add(conn);
@@ -530,7 +534,6 @@ public class NetworkTopologyController {
 
 	/**
 	 * Handles click on a device node.
-	 *
 	 * @param node the clicked node
 	 */
 	private void handleNodeClick(DeviceNode node) {
@@ -543,24 +546,26 @@ public class NetworkTopologyController {
 			if (selectedNode == node) {
 				openRouterCLI(router);
 			}
+			selectedNode = node;
+			updateSelection();
 		} else if (node.device instanceof Host host && selectedNode == node) {
 			// Double-click detection for host configuration
 			openHostDialog(host);
+			selectedNode = node;
+			updateSelection();
+		} else {
+			selectedNode = node;
+			updateSelection();
 		}
-
-		selectedNode = node;
-		updateSelection();
 	}
 
 	/**
 	 * Gets available (unconnected) interfaces for a device.
-	 *
 	 * @param device the device
 	 * @return list of available interfaces
 	 */
 	private List<NetworkInterface> getAvailableInterfaces(Object device) {
 		List<NetworkInterface> allInterfaces = new ArrayList<>();
-
 		if (device instanceof Router router) {
 			allInterfaces.addAll(router.getInterfaces());
 		} else if (device instanceof Switch sw) {
@@ -578,13 +583,11 @@ public class NetworkTopologyController {
 				availableInterfaces.add(iface);
 			}
 		}
-
 		return availableInterfaces;
 	}
 
 	/**
 	 * Updates all connection lines related to a device.
-	 *
 	 * @param device the device that was moved
 	 */
 	private void updateConnectionLines(Object device) {
@@ -595,7 +598,8 @@ public class NetworkTopologyController {
 			Object deviceA = findDevice(conn.interfaceA());
 			Object deviceB = findDevice(conn.interfaceB());
 
-			if (device.equals(deviceA) || device.equals(deviceB)) {
+			// Using Identity checks (==) since IdentityHashMap maps unique memory addresses
+			if (device == deviceA || device == deviceB) {
 				DeviceNode nodeA = deviceNodes.get(deviceA);
 				DeviceNode nodeB = deviceNodes.get(deviceB);
 				if (nodeA != null && nodeB != null) {
@@ -607,54 +611,48 @@ public class NetworkTopologyController {
 
 	/**
 	 * Updates a connection line between two nodes.
-	 *
 	 * @param line the line to update
 	 * @param nodeA the first node
 	 * @param nodeB the second node
 	 */
 	private void updateConnectionLine(Line line, DeviceNode nodeA, DeviceNode nodeB) {
-		double startX = nodeA.stackPane.getLayoutX() + 30;
-		double startY = nodeA.stackPane.getLayoutY() + 30;
-		double endX = nodeB.stackPane.getLayoutX() + 30;
-		double endY = nodeB.stackPane.getLayoutY() + 30;
-
-		line.setStartX(startX);
-		line.setStartY(startY);
-		line.setEndX(endX);
-		line.setEndY(endY);
+		Point2D start = canvasPane.sceneToLocal(nodeA.circle.localToScene(0, 0));
+		Point2D end = canvasPane.sceneToLocal(nodeB.circle.localToScene(0, 0));
+		line.setStartX(start.getX());
+		line.setStartY(start.getY());
+		line.setEndX(end.getX());
+		line.setEndY(end.getY());
 	}
 
 	/**
 	 * Finds the device that owns a network interface.
-	 *
 	 * @param iface the interface
 	 * @return the device owning the interface, or null if not found
 	 */
 	private Object findDevice(NetworkInterface iface) {
+		// Check routers
 		for (Router router : topology.getRouters()) {
 			if (iface instanceof RouterInterface && router.getInterfaces().contains(iface)) {
 				return router;
 			}
 		}
-
+		// Check switches
 		for (Switch sw : topology.getSwitches()) {
 			if (iface instanceof SwitchPort && sw.getPorts().contains(iface)) {
 				return sw;
 			}
 		}
-
+		// Check hosts
 		for (Host host : topology.getHosts()) {
 			if (host.getHostInterface().equals(iface)) {
 				return host;
 			}
 		}
-
 		return null;
 	}
 
 	/**
 	 * Gets the display name of a device.
-	 *
 	 * @param device the device
 	 * @return the device name
 	 */
@@ -671,7 +669,6 @@ public class NetworkTopologyController {
 
 	/**
 	 * Formats a network interface for display with user-friendly information.
-	 *
 	 * @param iface the interface to format
 	 * @return formatted string representation
 	 */
@@ -679,17 +676,14 @@ public class NetworkTopologyController {
 		if (iface == null) {
 			return "null";
 		}
-
 		StringBuilder display = new StringBuilder();
 		display.append(iface.getInterfaceName());
-
 		if (iface.getSubnet() != null) {
 			display.append(" (").append(iface.getSubnet().networkAddress());
 			display.append("/").append(iface.getSubnet().subnetMask().shortMask()).append(")");
 		} else {
 			display.append(" (unconfigured)");
 		}
-
 		return display.toString();
 	}
 
@@ -701,7 +695,6 @@ public class NetworkTopologyController {
 			node.circle.setStrokeWidth(2);
 			node.circle.setStroke(Color.BLACK);
 		}
-
 		if (selectedNode != null) {
 			selectedNode.circle.setStrokeWidth(4);
 			selectedNode.circle.setStroke(Color.BLUE);
@@ -713,18 +706,15 @@ public class NetworkTopologyController {
 	 */
 	private void updateDeviceList() {
 		deviceListView.getItems().clear();
-
 		deviceListView.getItems().add("=== Routers ===");
 		for (Router router : topology.getRouters()) {
 			deviceListView.getItems().add("  " + router.getName());
 		}
-
 		deviceListView.getItems().add("");
 		deviceListView.getItems().add("=== Switches ===");
 		for (Switch sw : topology.getSwitches()) {
 			deviceListView.getItems().add("  " + sw.getName());
 		}
-
 		deviceListView.getItems().add("");
 		deviceListView.getItems().add("=== Hosts ===");
 		for (Host host : topology.getHosts()) {
@@ -734,19 +724,15 @@ public class NetworkTopologyController {
 
 	/**
 	 * Opens the CLI dialog for a router.
-	 *
 	 * @param router the router to open CLI for
 	 */
 	private void openRouterCLI(Router router) {
-		// Using SimpleCLIDialog as a fallback - it's based on standard JavaFX TextArea
-		// instead of RichTextFX, which may have compatibility issues
 		SimpleCLIDialog cliDialog = new SimpleCLIDialog(router, topology);
 		cliDialog.showAndWait();
 	}
 
 	/**
 	 * Opens the configuration dialog for a host.
-	 *
 	 * @param host the host to configure
 	 */
 	private void openHostDialog(Host host) {
@@ -756,7 +742,6 @@ public class NetworkTopologyController {
 
 	/**
 	 * Shows an error message.
-	 *
 	 * @param message the error message
 	 */
 	private void showError(String message) {
@@ -769,7 +754,6 @@ public class NetworkTopologyController {
 
 	/**
 	 * Shows an information message.
-	 *
 	 * @param message the information message
 	 */
 	private void showInfo(String message) {
@@ -782,7 +766,6 @@ public class NetworkTopologyController {
 
 	/**
 	 * Creates a connection between two device nodes.
-	 *
 	 * @param startNode the start node
 	 * @param endNode the end node
 	 */
@@ -795,7 +778,6 @@ public class NetworkTopologyController {
 			showError("No available interfaces on " + getDeviceName(startNode.device));
 			return;
 		}
-
 		if (endInterfaces.isEmpty()) {
 			showError("No available interfaces on " + getDeviceName(endNode.device));
 			return;
@@ -819,6 +801,7 @@ public class NetworkTopologyController {
 		startDialog.setTitle("Select Interface");
 		startDialog.setHeaderText("Select interface on " + getDeviceName(startNode.device));
 		startDialog.setContentText("Interface:");
+
 		// Set the converter for the ComboBox inside the ChoiceDialog
 		@SuppressWarnings("unchecked")
 		ComboBox<NetworkInterface> startComboBox = (ComboBox<NetworkInterface>) startDialog.getDialogPane().lookup(COMBO_BOX);
@@ -835,6 +818,7 @@ public class NetworkTopologyController {
 		endDialog.setTitle("Select Interface");
 		endDialog.setHeaderText("Select interface on " + getDeviceName(endNode.device));
 		endDialog.setContentText("Interface:");
+
 		// Set the converter for the ComboBox inside the ChoiceDialog
 		@SuppressWarnings("unchecked")
 		ComboBox<NetworkInterface> endComboBox = (ComboBox<NetworkInterface>) endDialog.getDialogPane().lookup(COMBO_BOX);
@@ -855,11 +839,12 @@ public class NetworkTopologyController {
 			Line line = new Line();
 			line.setStrokeWidth(3);
 			line.setStroke(Color.DARKGRAY);
+			line.setMouseTransparent(true);
+
 			updateConnectionLine(line, startNode, endNode);
-
 			canvasPane.getChildren().addFirst(line); // Add to back
-			connectionLines.put(connection, line);
 
+			connectionLines.put(connection, line);
 		} catch (Exception ex) {
 			showError("Failed to create connection: " + ex.getMessage());
 		}
@@ -878,28 +863,24 @@ public class NetworkTopologyController {
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Load Router Configuration");
 		fileChooser.getExtensionFilters().addAll(
-				new FileChooser.ExtensionFilter("All Config Files", COMMAND_CONFIG_FILE_EXTENSION,
-						HIERARCHICAL_CONFIG_FILE_EXTENSION, TEXT_FILE_EXTENSION),
+				new FileChooser.ExtensionFilter("All Config Files", COMMAND_CONFIG_FILE_EXTENSION, HIERARCHICAL_CONFIG_FILE_EXTENSION, TEXT_FILE_EXTENSION),
 				new FileChooser.ExtensionFilter("Command Format", COMMAND_CONFIG_FILE_EXTENSION),
 				new FileChooser.ExtensionFilter("Hierarchical Format", HIERARCHICAL_CONFIG_FILE_EXTENSION),
 				new FileChooser.ExtensionFilter("Text Files", TEXT_FILE_EXTENSION),
-			new FileChooser.ExtensionFilter("All Files", "*.*")
+				new FileChooser.ExtensionFilter("All Files", "*.*")
 		);
 
 		Stage stage = (Stage) canvasPane.getScene().getWindow();
 		File file = fileChooser.showOpenDialog(stage);
-
 		if (file != null) {
 			try {
 				String config = Files.readString(file.toPath());
-
 				// Automatically detect format
 				ConfigurationParser parser = ConfigurationFactory.getParser(config);
 				parser.loadConfiguration(router, config);
 
 				// Update visual representation if interface states changed
 				updateInterfaceStates(router);
-
 				showInfo("Configuration loaded successfully from " + file.getName());
 			} catch (ConfigurationParseException e) {
 				showError("Configuration error: " + e.getMessage());
@@ -937,20 +918,16 @@ public class NetworkTopologyController {
 		}
 
 		boolean isCommandFormat = formatResult.get() == commandFormatButton;
-		ConfigurationGenerator generator = isCommandFormat ?
-			ConfigurationFactory.getCommandGenerator() :
-			ConfigurationFactory.getHierarchicalGenerator();
+		ConfigurationGenerator generator = isCommandFormat ? ConfigurationFactory.getCommandGenerator() : ConfigurationFactory.getHierarchicalGenerator();
 
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Save Router Configuration");
-
 		String extension = isCommandFormat ? COMMAND_CONFIG_FILE_EXTENSION : HIERARCHICAL_CONFIG_FILE_EXTENSION;
 		String description = isCommandFormat ? "Command Format" : "Hierarchical Format";
-
 		fileChooser.getExtensionFilters().addAll(
-			new FileChooser.ExtensionFilter(description, extension),
+				new FileChooser.ExtensionFilter(description, extension),
 				new FileChooser.ExtensionFilter("Text Files", TEXT_FILE_EXTENSION),
-			new FileChooser.ExtensionFilter("All Files", "*.*")
+				new FileChooser.ExtensionFilter("All Files", "*.*")
 		);
 
 		// Suggest filename
@@ -958,7 +935,6 @@ public class NetworkTopologyController {
 
 		Stage stage = (Stage) canvasPane.getScene().getWindow();
 		File file = fileChooser.showSaveDialog(stage);
-
 		if (file != null) {
 			try {
 				String config = generator.generateConfiguration(router);
@@ -972,7 +948,6 @@ public class NetworkTopologyController {
 
 	/**
 	 * Updates visual representation of interface states after configuration load.
-	 *
 	 * @param router the router whose interfaces to update
 	 */
 	private void updateInterfaceStates(Router router) {
@@ -1013,4 +988,3 @@ public class NetworkTopologyController {
 		double y;
 	}
 }
-

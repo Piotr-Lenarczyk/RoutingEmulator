@@ -34,6 +34,7 @@ public class SimpleTerminalTextArea extends TextArea {
 	 */
 	@Setter
 	private Consumer<String> onCommandSubmit;
+
 	/**
 	 * -- SETTER --
 	 * Sets the tab completion handler.
@@ -99,10 +100,22 @@ public class SimpleTerminalTextArea extends TextArea {
 	@SuppressWarnings("java:S6916")
 	private void handleKeyPress(KeyEvent event) {
 		switch (event.getCode()) {
-			case KeyCode.ENTER -> handleEnter();
-			case KeyCode.UP -> navigateHistory(-1);
-			case KeyCode.DOWN -> navigateHistory(1);
-			case KeyCode.TAB -> handleTab();
+			case KeyCode.ENTER -> {
+				handleEnter();
+				event.consume(); // Prevents default TextArea newline insertion
+			}
+			case KeyCode.UP -> {
+				navigateHistory(-1);
+				event.consume(); // Prevents default caret jumping
+			}
+			case KeyCode.DOWN -> {
+				navigateHistory(1);
+				event.consume(); // Prevents default caret jumping
+			}
+			case KeyCode.TAB -> {
+				handleTab();
+				event.consume(); // Prevents focus loss
+			}
 			case KeyCode.U -> {
 				if (event.isControlDown()) {
 					// Ctrl+U: Clear the command (but keep prompt)
@@ -133,17 +146,14 @@ public class SimpleTerminalTextArea extends TextArea {
 				positionCaret(promptStartPosition);
 				event.consume();
 			}
-			default -> {
-				// No action for other keys
-			}
+			// No action for other keys
+			// Additional check: if user somehow manages to position cursor before prompt, move it back
+			default -> Platform.runLater(() -> {
+				if (getCaretPosition() < promptStartPosition) {
+					positionCaret(promptStartPosition);
+				}
+			});
 		}
-
-		// Additional check: if user somehow manages to position cursor before prompt, move it back
-		Platform.runLater(() -> {
-			if (getCaretPosition() < promptStartPosition) {
-				positionCaret(promptStartPosition);
-			}
-		});
 	}
 
 	/**
@@ -151,7 +161,6 @@ public class SimpleTerminalTextArea extends TextArea {
 	 */
 	private void handleEnter() {
 		String fullText = getText();
-
 		// Extract command (everything after the prompt)
 		String command = "";
 		if (fullText.length() > promptStartPosition) {
@@ -163,7 +172,6 @@ public class SimpleTerminalTextArea extends TextArea {
 		if (!command.isEmpty()) {
 			commandHistory.add(command);
 			historyIndex = commandHistory.size();
-
 			if (onCommandSubmit != null) {
 				onCommandSubmit.accept(command);
 			}
@@ -180,11 +188,9 @@ public class SimpleTerminalTextArea extends TextArea {
 	 */
 	private void handleTab() {
 		String fullText = getText();
-
 		// Extract command (without prompt)
-		final String currentInput = fullText.length() > promptStartPosition
-				? fullText.substring(promptStartPosition)
-				: "";
+		final String currentInput = fullText.length() > promptStartPosition ?
+				fullText.substring(promptStartPosition) : "";
 
 		if (onTabComplete != null) {
 			onTabComplete.accept(currentInput, completions -> performTabCompletion(completions, currentInput));
@@ -211,8 +217,8 @@ public class SimpleTerminalTextArea extends TextArea {
 
 	private void handleSingleCompletion(List<String> completions, String currentInput) {
 		String completion = completions.getFirst();
-
 		// Find the position where the last word starts
+
 		// If input ends with space, we're completing a new empty word
 		boolean endsWithSpace = currentInput.endsWith(" ");
 		String trimmedInput = currentInput.trim();
@@ -251,4 +257,3 @@ public class SimpleTerminalTextArea extends TextArea {
 		positionCaret(getLength());
 	}
 }
-

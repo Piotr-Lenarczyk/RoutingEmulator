@@ -399,6 +399,7 @@ class NetworkTopologyTest {
 
 		String visualization = topology.visualize();
 
+		System.out.println(visualization);
 		assertTrue(visualization.contains("eth0"));
 		assertTrue(visualization.contains("<──>") || visualization.contains("--"));
 	}
