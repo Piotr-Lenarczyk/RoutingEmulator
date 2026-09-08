@@ -77,40 +77,20 @@ public class RouterInterface implements NetworkInterface {
 		this.status = InterfaceStatus.fromChars('u', 'D');
 	}
 
-	/**
-	 * Creates a router interface with full configuration.
-	 *
-	 * @param interfaceName the name of the interface
-	 * @param interfaceAddress the IP address and subnet mask
-	 * @param macAddress the MAC address
-	 * @param mtu the Maximum Transmission Unit
-	 * @param status the interface status (admin and link state)
-	 */
-	public RouterInterface(String interfaceName, InterfaceAddress interfaceAddress, MacAddress macAddress, int mtu, InterfaceStatus status) {
-		this.interfaceName = interfaceName;
-		this.interfaceAddress = interfaceAddress;
-		this.macAddress = macAddress;
-		this.mtu = mtu;
-		this.status = status;
-	}
 
-	/**
-	 * Creates a router interface with full configuration including VRF.
-	 *
-	 * @param interfaceName the name of the interface
-	 * @param interfaceAddress the IP address and subnet mask
-	 * @param macAddress the MAC address
-	 * @param vrf the VRF (Virtual Routing and Forwarding) name
-	 * @param mtu the Maximum Transmission Unit
-	 * @param status the interface status (admin and link state)
-	 */
-	public RouterInterface(String interfaceName, InterfaceAddress interfaceAddress, MacAddress macAddress, String vrf, int mtu, InterfaceStatus status) {
+	public RouterInterface(String interfaceName, LinkState linkState) {
 		this.interfaceName = interfaceName;
-		this.interfaceAddress = interfaceAddress;
-		this.macAddress = macAddress;
-		this.vrf = vrf;
-		this.mtu = mtu;
-		this.status = status;
+		this.interfaceAddress = null;
+		this.macAddress = new MacAddress();
+		this.description = null;
+		if (interfaceName.startsWith("eth") || interfaceName.startsWith("dum")) {
+			this.mtu = 1500;
+		} else if (interfaceName.startsWith("lo")) {
+			this.mtu = 65536;
+		}
+
+		// Interface starts with admin UP
+		this.status = InterfaceStatus.fromChars('u', linkState.getCode());
 	}
 
 	/**
@@ -218,6 +198,12 @@ public class RouterInterface implements NetworkInterface {
 	 * @param topology the network topology to check for connections
 	 */
 	public void updateLinkState(NetworkTopology topology) {
+		// Dummy interfaces are immune to physical link state outages
+		if (this.interfaceName.startsWith("dum")) {
+			logger.finer("Interface %s is a dummy interface. Link state remains UP".formatted(this.interfaceName));
+			this.status = new InterfaceStatus(this.status.getAdmin(), LinkState.UP);
+			return;
+		}
 		LinkState newLinkState = topology.hasActiveConnection(this) ? LinkState.UP : LinkState.DOWN;
 		logger.finer("Updating link state for interface %s to %s".formatted(this.interfaceName, newLinkState));
 		this.status = new InterfaceStatus(this.status.getAdmin(), newLinkState);

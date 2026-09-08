@@ -291,11 +291,28 @@ public class Router {
 			logger.warning("Attempted to assign invalid host address %s to interface %s".formatted(interfaceAddress, routerInterfaceName));
 			throw new InvalidAddressException(interfaceAddress + " is not a valid host IP address");
 		}
-
-		RouterInterface routerInterface = stagedInterfaces.stream()
-				.filter(intf -> intf.getInterfaceName().equals(routerInterfaceName))
-				.findFirst()
-				.orElseThrow(() -> new InterfaceNotFoundException(INTERFACE_NOT_EXISTS.formatted(routerInterfaceName)));
+		RouterInterface routerInterface;
+		if (routerInterfaceName.matches("eth\\d+\\.\\d+") || routerInterfaceName.matches("dum\\d+")) {
+			if (routerInterfaceName.matches("eth\\d+\\.\\d+")) {
+				logger.fine("Creating new VIF interface %s".formatted(routerInterfaceName));
+				routerInterface = stagedInterfaces.stream()
+						.filter(intf -> intf.getInterfaceName().equals(routerInterfaceName))
+						.findFirst()
+						.orElse(new RouterInterface(routerInterfaceName));
+			} else {
+				logger.fine("Creating new dummy interface %s".formatted(routerInterfaceName));
+				routerInterface = stagedInterfaces.stream()
+						.filter(intf -> intf.getInterfaceName().equals(routerInterfaceName))
+						.findFirst()
+						.orElse(new RouterInterface(routerInterfaceName, LinkState.UP));
+			}
+			stagedInterfaces.add(routerInterface);
+		} else {
+			routerInterface = stagedInterfaces.stream()
+					.filter(intf -> intf.getInterfaceName().equals(routerInterfaceName))
+					.findFirst()
+					.orElseThrow(() -> new InterfaceNotFoundException(INTERFACE_NOT_EXISTS.formatted(routerInterfaceName)));
+		}
 
 		// Check duplicate first
 		if (routerInterface.getInterfaceAddress() != null && routerInterface.getInterfaceAddress().equals(interfaceAddress)) {

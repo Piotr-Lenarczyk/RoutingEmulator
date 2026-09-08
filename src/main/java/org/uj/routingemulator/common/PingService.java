@@ -15,6 +15,7 @@ import java.util.logging.Logger;
  * Simple PingService: host-only L3 ping using ForwardingEngine. RTT is mocked deterministically.
  */
 public class PingService {
+
 	private static final Logger logger = Logger.getLogger(PingService.class.getName());
 	private static final long BASE_MS = 1;
 	private static final long PER_HOP_MS = 1;
@@ -39,6 +40,54 @@ public class PingService {
 			return new PingStatistics(failures);
 		}
 		return ping(src, dst, count, topology);
+	}
+
+	private static RouterInterface findInterfaceWithSubnet(Router srcRouter, RouterInterface ri) {
+		// First priority: Try to pick a standard physical interface (e.g. eth)
+		for (RouterInterface candidate : srcRouter.getInterfaces()) {
+			if (candidate.getSubnet() != null && !candidate.getInterfaceName().startsWith("dum")) {
+				return candidate;
+			}
+		}
+		// Second priority: Fallback to a dummy interface if no physical interface is available
+		for (RouterInterface candidate : srcRouter.getInterfaces()) {
+			if (candidate.getSubnet() != null) {
+				return candidate;
+			}
+		}
+		return ri;
+	}
+
+	private static IPAddress findSourceIp(RouterInterface ri) {
+		IPAddress sourceIp;
+		if (ri.getInterfaceAddress() != null && ri.getInterfaceAddress().ipAddress() != null) {
+			sourceIp = ri.getInterfaceAddress().ipAddress();
+		} else {
+			sourceIp = ri.getSubnet().networkAddress();
+		}
+		return sourceIp;
+	}
+
+	private static RouterInterface findExitInterfaceFromRoutingTable(Router srcRouter, IPAddress dst, RouterInterface ri) {
+		Optional<StaticRoutingEntry> matchedRoute = srcRouter.getRoutingTable().getRoutingEntries().stream()
+				.filter(e -> !e.isDisabled() && e.getSubnet() != null && e.getSubnet().contains(dst))
+				.findFirst();
+
+		if (matchedRoute.isPresent()) {
+			StaticRoutingEntry route = matchedRoute.get();
+			if (route.getRouterInterface() != null) {
+				ri = route.getRouterInterface();
+			} else if (route.getNextHop() != null) {
+				// try to infer which local interface would be used to reach next-hop (next-hop lies in one of router's subnets)
+				for (RouterInterface candidate : srcRouter.getInterfaces()) {
+					if (candidate.getSubnet() != null && candidate.getSubnet().contains(route.getNextHop())) {
+						ri = candidate;
+						break;
+					}
+				}
+			}
+		}
+		return ri;
 	}
 
 	/**
@@ -73,7 +122,9 @@ public class PingService {
 			logger.finest("Probe %d: Sending ICMP Echo Request from %s to %s".formatted(seq, srcAddr, dst));
 			Packet p = new Packet(srcAddr, dst, Packet.PacketType.ICMP_ECHO_REQUEST, 64);
 			logger.finest("Forwarding packet %s to destination %s".formatted(p, dst));
+
 			ForwardingOutcome outcome = engine.forward(p, src, topology);
+
 			if (outcome.reached()) {
 				long rtt = BASE_MS + outcome.hopCount() * PER_HOP_MS;
 				logger.finest("Probe %d succeeded: Reached destination in %d ms with %d hops".formatted(seq, rtt, outcome.hopCount()));
@@ -83,49 +134,7 @@ public class PingService {
 				results.add(new PingResult(seq, false, outcome.hopCount(), 0, outcome.reason()));
 			}
 		}
-
 		return new PingStatistics(results);
-	}
-
-	private static IPAddress findSourceIp(RouterInterface ri) {
-		IPAddress sourceIp;
-		if (ri.getInterfaceAddress() != null && ri.getInterfaceAddress().ipAddress() != null) {
-			sourceIp = ri.getInterfaceAddress().ipAddress();
-		} else {
-			sourceIp = ri.getSubnet().networkAddress();
-		}
-		return sourceIp;
-	}
-
-	private static RouterInterface findInterfaceWithSubnet(Router srcRouter, RouterInterface ri) {
-		for (RouterInterface candidate : srcRouter.getInterfaces()) {
-			if (candidate.getSubnet() != null) {
-				ri = candidate;
-				break;
-			}
-		}
-		return ri;
-	}
-
-	private static RouterInterface findExitInterfaceFromRoutingTable(Router srcRouter, IPAddress dst, RouterInterface ri) {
-		Optional<StaticRoutingEntry> matchedRoute = srcRouter.getRoutingTable().getRoutingEntries().stream()
-				.filter(e -> !e.isDisabled() && e.getSubnet() != null && e.getSubnet().contains(dst))
-				.findFirst();
-		if (matchedRoute.isPresent()) {
-			StaticRoutingEntry route = matchedRoute.get();
-			if (route.getRouterInterface() != null) {
-				ri = route.getRouterInterface();
-			} else if (route.getNextHop() != null) {
-				// try to infer which local interface would be used to reach next-hop (next-hop lies in one of router's subnets)
-				for (RouterInterface candidate : srcRouter.getInterfaces()) {
-					if (candidate.getSubnet() != null && candidate.getSubnet().contains(route.getNextHop())) {
-						ri = candidate;
-						break;
-					}
-				}
-			}
-		}
-		return ri;
 	}
 
 	/**
@@ -146,9 +155,11 @@ public class PingService {
 				break;
 			}
 		}
+
 		if (ri == null) {
 			// If no local interface contains the destination, consult routing table to determine exit interface
 			ri = findExitInterfaceFromRoutingTable(srcRouter, dst, ri);
+
 			// fallback: pick first interface with a subnet
 			if (ri == null) {
 				ri = findInterfaceWithSubnet(srcRouter, ri);
@@ -171,7 +182,9 @@ public class PingService {
 		IPAddress srcAddr = sourceIp != null ? sourceIp : new IPAddress(0, 0, 0, 0);
 		logger.finest("Probe %d: Router %s sending ICMP Echo Request from %s to %s with ttl=%d".formatted(seq, srcRouter.getName(), srcAddr, dst, ttl));
 		Packet p = new Packet(srcAddr, dst, Packet.PacketType.ICMP_ECHO_REQUEST, ttl);
+
 		ForwardingOutcome outcome = engine.forward(p, srcRouter, topology);
+
 		if (outcome.reached()) {
 			long rtt = BASE_MS + outcome.hopCount() * PER_HOP_MS;
 			results.add(new PingResult(seq, true, outcome.hopCount(), rtt, null));

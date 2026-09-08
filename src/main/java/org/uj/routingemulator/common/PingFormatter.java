@@ -24,7 +24,7 @@ public class PingFormatter {
         String dstStr = dst.toString();
         String srcStr = src != null ? src.toString() : "0.0.0.0";
 
-        sb.append("PING ").append(dstStr).append(" (").append(dstStr).append("): 56(84) bytes of data.%n");
+        sb.append("PING ").append(dstStr).append(" (").append(dstStr).append("): 56(84) bytes of data.\n");
 
         List<PingResult> results = stats.results();
 
@@ -40,7 +40,7 @@ public class PingFormatter {
             }
         }
 
-        sb.append("%n--- ").append(dstStr).append(" ping statistics ---%n");
+        sb.append("\n--- ").append(dstStr).append(" ping statistics ---\n");
         int transmitted = stats.getSent();
         int received = stats.getReceived();
         long errors = (long) transmitted - received; // simple

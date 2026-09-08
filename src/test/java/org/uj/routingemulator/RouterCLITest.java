@@ -4,18 +4,24 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.uj.routingemulator.router.Router;
+import org.uj.routingemulator.router.RouterInterface;
 import org.uj.routingemulator.router.RouterMode;
 import org.uj.routingemulator.router.cli.RouterCLIParser;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.logging.Logger;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests for Router CLI commands.
  */
 class RouterCLITest {
+	private static final Logger logger = Logger.getLogger(RouterCLITest.class.getName());
 	private Router router;
 	private RouterCLIParser parser;
 	private final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -35,6 +41,26 @@ class RouterCLITest {
 
 	private String normalizeOutput(String output) {
 		return output.replaceAll("\r", "");
+	}
+
+	private void loadConfiguration(String config, RouterCLIParser parser, Router router) {
+		for (String line : config.split("\n")) {
+			if (line.trim().isEmpty() || line.trim().startsWith("#")) {
+				continue;
+			}
+			logger.fine("Loading line: " + line);
+			try {
+				parser.executeCommand(line, router);
+			} catch (RuntimeException e) {
+				throw e;
+			}
+		}
+	}
+
+	private void loadConfigurationFromFile(String fileName, RouterCLIParser parser, Router router) throws Exception {
+		String config = Files.readString(Path.of(fileName));
+		logger.fine("Loading configuration from file: " + fileName);
+		loadConfiguration(config, parser, router);
 	}
 
 	/**
@@ -776,6 +802,45 @@ class RouterCLITest {
 		// Should show interface status as A/D (Admin Down / Link Down) or A/u (Admin Down / Link Up)
 		assertTrue(output.contains("eth0"), "Should list eth0");
 		assertTrue(output.contains("A/D") || output.contains("A/u"), "Should show admin down status");
+	}
+
+	@Test
+	void testSimpleDummyVifInterface() {
+		parser.executeCommand("configure", router);
+		assertDoesNotThrow(() -> {
+			parser.executeCommand("set interfaces ethernet eth0 vif 1000 address 192.168.1.1/30", router);
+			parser.executeCommand("set interfaces dummy dum0 address 192.168.2.1/24", router);
+		});
+		parser.executeCommand("set protocols static route 0.0.0.0/0 next-hop 192.168.1.2", router);
+		parser.executeCommand("commit", router);
+		outputStream.reset();
+
+		assertEquals(4, router.getInterfaces().size(), "Should have 4 interfaces configured");
+		assertThat(router.getInterfaces())
+				.extracting(RouterInterface::getInterfaceName)
+				.containsExactlyInAnyOrder("eth0", "eth0.1000", "dum0", "lo");
+		assertEquals(1, router.getRoutingTable().getRoutingEntries().size(), "Should have 1 route configured");
+	}
+
+	@Test
+	void testSimpleDummyVifInterfaceFromFile() {
+		assertDoesNotThrow(() -> loadConfigurationFromFile("src/test/resources/ra.cfg", parser, router));
+
+		assertEquals(4, router.getInterfaces().size(), "Should have 4 interfaces configured");
+		assertThat(router.getInterfaces())
+				.extracting(RouterInterface::getInterfaceName)
+				.containsExactlyInAnyOrder("eth0", "eth0.1000", "dum0", "lo");
+		assertEquals(1, router.getRoutingTable().getRoutingEntries().size(), "Should have 1 route configured");
+	}
+
+	@Test
+	void testLoadingConfigurationFromFile() {
+		String[] fileNames = {"ra.cfg", "rb.cfg", "rc.cfg", "rd.cfg"};
+
+		for (String fileName : fileNames) {
+			assertDoesNotThrow(() -> loadConfigurationFromFile("src/test/resources/" + fileName, parser, router));
+			router.reset();
+		}
 	}
 }
 
