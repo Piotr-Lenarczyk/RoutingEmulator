@@ -43,13 +43,19 @@ public class PingService {
 	}
 
 	private static RouterInterface findInterfaceWithSubnet(Router srcRouter, RouterInterface ri) {
-		// First priority: Try to pick a standard physical interface (e.g. eth)
+		// Priority 1: Standard physical interface (e.g. eth0)
 		for (RouterInterface candidate : srcRouter.getInterfaces()) {
-			if (candidate.getSubnet() != null && !candidate.getInterfaceName().startsWith("dum")) {
+			if (candidate.getSubnet() != null && !candidate.getInterfaceName().contains(".") && !candidate.getInterfaceName().startsWith("dum")) {
 				return candidate;
 			}
 		}
-		// Second priority: Fallback to a dummy interface if no physical interface is available
+		// Priority 2: VIF sub-interface (e.g. eth0.1000)
+		for (RouterInterface candidate : srcRouter.getInterfaces()) {
+			if (candidate.getSubnet() != null && candidate.getInterfaceName().matches("eth\\d+\\.\\d+")) {
+				return candidate;
+			}
+		}
+		// Priority 3: Fallback to a dummy interface
 		for (RouterInterface candidate : srcRouter.getInterfaces()) {
 			if (candidate.getSubnet() != null) {
 				return candidate;

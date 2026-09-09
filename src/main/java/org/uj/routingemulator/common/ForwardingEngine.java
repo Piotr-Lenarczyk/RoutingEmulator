@@ -158,13 +158,42 @@ public class ForwardingEngine {
     }
 
     // ==================================================================================
+    // VIF and Topology Helpers
+    // ==================================================================================
+
+    /**
+     * Retrieves the physical interface underlying a given interface.
+     * E.g., for VIF eth0.1000, it returns eth0.
+     */
+    private RouterInterface getPhysicalInterface(Router router, RouterInterface iface) {
+        if (iface.getInterfaceName().contains(".")) {
+            String parentName = iface.getInterfaceName().split("\\.")[0];
+            return router.getInterfaces().stream()
+                    .filter(i -> i.getInterfaceName().equals(parentName))
+                    .findFirst()
+                    .orElse(iface);
+        }
+        return iface;
+    }
+
+    private boolean isDirectlyConnectedNeighbor(NetworkTopology topology, Router currentRouter, RouterInterface localIf, Router neighborRouter, RouterInterface neighborIf) {
+        RouterInterface localPhysical = getPhysicalInterface(currentRouter, localIf);
+        RouterInterface neighborPhysical = getPhysicalInterface(neighborRouter, neighborIf);
+        return topology.areInterfacesL2Connected(localPhysical, neighborPhysical);
+    }
+
+
+    // ==================================================================================
     // Shared traversal core (used by both public forward() overloads)
     // ==================================================================================
 
     private ForwardingOutcome resolveDirectSubnet(Router currentRouter, RouterInterface dstIf, Packet packet,
                                                   NetworkTopology topology, int hopsBeforeThisHop,
                                                   boolean verifyOwnAddressReturn) {
-        if (dstIf.isDisabled()) {
+        RouterInterface physicalIf = getPhysicalInterface(currentRouter, dstIf);
+
+        // If either VIF or its parent is administratively down, block forwarding.
+        if (dstIf.isDisabled() || physicalIf.isDisabled()) {
             logger.fine(FORWARDING_FAILURE_INTERFACE_ADMIN_DOWN.formatted(dstIf.getInterfaceName(), currentRouter.getName()));
             return new ForwardingOutcome(false, hopsBeforeThisHop + 1, INTERFACE_ADMIN_DOWN);
         }
@@ -182,14 +211,17 @@ public class ForwardingEngine {
             return new ForwardingOutcome(false, hops, TRAFFIC_DISCARDED_EGRESS_DUMMY_INTERFACE);
         }
 
-        HostInterface foundHost = topology.findHostInterfaceByIpConnectedToInterface(dstIf, packet.getDestination());
+        HostInterface foundHost = topology.findHostInterfaceByIpConnectedToInterface(physicalIf, packet.getDestination());
         if (foundHost != null) {
             return resolveHostOnSubnetReached(currentRouter, dstIf, foundHost, packet, topology, hops, verifyOwnAddressReturn);
         }
 
         RouterInterface neighborRouterIf = findInterfaceByIp(topology, packet.getDestination());
-        if (neighborRouterIf != null && isDirectlyConnectedNeighbor(topology, dstIf, neighborRouterIf)) {
-            return resolveNeighborInterfaceReached(neighborRouterIf, packet, topology, hops);
+        if (neighborRouterIf != null) {
+            Router neighborRouter = findRouterOwningInterface(topology, neighborRouterIf);
+            if (neighborRouter != null && isDirectlyConnectedNeighbor(topology, currentRouter, dstIf, neighborRouter, neighborRouterIf)) {
+                return resolveNeighborInterfaceReached(neighborRouterIf, packet, topology, hops);
+            }
         }
 
         logger.fine("Forwarding failure: no host with IP %s found on subnet connected to router %s interface %s"
@@ -266,7 +298,9 @@ public class ForwardingEngine {
 
     private RouteStep resolveInterfaceRoute(Router currentRouter, RouterInterface exitIf, IPAddress destination,
                                             NetworkTopology topology, int hops) {
-        if (exitIf.isDisabled()) {
+        RouterInterface physicalIf = getPhysicalInterface(currentRouter, exitIf);
+
+        if (exitIf.isDisabled() || physicalIf.isDisabled()) {
             logger.fine(FORWARDING_FAILURE_INTERFACE_ADMIN_DOWN.formatted(exitIf.getInterfaceName(), currentRouter.getName()));
             return RouteStep.terminal(new ForwardingOutcome(false, hops, INTERFACE_ADMIN_DOWN));
         }
@@ -278,14 +312,14 @@ public class ForwardingEngine {
             return RouteStep.terminal(new ForwardingOutcome(false, hops, TRAFFIC_DISCARDED_EGRESS_DUMMY_INTERFACE));
         }
 
-        Connection exitConn = topology.getConnectionForInterface(exitIf);
+        Connection exitConn = topology.getConnectionForInterface(physicalIf);
         if (exitConn == null) {
             logger.fine("Forwarding failure: exit interface %s on router %s is not connected to any other interface"
                     .formatted(exitIf.getInterfaceName(), currentRouter.getName()));
             return RouteStep.terminal(new ForwardingOutcome(false, hops, INTERFACE_NOT_CONNECTED));
         }
 
-        HostInterface foundHost = topology.findHostInterfaceByIpConnectedToInterface(exitIf, destination);
+        HostInterface foundHost = topology.findHostInterfaceByIpConnectedToInterface(physicalIf, destination);
         if (foundHost != null) {
             logger.fine("Forwarding success: reached destination host via exit interface %s on router %s"
                     .formatted(exitIf.getInterfaceName(), currentRouter.getName()));
@@ -293,7 +327,7 @@ public class ForwardingEngine {
         }
 
         // L2 search for another connected router, bridging across switches if necessary
-        RouterInterface neighborRouterIf = topology.findFirstOtherRouterInterfaceConnectedToInterface(exitIf);
+        RouterInterface neighborRouterIf = topology.findFirstOtherRouterInterfaceConnectedToInterface(physicalIf);
         if (neighborRouterIf != null) {
             Router neighborRouter = findRouterOwningInterface(topology, neighborRouterIf);
             if (neighborRouter == null) {
@@ -405,6 +439,12 @@ public class ForwardingEngine {
     private ForwardingOutcome resolveReturnRouteDirectSubnet(Router currentRouter, RouterInterface dstIf, IPAddress dstIp,
                                                              NetworkTopology topology, int hops) {
 
+        RouterInterface physicalIf = getPhysicalInterface(currentRouter, dstIf);
+
+        if (dstIf.isDisabled() || physicalIf.isDisabled()) {
+            return new ForwardingOutcome(false, hops, INTERFACE_ADMIN_DOWN);
+        }
+
         if (dstIf.getInterfaceAddress() != null && dstIf.getInterfaceAddress().ipAddress().equals(dstIp)) {
             logger.finer("Return route verification success: destination IP %s matches router %s interface %s"
                     .formatted(dstIp, currentRouter.getName(), dstIf.getInterfaceName()));
@@ -418,7 +458,7 @@ public class ForwardingEngine {
             return new ForwardingOutcome(false, hops, TRAFFIC_DISCARDED_EGRESS_DUMMY_INTERFACE);
         }
 
-        HostInterface foundHost = topology.findHostInterfaceByIpConnectedToInterface(dstIf, dstIp);
+        HostInterface foundHost = topology.findHostInterfaceByIpConnectedToInterface(physicalIf, dstIp);
         if (foundHost != null) {
             logger.finer("Return route verification success: destination IP %s matches host reachable from router %s interface %s"
                     .formatted(dstIp, currentRouter.getName(), dstIf.getInterfaceName()));
@@ -426,10 +466,13 @@ public class ForwardingEngine {
         }
 
         RouterInterface neighborRouterIf = findInterfaceByIp(topology, dstIp);
-        if (neighborRouterIf != null && isDirectlyConnectedNeighbor(topology, dstIf, neighborRouterIf)) {
-            logger.finer("Return route verification success: destination IP %s matches neighbor router interface %s on router %s"
-                    .formatted(dstIp, neighborRouterIf.getInterfaceName(), currentRouter.getName()));
-            return new ForwardingOutcome(true, hops, ROUTER_RETURN_REACHED);
+        if (neighborRouterIf != null) {
+            Router neighborRouter = findRouterOwningInterface(topology, neighborRouterIf);
+            if (neighborRouter != null && isDirectlyConnectedNeighbor(topology, currentRouter, dstIf, neighborRouter, neighborRouterIf)) {
+                logger.finer("Return route verification success: destination IP %s matches neighbor router interface %s on router %s"
+                        .formatted(dstIp, neighborRouterIf.getInterfaceName(), currentRouter.getName()));
+                return new ForwardingOutcome(true, hops, ROUTER_RETURN_REACHED);
+            }
         }
 
         logger.finer("Return route verification failure: no host with IP %s found on subnet connected to router %s interface %s"
@@ -464,6 +507,13 @@ public class ForwardingEngine {
 
     private ReturnRouteStep resolveReturnRouteInterfaceRoute(Router currentRouter, RouterInterface exitIf, IPAddress dstIp,
                                                              NetworkTopology topology, int hops) {
+
+        RouterInterface physicalIf = getPhysicalInterface(currentRouter, exitIf);
+
+        if (exitIf.isDisabled() || physicalIf.isDisabled()) {
+            return ReturnRouteStep.terminal(new ForwardingOutcome(false, hops, INTERFACE_ADMIN_DOWN));
+        }
+
         // Return path drops if it requires exiting a dummy interface
         if (exitIf.getInterfaceName().startsWith("dum")) {
             logger.finer("Return route verification failure: Traffic discarded via dummy interface %s on router %s"
@@ -471,14 +521,14 @@ public class ForwardingEngine {
             return ReturnRouteStep.terminal(new ForwardingOutcome(false, hops, TRAFFIC_DISCARDED_EGRESS_DUMMY_INTERFACE));
         }
 
-        Connection exitConn = topology.getConnectionForInterface(exitIf);
+        Connection exitConn = topology.getConnectionForInterface(physicalIf);
         if (exitConn == null) {
             logger.finer("Return route verification failure: exit interface %s on router %s is not connected to any other interface"
                     .formatted(exitIf.getInterfaceName(), currentRouter.getName()));
             return ReturnRouteStep.terminal(new ForwardingOutcome(false, hops, INTERFACE_NOT_CONNECTED));
         }
 
-        HostInterface foundHost = topology.findHostInterfaceByIpConnectedToInterface(exitIf, dstIp);
+        HostInterface foundHost = topology.findHostInterfaceByIpConnectedToInterface(physicalIf, dstIp);
         if (foundHost != null) {
             logger.finer("Return route verification success: destination IP %s matches host reachable from router %s exit interface %s"
                     .formatted(dstIp, currentRouter.getName(), exitIf.getInterfaceName()));
@@ -486,14 +536,17 @@ public class ForwardingEngine {
         }
 
         RouterInterface neighborIf = findInterfaceByIp(topology, dstIp);
-        if (neighborIf != null && isDirectlyConnectedNeighbor(topology, exitIf, neighborIf)) {
-            logger.finer("Return route verification success: destination IP %s matches neighbor router interface %s on router %s"
-                    .formatted(dstIp, neighborIf.getInterfaceName(), currentRouter.getName()));
-            return ReturnRouteStep.terminal(new ForwardingOutcome(true, hops, ROUTER_RETURN_REACHED));
+        if (neighborIf != null) {
+            Router neighborRouter = findRouterOwningInterface(topology, neighborIf);
+            if (neighborRouter != null && isDirectlyConnectedNeighbor(topology, currentRouter, exitIf, neighborRouter, neighborIf)) {
+                logger.finer("Return route verification success: destination IP %s matches neighbor router interface %s on router %s"
+                        .formatted(dstIp, neighborIf.getInterfaceName(), currentRouter.getName()));
+                return ReturnRouteStep.terminal(new ForwardingOutcome(true, hops, ROUTER_RETURN_REACHED));
+            }
         }
 
         // L2 search for another connected router, bridging across switches if necessary
-        RouterInterface neighborRouterIf = topology.findFirstOtherRouterInterfaceConnectedToInterface(exitIf);
+        RouterInterface neighborRouterIf = topology.findFirstOtherRouterInterfaceConnectedToInterface(physicalIf);
         if (neighborRouterIf != null) {
             Router neighborRouter = findRouterOwningInterface(topology, neighborRouterIf);
             if (neighborRouter == null) {
@@ -529,7 +582,6 @@ public class ForwardingEngine {
             logger.finer("Return route verification failure: next-hop router for IP %s on router %s not found".formatted(nextHop, currentRouter.getName()));
             return ReturnRouteStep.terminal(new ForwardingOutcome(false, hops, NEXT_HOP_NOT_FOUND));
         }
-
         return ReturnRouteStep.advance(neighborRouter);
     }
 
@@ -537,10 +589,6 @@ public class ForwardingEngine {
         return router.getInterfaces().stream()
                 .filter(iface -> iface.getSubnet() != null && belongsToSubnet(destination, iface.getSubnet()))
                 .findFirst();
-    }
-
-    private boolean isDirectlyConnectedNeighbor(NetworkTopology topology, NetworkInterface localIf, NetworkInterface candidate) {
-        return topology.areInterfacesL2Connected(localIf, candidate);
     }
 
     private boolean belongsToSubnet(IPAddress ip, Subnet subnet) {

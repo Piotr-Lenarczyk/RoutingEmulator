@@ -351,9 +351,28 @@ public class Router {
 				.filter(intf -> intf.getInterfaceName().equals(routerInterfaceName))
 				.findFirst()
 				.orElseThrow(() -> new InterfaceNotFoundException(INTERFACE_NOT_EXISTS.formatted(routerInterfaceName)));
+
 		logger.info("%s: Disabling interface %s in staged configuration".formatted(this.getName(), routerInterfaceName));
+
 		routerInterface.disable();
 		hasUncommittedChanges = true;
+
+		// If it's a physical interface (does not contain a dot), find and disable its children
+		if (!routerInterfaceName.contains(".")) {
+			// Create the prefix to look for, e.g., "eth0."
+			String childPrefix = routerInterfaceName + ".";
+
+			for (RouterInterface childVif : stagedInterfaces) {
+				// If the interface name starts with "eth0." and is not already disabled
+				if (childVif.getInterfaceName().startsWith(childPrefix) && !childVif.isDisabled()) {
+					logger.fine("%s: Automatically disabling child VIF %s because parent %s was disabled"
+							.formatted(this.getName(), childVif.getInterfaceName(), routerInterfaceName));
+
+					childVif.disable();
+					hasUncommittedChanges = true;
+				}
+			}
+		}
 	}
 
 	/**

@@ -204,8 +204,62 @@ public class RouterInterface implements NetworkInterface {
 			this.status = new InterfaceStatus(this.status.getAdmin(), LinkState.UP);
 			return;
 		}
+
+		// VIF inherits link state from its parent interface
+		if (this.interfaceName.matches("eth\\d+\\.\\d+")) {
+			String parentName = this.interfaceName.split("\\.")[0];
+			Router owner = null;
+
+			// Find owning router
+			for (Router router : topology.getRouters()) {
+				if (router.getInterfaces().contains(this)) {
+					owner = router;
+					break;
+				}
+			}
+
+			if (owner != null) {
+				RouterInterface parent = owner.findFromName(parentName);
+				if (parent != null) {
+					if (parent.getStatus().getAdmin() == AdminState.ADMIN_DOWN
+							|| parent.getStatus().getLink() == LinkState.DOWN) {
+						this.status = new InterfaceStatus(this.status.getAdmin(), LinkState.DOWN);
+					} else {
+						this.status = new InterfaceStatus(this.status.getAdmin(), LinkState.UP);
+					}
+					return;
+				}
+			}
+
+			// If parent is not found, default to DOWN
+			this.status = new InterfaceStatus(this.status.getAdmin(), LinkState.DOWN);
+			return;
+		}
+
+		// Standard physical interfaces
 		LinkState newLinkState = topology.hasActiveConnection(this) ? LinkState.UP : LinkState.DOWN;
 		logger.finer("Updating link state for interface %s to %s".formatted(this.interfaceName, newLinkState));
 		this.status = new InterfaceStatus(this.status.getAdmin(), newLinkState);
+
+		// Cascade the link state update to all child VIFs
+		Router owner = null;
+		for (Router router : topology.getRouters()) {
+			if (router.getInterfaces().contains(this)) {
+				owner = router;
+				break;
+			}
+		}
+
+		if (owner != null) {
+			String childPrefix = this.interfaceName + ".";
+			for (RouterInterface childVif : owner.getInterfaces()) {
+				if (childVif.getInterfaceName().startsWith(childPrefix)) {
+					logger.finer("Cascading link state update from parent %s to child VIF %s"
+							.formatted(this.interfaceName, childVif.getInterfaceName()));
+					// Trigger the child to re-evaluate its state
+					childVif.updateLinkState(topology);
+				}
+			}
+		}
 	}
 }
