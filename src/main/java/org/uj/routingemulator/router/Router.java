@@ -270,77 +270,50 @@ public class Router {
 			throw new InvalidModeException("Invalid command: set [interfaces]");
 		}
 
-		// Provide validation with concise error messages
 		if (interfaceAddress.isNetworkAddress()) {
-			logger.warning("Attempted to assign network address %s to interface %s".formatted(interfaceAddress, routerInterfaceName));
-			throw new InvalidAddressException(
-					String.format("Cannot assign network address %s to the interface. Use a host address instead",
-							interfaceAddress)
-			);
+			throw new InvalidAddressException(String.format("Cannot assign network address %s to the interface. Use a host address instead", interfaceAddress));
 		}
-
 		if (interfaceAddress.isBroadcastAddress()) {
-			logger.warning("Attempted to assign broadcast address %s to interface %s".formatted(interfaceAddress, routerInterfaceName));
-			throw new InvalidAddressException(
-					String.format("Cannot assign broadcast address %s to the interface. Use a host address instead",
-							interfaceAddress)
-			);
+			throw new InvalidAddressException(String.format("Cannot assign broadcast address %s to the interface. Use a host address instead", interfaceAddress));
 		}
-
 		if (!interfaceAddress.isValidHostAddress()) {
-			logger.warning("Attempted to assign invalid host address %s to interface %s".formatted(interfaceAddress, routerInterfaceName));
 			throw new InvalidAddressException(interfaceAddress + " is not a valid host IP address");
 		}
-		RouterInterface routerInterface;
-		if (routerInterfaceName.matches("eth\\d+\\.\\d+") || routerInterfaceName.matches("dum\\d+")) {
-			if (routerInterfaceName.matches("eth\\d+\\.\\d+")) {
+
+		InterfaceType determinedType = InterfaceType.fromName(routerInterfaceName);
+		RouterInterface routerInterface = stagedInterfaces.stream()
+				.filter(intf -> intf.getInterfaceName().equals(routerInterfaceName))
+				.findFirst()
+				.orElse(null);
+
+		// Dynamically create interface if it doesn't exist (supports vifs and dummies)
+		if (routerInterface == null) {
+			if (determinedType == InterfaceType.VIF) {
 				logger.fine("Creating new VIF interface %s".formatted(routerInterfaceName));
-				routerInterface = stagedInterfaces.stream()
-						.filter(intf -> intf.getInterfaceName().equals(routerInterfaceName))
-						.findFirst()
-						.orElse(new RouterInterface(routerInterfaceName));
-			} else {
+				routerInterface = new RouterInterface(routerInterfaceName);
+			} else if (determinedType == InterfaceType.DUMMY) {
 				logger.fine("Creating new dummy interface %s".formatted(routerInterfaceName));
-				routerInterface = stagedInterfaces.stream()
-						.filter(intf -> intf.getInterfaceName().equals(routerInterfaceName))
-						.findFirst()
-						.orElse(new RouterInterface(routerInterfaceName, LinkState.UP));
+				routerInterface = new RouterInterface(routerInterfaceName, LinkState.UP);
+			} else {
+				// If it is a regular interface but not found, throw error to avoid creating arbitrary names
+				throw new InterfaceNotFoundException(INTERFACE_NOT_EXISTS.formatted(routerInterfaceName));
 			}
 			stagedInterfaces.add(routerInterface);
-		} else {
-			routerInterface = stagedInterfaces.stream()
-					.filter(intf -> intf.getInterfaceName().equals(routerInterfaceName))
-					.findFirst()
-					.orElseThrow(() -> new InterfaceNotFoundException(INTERFACE_NOT_EXISTS.formatted(routerInterfaceName)));
 		}
 
-		// Check duplicate first
 		if (routerInterface.getInterfaceAddress() != null && routerInterface.getInterfaceAddress().equals(interfaceAddress)) {
-			logger.warning("Attempted to assign duplicate address %s to interface %s".formatted(interfaceAddress, routerInterfaceName));
 			throw new DuplicateConfigurationException("Configuration already exists");
 		}
 
-		// Stage the new address
 		routerInterface.setInterfaceAddress(interfaceAddress);
 		hasUncommittedChanges = true;
 
-		// If the interface is administratively disabled, log and continue (no confirmation mechanism)
 		if (routerInterface.isDisabled()) {
-			logger.info("Interface %s is disabled. Staged change applied but packets routed through this interface will be dropped".formatted(routerInterfaceName));
 			String msg = String.format("Interface %s is disabled%nPackets routed through this interface will be dropped%nEnsure this action is deliberate", routerInterface.getInterfaceName());
 			logger.warning(msg);
-			// do not throw; staged change remains
 		}
-		logger.info("%s: Interface %s configured with address %s in staged configuration".formatted(this.name, routerInterfaceName, interfaceAddress));
 	}
 
-	/**
-	 * Disables a router interface in the staged configuration.
-	 *
-	 * @param routerInterfaceName Name of the router interface to be disabled
-	 * @throws InvalidModeException       if not in CONFIGURATION mode
-	 * @throws InterfaceNotFoundException if the interface doesn't exist
-	 */
 	public void disableInterface(String routerInterfaceName) {
 		if (mode != RouterMode.CONFIGURATION) {
 			logger.warning("Attempted to disable interface while in %s mode".formatted(mode));
@@ -353,22 +326,53 @@ public class Router {
 				.orElseThrow(() -> new InterfaceNotFoundException(INTERFACE_NOT_EXISTS.formatted(routerInterfaceName)));
 
 		logger.info("%s: Disabling interface %s in staged configuration".formatted(this.getName(), routerInterfaceName));
-
 		routerInterface.disable();
 		hasUncommittedChanges = true;
 
-		// If it's a physical interface (does not contain a dot), find and disable its children
-		if (!routerInterfaceName.contains(".")) {
-			// Create the prefix to look for, e.g., "eth0."
+		if (routerInterface.getType() == InterfaceType.ETHERNET) {
 			String childPrefix = routerInterfaceName + ".";
-
 			for (RouterInterface childVif : stagedInterfaces) {
-				// If the interface name starts with "eth0." and is not already disabled
-				if (childVif.getInterfaceName().startsWith(childPrefix) && !childVif.isDisabled()) {
+				if (childVif.getType() == InterfaceType.VIF && childVif.getInterfaceName().startsWith(childPrefix) && !childVif.isDisabled()) {
 					logger.fine("%s: Automatically disabling child VIF %s because parent %s was disabled"
 							.formatted(this.getName(), childVif.getInterfaceName(), routerInterfaceName));
-
 					childVif.disable();
+					hasUncommittedChanges = true;
+				}
+			}
+		}
+	}
+
+	/**
+	 * Enables a router interface in the staged configuration.
+	 * If a physical interface is enabled, all of its disabled child VIFs are also enabled.
+	 *
+	 * @param routerInterfaceName Name of the router interface to be enabled
+	 * @throws InvalidModeException       if not in CONFIGURATION mode
+	 * @throws InterfaceNotFoundException if the interface doesn't exist
+	 */
+	public void enableInterface(String routerInterfaceName) {
+		if (mode != RouterMode.CONFIGURATION) {
+			logger.warning("Attempted to enable interface while in %s mode".formatted(mode));
+			throw new InvalidModeException("Invalid command: delete [interfaces]");
+		}
+
+		RouterInterface routerInterface = stagedInterfaces.stream()
+				.filter(intf -> intf.getInterfaceName().equals(routerInterfaceName))
+				.findFirst()
+				.orElseThrow(() -> new InterfaceNotFoundException(INTERFACE_NOT_EXISTS.formatted(routerInterfaceName)));
+
+		logger.info("%s: Enabling interface %s in staged configuration".formatted(this.getName(), routerInterfaceName));
+		routerInterface.enable();
+		hasUncommittedChanges = true;
+
+		// Cascade enable to children if it's a physical interface
+		if (routerInterface.getType() == InterfaceType.ETHERNET) {
+			String childPrefix = routerInterfaceName + ".";
+			for (RouterInterface childVif : stagedInterfaces) {
+				if (childVif.getType() == InterfaceType.VIF && childVif.getInterfaceName().startsWith(childPrefix) && childVif.isDisabled()) {
+					logger.fine("%s: Automatically enabling child VIF %s because parent %s was enabled"
+							.formatted(this.getName(), childVif.getInterfaceName(), routerInterfaceName));
+					childVif.enable();
 					hasUncommittedChanges = true;
 				}
 			}

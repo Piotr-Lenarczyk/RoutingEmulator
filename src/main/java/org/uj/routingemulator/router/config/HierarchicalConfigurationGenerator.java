@@ -1,5 +1,6 @@
 package org.uj.routingemulator.router.config;
 
+import org.uj.routingemulator.router.InterfaceType;
 import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.RouterInterface;
 import org.uj.routingemulator.router.StaticRoutingEntry;
@@ -81,9 +82,9 @@ public class HierarchicalConfigurationGenerator implements ConfigurationGenerato
 		for (RouterInterface iface : router.getInterfaces()) {
 			if (iface.getInterfaceAddress() == null && !iface.isDisabled()) continue;
 
-			if (iface.getInterfaceName().startsWith("dum")) {
+			if (iface.getType() == InterfaceType.DUMMY) {
 				dummies.add(iface);
-			} else if (iface.getInterfaceName().startsWith("eth")) {
+			} else if (iface.getType() == InterfaceType.ETHERNET || iface.getType() == InterfaceType.VIF) {
 				String base = iface.getInterfaceName().split("\\.")[0];
 				ethMap.computeIfAbsent(base, k -> new ArrayList<>()).add(iface);
 			}

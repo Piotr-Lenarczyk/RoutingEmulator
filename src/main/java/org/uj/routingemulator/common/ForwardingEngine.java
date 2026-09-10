@@ -2,6 +2,7 @@ package org.uj.routingemulator.common;
 
 import org.uj.routingemulator.host.Host;
 import org.uj.routingemulator.host.HostInterface;
+import org.uj.routingemulator.router.InterfaceType;
 import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.RouterInterface;
 import org.uj.routingemulator.router.StaticRoutingEntry;
@@ -166,7 +167,7 @@ public class ForwardingEngine {
      * E.g., for VIF eth0.1000, it returns eth0.
      */
     private RouterInterface getPhysicalInterface(Router router, RouterInterface iface) {
-        if (iface.getInterfaceName().contains(".")) {
+        if (iface.getType() == InterfaceType.VIF) {
             String parentName = iface.getInterfaceName().split("\\.")[0];
             return router.getInterfaces().stream()
                     .filter(i -> i.getInterfaceName().equals(parentName))
@@ -205,7 +206,7 @@ public class ForwardingEngine {
         }
 
         // If traffic must exit through a dummy interface to reach the subnet, it is blackholed.
-        if (dstIf.getInterfaceName().startsWith("dum")) {
+        if (dstIf.getType() == InterfaceType.DUMMY) {
             logger.fine("Forwarding failure: Traffic discarded via dummy interface %s on router %s"
                     .formatted(dstIf.getInterfaceName(), currentRouter.getName()));
             return new ForwardingOutcome(false, hops, TRAFFIC_DISCARDED_EGRESS_DUMMY_INTERFACE);
@@ -306,7 +307,7 @@ public class ForwardingEngine {
         }
 
         // Dummy egress interface immediately discards the packet
-        if (exitIf.getInterfaceName().startsWith("dum")) {
+        if (exitIf.getType() == InterfaceType.DUMMY) {
             logger.fine("Forwarding failure: Traffic discarded via dummy interface %s on router %s"
                     .formatted(exitIf.getInterfaceName(), currentRouter.getName()));
             return RouteStep.terminal(new ForwardingOutcome(false, hops, TRAFFIC_DISCARDED_EGRESS_DUMMY_INTERFACE));
@@ -346,7 +347,7 @@ public class ForwardingEngine {
     private RouteStep resolveNextHopRoute(Router currentRouter, IPAddress nextHop, NetworkTopology topology, int hops) {
 
         Optional<RouterInterface> egressIfOpt = findDirectSubnetInterface(currentRouter, nextHop);
-        if (egressIfOpt.isPresent() && egressIfOpt.get().getInterfaceName().startsWith("dum")) {
+        if (egressIfOpt.isPresent() && egressIfOpt.get().getType() == InterfaceType.DUMMY) {
             logger.fine("Forwarding failure: Next-hop reachable via dummy interface on router %s".formatted(currentRouter.getName()));
             return RouteStep.terminal(new ForwardingOutcome(false, hops, TRAFFIC_DISCARDED_EGRESS_DUMMY_INTERFACE));
         }
@@ -452,7 +453,7 @@ public class ForwardingEngine {
         }
 
         // Return path drops if it requires exiting a dummy interface
-        if (dstIf.getInterfaceName().startsWith("dum")) {
+        if (dstIf.getType() == InterfaceType.DUMMY) {
             logger.finer("Return route verification failure: Traffic discarded via dummy interface %s on router %s"
                     .formatted(dstIf.getInterfaceName(), currentRouter.getName()));
             return new ForwardingOutcome(false, hops, TRAFFIC_DISCARDED_EGRESS_DUMMY_INTERFACE);
@@ -515,7 +516,7 @@ public class ForwardingEngine {
         }
 
         // Return path drops if it requires exiting a dummy interface
-        if (exitIf.getInterfaceName().startsWith("dum")) {
+        if (exitIf.getType() == InterfaceType.DUMMY) {
             logger.finer("Return route verification failure: Traffic discarded via dummy interface %s on router %s"
                     .formatted(exitIf.getInterfaceName(), currentRouter.getName()));
             return ReturnRouteStep.terminal(new ForwardingOutcome(false, hops, TRAFFIC_DISCARDED_EGRESS_DUMMY_INTERFACE));
@@ -565,7 +566,7 @@ public class ForwardingEngine {
     private ReturnRouteStep resolveReturnRouteNextHop(Router currentRouter, IPAddress nextHop, NetworkTopology topology, int hops) {
 
         Optional<RouterInterface> egressIfOpt = findDirectSubnetInterface(currentRouter, nextHop);
-        if (egressIfOpt.isPresent() && egressIfOpt.get().getInterfaceName().startsWith("dum")) {
+        if (egressIfOpt.isPresent() && egressIfOpt.get().getType() == InterfaceType.DUMMY) {
             logger.finer("Return route verification failure: Next-hop reachable via dummy interface on router %s".formatted(currentRouter.getName()));
             return ReturnRouteStep.terminal(new ForwardingOutcome(false, hops, TRAFFIC_DISCARDED_EGRESS_DUMMY_INTERFACE));
         }

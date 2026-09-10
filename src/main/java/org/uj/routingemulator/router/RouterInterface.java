@@ -27,6 +27,8 @@ import java.util.logging.Logger;
  * Interface names follow standard conventions:
  * <ul>
  *   <li>eth0, eth1, ... - Ethernet interfaces (MTU 1500)</li>
+ *   <li>eth0.1000 - Ethernet VLAN sub-interfaces (MTU 1500)</li>
+ *   <li>dum0, dum1, ... - Dummy interfaces (MTU 1500)</li>
  *   <li>lo - Loopback interface (MTU 65536)</li>
  * </ul>
  * <p>
@@ -39,8 +41,11 @@ import java.util.logging.Logger;
 @EqualsAndHashCode
 @ToString
 public class RouterInterface implements NetworkInterface {
+
 	private static final Logger logger = Logger.getLogger(RouterInterface.class.getName());
+
 	private String interfaceName;
+	private InterfaceType type;
 	private InterfaceAddress interfaceAddress;
 	private MacAddress macAddress;
 	private String description;
@@ -49,27 +54,20 @@ public class RouterInterface implements NetworkInterface {
 	private InterfaceStatus status;
 
 	/**
-	 * Creates a router interface with the specified name.
-	 * <p>
-	 * The interface is created with:
-	 * <ul>
-	 *   <li>No IP address configured</li>
-	 *   <li>Random MAC address</li>
-	 *   <li>Administrative state UP</li>
-	 *   <li>MTU based on interface type (1500 for eth*, 65536 for lo)</li>
-	 *   <li>Default VRF</li>
-	 * </ul>
+	 * Creates a router interface with the specified name and determines its type automatically.
 	 *
-	 * @param interfaceName the name of the interface (e.g., "eth0", "lo")
+	 * @param interfaceName the name of the interface (e.g., "eth0", "eth0.10", "lo", "dum0")
 	 */
 	public RouterInterface(String interfaceName) {
 		this.interfaceName = interfaceName;
+		this.type = InterfaceType.fromName(interfaceName);
 		this.interfaceAddress = null;
 		this.macAddress = new MacAddress();
 		this.description = null;
-		if (interfaceName.startsWith("eth") || interfaceName.startsWith("dum")) {
+
+		if (this.type == InterfaceType.ETHERNET || this.type == InterfaceType.DUMMY || this.type == InterfaceType.VIF) {
 			this.mtu = 1500;
-		} else if (interfaceName.startsWith("lo")) {
+		} else if (this.type == InterfaceType.LOOPBACK) {
 			this.mtu = 65536;
 		}
 
@@ -77,15 +75,16 @@ public class RouterInterface implements NetworkInterface {
 		this.status = InterfaceStatus.fromChars('u', 'D');
 	}
 
-
 	public RouterInterface(String interfaceName, LinkState linkState) {
 		this.interfaceName = interfaceName;
+		this.type = InterfaceType.fromName(interfaceName);
 		this.interfaceAddress = null;
 		this.macAddress = new MacAddress();
 		this.description = null;
-		if (interfaceName.startsWith("eth") || interfaceName.startsWith("dum")) {
+
+		if (this.type == InterfaceType.ETHERNET || this.type == InterfaceType.DUMMY || this.type == InterfaceType.VIF) {
 			this.mtu = 1500;
-		} else if (interfaceName.startsWith("lo")) {
+		} else if (this.type == InterfaceType.LOOPBACK) {
 			this.mtu = 65536;
 		}
 
@@ -93,24 +92,41 @@ public class RouterInterface implements NetworkInterface {
 		this.status = InterfaceStatus.fromChars('u', linkState.getCode());
 	}
 
-	/**
-	 * Gets the subnet (network) this interface belongs to.
-	 * This is a convenience method that calculates the subnet from the interface address.
-	 *
-	 * @return Subnet this interface belongs to, or null if no address is configured
-	 */
+	public RouterInterface(String interfaceName, InterfaceAddress interfaceAddress, MacAddress macAddress, int mtu, InterfaceStatus status) {
+		this.interfaceName = interfaceName;
+		this.type = InterfaceType.fromName(interfaceName);
+		this.interfaceAddress = interfaceAddress;
+		this.macAddress = macAddress;
+		this.mtu = mtu;
+		this.status = status;
+	}
+
+	public RouterInterface(String interfaceName, InterfaceAddress interfaceAddress, MacAddress macAddress, String vrf, int mtu, InterfaceStatus status) {
+		this.interfaceName = interfaceName;
+		this.type = InterfaceType.fromName(interfaceName);
+		this.interfaceAddress = interfaceAddress;
+		this.macAddress = macAddress;
+		this.vrf = vrf;
+		this.mtu = mtu;
+		this.status = status;
+	}
+
+	public RouterInterface(RouterInterface other) {
+		this.interfaceName = other.interfaceName;
+		this.type = other.type;
+		this.interfaceAddress = other.interfaceAddress;
+		this.macAddress = other.macAddress;
+		this.description = other.description;
+		this.vrf = other.vrf;
+		this.mtu = other.mtu;
+		this.status = other.status;
+	}
+
 	public Subnet getSubnet() {
 		return interfaceAddress != null ? interfaceAddress.getSubnet() : null;
 	}
 
-	/**
-	 * Sets the subnet by converting to interface address.
-	 *
-	 * @param subnet the subnet to set
-	 */
 	public void setSubnet(Subnet subnet) {
-		// For backward compatibility - interpret as setting the interface address
-		// to the network address (though this is semantically incorrect)
 		if (subnet != null) {
 			this.interfaceAddress = new InterfaceAddress(subnet.networkAddress(), subnet.subnetMask());
 		} else {
@@ -118,44 +134,16 @@ public class RouterInterface implements NetworkInterface {
 		}
 	}
 
-	/**
-	 * Copy constructor for creating a deep copy of RouterInterface.
-	 * @param other The RouterInterface to copy
-	 */
-	public RouterInterface(RouterInterface other) {
-		this.interfaceName = other.interfaceName;
-		this.interfaceAddress = other.interfaceAddress; // InterfaceAddress is immutable
-		this.macAddress = other.macAddress; // MacAddress is immutable
-		this.description = other.description;
-		this.vrf = other.vrf;
-		this.mtu = other.mtu;
-		this.status = other.status; // InterfaceStatus is immutable
-	}
-
-	/**
-	 * Administratively disables the interface.
-	 * <p>
-	 * Sets administrative state to ADMIN_DOWN while preserving the current link state.
-	 *
-	 * @throws DuplicateConfigurationException if the interface is already administratively disabled
-	 */
 	public void disable() {
 		if (this.status.getAdmin() == AdminState.ADMIN_DOWN) {
 			logger.warning("Interface %s is already administratively disabled.".formatted(this.interfaceName));
-			throw new DuplicateConfigurationException("Configuration path: [interfaces ethernet %s disable] already exists".formatted(this.interfaceName));
+			throw new DuplicateConfigurationException("Configuration path: [interfaces %s %s disable] already exists".formatted(this.type.name().toLowerCase(), this.interfaceName));
 		}
 		logger.finer("Disabling interface %s. Previous status: %s".formatted(this.interfaceName, this.status));
 		this.status = new InterfaceStatus(AdminState.ADMIN_DOWN, this.status.getLink());
 		logger.finest("Setting interface %s admin state to %s".formatted(this.interfaceName, this.status.getAdmin()));
 	}
 
-	/**
-	 * Administratively enables the interface.
-	 * <p>
-	 * Sets administrative state to UP while preserving the current link state.
-	 *
-	 * @throws ConfigurationNotFoundException if the interface is already administratively enabled
-	 */
 	public void enable() {
 		if (this.status.getAdmin() == AdminState.UP) {
 			logger.warning("Interface %s is already enabled.".formatted(this.interfaceName));
@@ -166,51 +154,21 @@ public class RouterInterface implements NetworkInterface {
 		logger.finest("Setting interface %s admin state to %s".formatted(this.interfaceName, this.status.getAdmin()));
 	}
 
-	/**
-	 * Checks if the interface is administratively disabled.
-	 * <p>
-	 * This only checks administrative state, not link state.
-	 * An interface with link DOWN but admin UP is not considered disabled.
-	 *
-	 * @return true if the interface is administratively disabled, false otherwise
-	 */
 	public boolean isDisabled() {
 		return this.status.getAdmin() == AdminState.ADMIN_DOWN;
 	}
 
-	/**
-	 * Updates the link state based on the network topology.
-	 * <p>
-	 * Link state is set to UP if:
-	 * <ul>
-	 *   <li>Interface has a physical connection in the topology</li>
-	 *   <li>The neighboring interface is administratively UP (for RouterInterface neighbors)</li>
-	 * </ul>
-	 * <p>
-	 * Otherwise, link state is set to DOWN.
-	 * <p>
-	 * This method should be called whenever:
-	 * <ul>
-	 *   <li>A connection is added or removed</li>
-	 *   <li>A neighboring interface changes administrative state</li>
-	 * </ul>
-	 *
-	 * @param topology the network topology to check for connections
-	 */
 	public void updateLinkState(NetworkTopology topology) {
-		// Dummy interfaces are immune to physical link state outages
-		if (this.interfaceName.startsWith("dum")) {
+		if (this.type == InterfaceType.DUMMY) {
 			logger.finer("Interface %s is a dummy interface. Link state remains UP".formatted(this.interfaceName));
 			this.status = new InterfaceStatus(this.status.getAdmin(), LinkState.UP);
 			return;
 		}
 
-		// VIF inherits link state from its parent interface
-		if (this.interfaceName.matches("eth\\d+\\.\\d+")) {
+		if (this.type == InterfaceType.VIF) {
 			String parentName = this.interfaceName.split("\\.")[0];
 			Router owner = null;
 
-			// Find owning router
 			for (Router router : topology.getRouters()) {
 				if (router.getInterfaces().contains(this)) {
 					owner = router;
@@ -221,8 +179,7 @@ public class RouterInterface implements NetworkInterface {
 			if (owner != null) {
 				RouterInterface parent = owner.findFromName(parentName);
 				if (parent != null) {
-					if (parent.getStatus().getAdmin() == AdminState.ADMIN_DOWN
-							|| parent.getStatus().getLink() == LinkState.DOWN) {
+					if (parent.getStatus().getAdmin() == AdminState.ADMIN_DOWN || parent.getStatus().getLink() == LinkState.DOWN) {
 						this.status = new InterfaceStatus(this.status.getAdmin(), LinkState.DOWN);
 					} else {
 						this.status = new InterfaceStatus(this.status.getAdmin(), LinkState.UP);
@@ -231,17 +188,14 @@ public class RouterInterface implements NetworkInterface {
 				}
 			}
 
-			// If parent is not found, default to DOWN
 			this.status = new InterfaceStatus(this.status.getAdmin(), LinkState.DOWN);
 			return;
 		}
 
-		// Standard physical interfaces
 		LinkState newLinkState = topology.hasActiveConnection(this) ? LinkState.UP : LinkState.DOWN;
 		logger.finer("Updating link state for interface %s to %s".formatted(this.interfaceName, newLinkState));
 		this.status = new InterfaceStatus(this.status.getAdmin(), newLinkState);
 
-		// Cascade the link state update to all child VIFs
 		Router owner = null;
 		for (Router router : topology.getRouters()) {
 			if (router.getInterfaces().contains(this)) {
@@ -253,10 +207,9 @@ public class RouterInterface implements NetworkInterface {
 		if (owner != null) {
 			String childPrefix = this.interfaceName + ".";
 			for (RouterInterface childVif : owner.getInterfaces()) {
-				if (childVif.getInterfaceName().startsWith(childPrefix)) {
+				if (childVif.getType() == InterfaceType.VIF && childVif.getInterfaceName().startsWith(childPrefix)) {
 					logger.finer("Cascading link state update from parent %s to child VIF %s"
 							.formatted(this.interfaceName, childVif.getInterfaceName()));
-					// Trigger the child to re-evaluate its state
 					childVif.updateLinkState(topology);
 				}
 			}

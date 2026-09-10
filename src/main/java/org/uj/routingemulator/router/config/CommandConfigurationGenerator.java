@@ -1,5 +1,6 @@
 package org.uj.routingemulator.router.config;
 
+import org.uj.routingemulator.router.InterfaceType;
 import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.RouterInterface;
 import org.uj.routingemulator.router.StaticRoutingEntry;
@@ -31,9 +32,9 @@ public class CommandConfigurationGenerator implements ConfigurationGenerator {
 			String name = iface.getInterfaceName();
 			String prefix;
 
-			if (name.startsWith("dum")) {
+			if (iface.getType() == InterfaceType.DUMMY) {
 				prefix = "set interfaces dummy " + name;
-			} else if (name.contains(".")) {
+			} else if (iface.getType() == InterfaceType.VIF) {
 				String[] parts = name.split("\\.");
 				prefix = "set interfaces ethernet " + parts[0] + " vif " + parts[1];
 			} else {

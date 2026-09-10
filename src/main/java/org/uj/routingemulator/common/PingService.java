@@ -2,6 +2,7 @@ package org.uj.routingemulator.common;
 
 import org.uj.routingemulator.host.Host;
 import org.uj.routingemulator.host.HostInterface;
+import org.uj.routingemulator.router.InterfaceType;
 import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.RouterInterface;
 import org.uj.routingemulator.router.StaticRoutingEntry;
@@ -43,21 +44,21 @@ public class PingService {
 	}
 
 	private static RouterInterface findInterfaceWithSubnet(Router srcRouter, RouterInterface ri) {
-		// Priority 1: Standard physical interface (e.g. eth0)
+		// Priority 1: Standard physical interface
 		for (RouterInterface candidate : srcRouter.getInterfaces()) {
-			if (candidate.getSubnet() != null && !candidate.getInterfaceName().contains(".") && !candidate.getInterfaceName().startsWith("dum")) {
+			if (candidate.getSubnet() != null && candidate.getType() == InterfaceType.ETHERNET) {
 				return candidate;
 			}
 		}
-		// Priority 2: VIF sub-interface (e.g. eth0.1000)
+		// Priority 2: VIF sub-interface
 		for (RouterInterface candidate : srcRouter.getInterfaces()) {
-			if (candidate.getSubnet() != null && candidate.getInterfaceName().matches("eth\\d+\\.\\d+")) {
+			if (candidate.getSubnet() != null && candidate.getType() == InterfaceType.VIF) {
 				return candidate;
 			}
 		}
 		// Priority 3: Fallback to a dummy interface
 		for (RouterInterface candidate : srcRouter.getInterfaces()) {
-			if (candidate.getSubnet() != null) {
+			if (candidate.getSubnet() != null && candidate.getType() == InterfaceType.DUMMY) {
 				return candidate;
 			}
 		}
