@@ -8,6 +8,7 @@ import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.RouterInterface;
 import org.uj.routingemulator.router.RouterMode;
 import org.uj.routingemulator.router.StaticRoutingEntry;
+import org.uj.routingemulator.router.cli.RouterCLIParser;
 import org.uj.routingemulator.switching.Switch;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -156,4 +157,120 @@ class PingTest {
         assertEquals(4, stats.getSent());
         assertEquals(0, stats.getReceived());
     }
+
+	@Test
+	void testPingHostToRouterDummyDestinationWithReturnPath() {
+		NetworkTopology topology = new NetworkTopology();
+		Host source = new Host("h1", new HostInterface(
+				"eth0",
+				new Subnet(new IPAddress(192, 168, 1, 2), new SubnetMask(24)),
+				new IPAddress(192, 168, 1, 1)
+		));
+
+		Router router = new Router("R1");
+		router.setMode(RouterMode.CONFIGURATION);
+		router.configureInterface("eth0", InterfaceAddress.fromString("192.168.1.1/24"));
+		router.configureInterface("dum0", InterfaceAddress.fromString("192.168.2.1/24"));
+		router.commitChanges();
+		router.setMode(RouterMode.OPERATIONAL);
+
+		topology.addHost(source);
+		topology.addRouter(router);
+		topology.addConnection(new Connection(source.getHostInterface(), router.findFromName("eth0")));
+
+		PingStatistics stats = source.ping("192.168.2.1", topology);
+		assertEquals(4, stats.getSent());
+		assertEquals(4, stats.getReceived());
+	}
+
+	@Test
+	void testPingViaDummyStaticRouteEgressParserAcceptanceAndFailure() {
+		NetworkTopology topology = new NetworkTopology();
+		Host source = new Host("h1", new HostInterface(
+				"eth0",
+				new Subnet(new IPAddress(192, 168, 1, 2), new SubnetMask(24)),
+				new IPAddress(192, 168, 1, 1)
+		));
+		Router router = new Router("R1");
+		RouterCLIParser parser = new RouterCLIParser();
+		router.setMode(RouterMode.CONFIGURATION);
+		parser.executeCommand("set interfaces ethernet eth0 address 192.168.1.1/24", router);
+		parser.executeCommand("set interfaces dummy dum0 address 192.168.2.1/24", router);
+		parser.executeCommand("set protocols static route 10.0.0.0/8 interface dum0", router);
+		parser.executeCommand("commit", router);
+		router.setMode(RouterMode.OPERATIONAL);
+
+		assertEquals(1, router.getRoutingTable().getRoutingEntries().size());
+		assertEquals("dum0", router.getRoutingTable().getRoutingEntries().getFirst()
+				.getRouterInterface().getInterfaceName());
+
+		topology.addHost(source);
+		topology.addRouter(router);
+		topology.addConnection(new Connection(source.getHostInterface(), router.findFromName("eth0")));
+
+		PingStatistics stats = source.ping("10.0.0.1", topology);
+		assertEquals(4, stats.getSent());
+		assertEquals(0, stats.getReceived());
+	}
+
+	@Test
+	void testPingVifDestination() {
+		NetworkTopology topology = new NetworkTopology();
+		Host source = new Host("h1", new HostInterface(
+				"eth0",
+				new Subnet(new IPAddress(192, 168, 1, 2), new SubnetMask(24)),
+				new IPAddress(192, 168, 1, 1)
+		));
+		Router router = new Router("R1");
+		router.setMode(RouterMode.CONFIGURATION);
+		router.configureInterface("eth0", InterfaceAddress.fromString("192.168.1.1/24"));
+		router.configureInterface("eth0.1000", InterfaceAddress.fromString("192.168.2.1/24"));
+		router.commitChanges();
+		router.setMode(RouterMode.OPERATIONAL);
+
+		topology.addHost(source);
+		topology.addRouter(router);
+		topology.addConnection(new Connection(source.getHostInterface(), router.findFromName("eth0")));
+
+		PingStatistics stats = source.ping("192.168.2.1", topology);
+		assertEquals(4, stats.getSent());
+		assertEquals(4, stats.getReceived());
+	}
+
+	@Test
+	void testPingViaVifStaticRouteEgressUsesPhysicalParent() {
+		NetworkTopology topology = new NetworkTopology();
+		Host source = new Host("h1", new HostInterface(
+				"eth0",
+				new Subnet(new IPAddress(192, 168, 1, 2), new SubnetMask(24)),
+				new IPAddress(192, 168, 1, 1)
+		));
+		Host destination = new Host("h2", new HostInterface(
+				"eth0",
+				new Subnet(new IPAddress(10, 0, 1, 2), new SubnetMask(24)),
+				new IPAddress(10, 0, 0, 1)
+		));
+		Router router = new Router("R1", new java.util.ArrayList<>(java.util.List.of(
+				new RouterInterface("eth0"),
+				new RouterInterface("eth1")
+		)));
+		router.setMode(RouterMode.CONFIGURATION);
+		router.configureInterface("eth0", InterfaceAddress.fromString("192.168.1.1/24"));
+		router.configureInterface("eth1", InterfaceAddress.fromString("10.0.0.1/24"));
+		router.configureInterface("eth1.1000", InterfaceAddress.fromString("192.168.100.1/24"));
+		RouterCLIParser parser = new RouterCLIParser();
+		parser.executeCommand("set protocols static route 10.0.1.0/24 interface eth1.1000", router);
+		router.commitChanges();
+		router.setMode(RouterMode.OPERATIONAL);
+
+		topology.addHost(source);
+		topology.addHost(destination);
+		topology.addRouter(router);
+		topology.addConnection(new Connection(source.getHostInterface(), router.findFromName("eth0")));
+		topology.addConnection(new Connection(destination.getHostInterface(), router.findFromName("eth1")));
+
+		PingStatistics stats = source.ping("10.0.1.2", topology);
+		assertEquals(4, stats.getSent());
+		assertEquals(4, stats.getReceived());
+	}
 }

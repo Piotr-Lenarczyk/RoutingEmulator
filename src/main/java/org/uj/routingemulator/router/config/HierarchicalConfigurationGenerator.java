@@ -44,19 +44,6 @@ public class HierarchicalConfigurationGenerator implements ConfigurationGenerato
 		config.append("        }\n");
 	}
 
-	private static void buildInterface(RouterInterface iface, StringBuilder config) {
-		if (iface.getInterfaceAddress() != null || iface.isDisabled()) {
-			config.append("    ethernet ").append(iface.getInterfaceName()).append(" {\n");
-			if (iface.getInterfaceAddress() != null) {
-				config.append("        address ").append(iface.getInterfaceAddress()).append("\n");
-			}
-			if (iface.isDisabled()) {
-				config.append("        disable\n");
-			}
-			config.append("    }\n");
-		}
-	}
-
 	/**
 	 * Generates hierarchical configuration for the specified router.
 	 * <p>

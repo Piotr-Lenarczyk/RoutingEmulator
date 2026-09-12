@@ -4,6 +4,7 @@ import org.jline.reader.Candidate;
 import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
+import org.uj.routingemulator.router.InterfaceType;
 import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.RouterInterface;
 import org.uj.routingemulator.router.RouterMode;
@@ -24,6 +25,9 @@ public class RouterCommandCompleter implements Completer {
 	private static final String INTERFACE = "interface";
 	private static final String INTERFACES = "interfaces";
 	private static final String DELETE = "delete";
+	private static final String INTERFACE_UPPERCASE = "Interface ";
+	private static final String ADDRESS = "address";
+	private static final String DISABLE = "disable";
 
 	private final Router router;
 
@@ -182,6 +186,14 @@ public class RouterCommandCompleter implements Completer {
 		}
 	}
 
+	private static void suggestInterfaceArgument(String[] words, String currentWord, List<Candidate> candidates) {
+		if (words[4].equalsIgnoreCase(ADDRESS) && currentWord.isEmpty()) {
+			candidates.add(new Candidate(ADDRESS_FORMAT, ADDRESS_FORMAT, null, "Enter IP address with prefix (e.g., 192.168.1.1/24)", null, null, false));
+		} else if (words[4].equalsIgnoreCase("vif") && currentWord.isEmpty()) {
+			candidates.add(new Candidate("<1-4094>", "<1-4094>", null, "Enter VLAN ID (1-4094)", null, null, false));
+		}
+	}
+
 	private void completeRouteType(String[] words, String currentWord, List<Candidate> candidates) {
 		if (words.length == 7 && words[5].equalsIgnoreCase(NEXT_HOP)) {
 			// After "next-hop" keyword - user needs to enter next-hop IP
@@ -192,12 +204,12 @@ public class RouterCommandCompleter implements Completer {
 		} else if (words.length == 7 && words[5].equalsIgnoreCase(INTERFACE)) {
 			// After "interface" keyword - show available interfaces
 			for (RouterInterface iface : router.getInterfaces()) {
-				addCandidateIfMatches(candidates, iface.getInterfaceName(), "Interface " + iface.getInterfaceName(), currentWord);
+				addCandidateIfMatches(candidates, iface.getInterfaceName(), INTERFACE_UPPERCASE + iface.getInterfaceName(), currentWord);
 			}
 		} else if (words.length == 8 && (words[5].equalsIgnoreCase(NEXT_HOP) || words[5].equalsIgnoreCase(INTERFACE))) {
 			// After next-hop IP or interface name - show optional parameters
 			addCandidateIfMatches(candidates, "distance", "Set administrative distance", currentWord);
-			addCandidateIfMatches(candidates, "disable", "Disable route", currentWord);
+			addCandidateIfMatches(candidates, DISABLE, "Disable route", currentWord);
 		} else if (words.length == 9 && words[7].equalsIgnoreCase("distance") && currentWord.isEmpty()) {
 			// After "distance" keyword - user needs to enter distance value
 			candidates.add(new Candidate("<1-255>", "<1-255>", null,
@@ -213,26 +225,12 @@ public class RouterCommandCompleter implements Completer {
 
 		} else if (words.length == 4) {
 			// e.g., "set interfaces ethernet/dummy <interface>"
-			if (words[2].equalsIgnoreCase(ETHERNET)) {
-				for (RouterInterface iface : router.getInterfaces()) {
-					if (iface.getInterfaceName().startsWith("eth")) {
-						addCandidateIfMatches(candidates, iface.getInterfaceName(), "Interface " + iface.getInterfaceName(), currentWord);
-					}
-				}
-			} else if (words[2].equalsIgnoreCase("dummy")) {
-				for (RouterInterface iface : router.getInterfaces()) {
-					if (iface.getInterfaceName().startsWith("dum")) {
-						addCandidateIfMatches(candidates, iface.getInterfaceName(), "Interface " + iface.getInterfaceName(), currentWord);
-					}
-				}
-				// Suggest a default one to guide the user if none exist yet
-				addCandidateIfMatches(candidates, "dum0", "Dummy Interface 0", currentWord);
-			}
+			checkInterfaceType(words, currentWord, candidates);
 
 		} else if (words.length == 5) {
 			// e.g., "set interfaces ethernet eth0 <command>"
-			addCandidateIfMatches(candidates, "address", "Set IP address", currentWord);
-			addCandidateIfMatches(candidates, "disable", "Disable interface", currentWord);
+			addCandidateIfMatches(candidates, ADDRESS, "Set IP address", currentWord);
+			addCandidateIfMatches(candidates, DISABLE, "Disable interface", currentWord);
 
 			// Only ethernet interfaces support VLAN sub-interfaces
 			if (words[2].equalsIgnoreCase(ETHERNET)) {
@@ -241,24 +239,36 @@ public class RouterCommandCompleter implements Completer {
 
 		} else if (words.length == 6) {
 			// e.g., "set interfaces ethernet eth0 address <ip>" OR "set interfaces ethernet eth0 vif <id>"
-			if (words[4].equalsIgnoreCase("address") && currentWord.isEmpty()) {
-				candidates.add(new Candidate(ADDRESS_FORMAT, ADDRESS_FORMAT, null, "Enter IP address with prefix (e.g., 192.168.1.1/24)", null, null, false));
-			} else if (words[4].equalsIgnoreCase("vif") && currentWord.isEmpty()) {
-				candidates.add(new Candidate("<1-4094>", "<1-4094>", null, "Enter VLAN ID (1-4094)", null, null, false));
-			}
+			suggestInterfaceArgument(words, currentWord, candidates);
 
 		} else if (words.length == 7) {
 			// e.g., "set interfaces ethernet eth0 vif 1000 <command>"
 			if (words[4].equalsIgnoreCase("vif")) {
-				addCandidateIfMatches(candidates, "address", "Set IP address", currentWord);
-				addCandidateIfMatches(candidates, "disable", "Disable interface", currentWord);
+				addCandidateIfMatches(candidates, ADDRESS, "Set IP address", currentWord);
+				addCandidateIfMatches(candidates, DISABLE, "Disable interface", currentWord);
 			}
 
-		} else if (words.length == 8) {
+		} else if (words.length == 8 && words[4].equalsIgnoreCase("vif") && words[6].equalsIgnoreCase(ADDRESS) && currentWord.isEmpty()) {
 			// e.g., "set interfaces ethernet eth0 vif 1000 address <ip>"
-			if (words[4].equalsIgnoreCase("vif") && words[6].equalsIgnoreCase("address") && currentWord.isEmpty()) {
-				candidates.add(new Candidate(ADDRESS_FORMAT, ADDRESS_FORMAT, null, "Enter IP address with prefix (e.g., 192.168.10.1/24)", null, null, false));
+			candidates.add(new Candidate(ADDRESS_FORMAT, ADDRESS_FORMAT, null, "Enter IP address with prefix (e.g., 192.168.10.1/24)", null, null, false));
+		}
+	}
+
+	private void checkInterfaceType(String[] words, String currentWord, List<Candidate> candidates) {
+		if (words[2].equalsIgnoreCase(ETHERNET)) {
+			for (RouterInterface iface : router.getInterfaces()) {
+				if (iface.getType() == InterfaceType.ETHERNET) {
+					addCandidateIfMatches(candidates, iface.getInterfaceName(), INTERFACE_UPPERCASE + iface.getInterfaceName(), currentWord);
+				}
 			}
+		} else if (words[2].equalsIgnoreCase("dummy")) {
+			for (RouterInterface iface : router.getInterfaces()) {
+				if (iface.getType() == InterfaceType.DUMMY) {
+					addCandidateIfMatches(candidates, iface.getInterfaceName(), INTERFACE_UPPERCASE + iface.getInterfaceName(), currentWord);
+				}
+			}
+			// Suggest a default one to guide the user if none exist yet
+			addCandidateIfMatches(candidates, "dum0", "Dummy Interface 0", currentWord);
 		}
 	}
 

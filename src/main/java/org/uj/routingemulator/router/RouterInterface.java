@@ -166,29 +166,7 @@ public class RouterInterface implements NetworkInterface {
 		}
 
 		if (this.type == InterfaceType.VIF) {
-			String parentName = this.interfaceName.split("\\.")[0];
-			Router owner = null;
-
-			for (Router router : topology.getRouters()) {
-				if (router.getInterfaces().contains(this)) {
-					owner = router;
-					break;
-				}
-			}
-
-			if (owner != null) {
-				RouterInterface parent = owner.findFromName(parentName);
-				if (parent != null) {
-					if (parent.getStatus().getAdmin() == AdminState.ADMIN_DOWN || parent.getStatus().getLink() == LinkState.DOWN) {
-						this.status = new InterfaceStatus(this.status.getAdmin(), LinkState.DOWN);
-					} else {
-						this.status = new InterfaceStatus(this.status.getAdmin(), LinkState.UP);
-					}
-					return;
-				}
-			}
-
-			this.status = new InterfaceStatus(this.status.getAdmin(), LinkState.DOWN);
+			processVifLinkState(topology);
 			return;
 		}
 
@@ -214,5 +192,31 @@ public class RouterInterface implements NetworkInterface {
 				}
 			}
 		}
+	}
+
+	private void processVifLinkState(NetworkTopology topology) {
+		String parentName = this.interfaceName.split("\\.")[0];
+		Router owner = null;
+
+		for (Router router : topology.getRouters()) {
+			if (router.getInterfaces().contains(this)) {
+				owner = router;
+				break;
+			}
+		}
+
+		if (owner != null) {
+			RouterInterface parent = owner.findFromName(parentName);
+			if (parent != null) {
+				if (parent.getStatus().getAdmin() == AdminState.ADMIN_DOWN || parent.getStatus().getLink() == LinkState.DOWN) {
+					this.status = new InterfaceStatus(this.status.getAdmin(), LinkState.DOWN);
+				} else {
+					this.status = new InterfaceStatus(this.status.getAdmin(), LinkState.UP);
+				}
+				return;
+			}
+		}
+
+		this.status = new InterfaceStatus(this.status.getAdmin(), LinkState.DOWN);
 	}
 }

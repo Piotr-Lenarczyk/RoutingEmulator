@@ -60,9 +60,9 @@ public class Main extends Application {
 	private static void configureLogging() {
 		LogManager.getLogManager().reset();
 		Logger rootLogger = Logger.getLogger("org.uj.routingemulator");
-		rootLogger.setLevel(Level.ALL);
+		rootLogger.setLevel(Level.WARNING);
 		ConsoleHandler consoleHandler = new ConsoleHandler();
-		consoleHandler.setLevel(Level.ALL);
+		consoleHandler.setLevel(Level.WARNING);
 		rootLogger.addHandler(consoleHandler);
 	}
 

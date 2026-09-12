@@ -3,9 +3,7 @@ package org.uj.routingemulator;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.uj.routingemulator.router.Router;
-import org.uj.routingemulator.router.RouterInterface;
-import org.uj.routingemulator.router.RouterMode;
+import org.uj.routingemulator.router.*;
 import org.uj.routingemulator.router.cli.RouterCLIParser;
 
 import java.io.ByteArrayOutputStream;
@@ -820,6 +818,67 @@ class RouterCLITest {
 				.extracting(RouterInterface::getInterfaceName)
 				.containsExactlyInAnyOrder("eth0", "eth0.1000", "dum0", "lo");
 		assertEquals(1, router.getRoutingTable().getRoutingEntries().size(), "Should have 1 route configured");
+	}
+
+	@Test
+	void testParserCreatesDummyAndVifInterfaces() {
+		parser.executeCommand("configure", router);
+
+		parser.executeCommand("set interfaces dummy dum0 address 192.168.2.1/24", router);
+		parser.executeCommand("set interfaces ethernet eth0 vif 1000 address 192.168.3.1/24", router);
+
+		RouterInterface dummy = router.getStagedInterfaces().stream()
+				.filter(iface -> iface.getInterfaceName().equals("dum0"))
+				.findFirst()
+				.orElseThrow();
+		RouterInterface vif = router.getStagedInterfaces().stream()
+				.filter(iface -> iface.getInterfaceName().equals("eth0.1000"))
+				.findFirst()
+				.orElseThrow();
+
+		assertEquals(InterfaceType.DUMMY, dummy.getType());
+		assertEquals(InterfaceType.VIF, vif.getType());
+		assertEquals("u/u", dummy.getStatus().toString());
+		assertNotNull(dummy.getInterfaceAddress());
+		assertNotNull(vif.getInterfaceAddress());
+	}
+
+	@Test
+	void testParserDisablesAndReenablesDummyAndVifInterfaces() {
+		parser.executeCommand("configure", router);
+		parser.executeCommand("set interfaces dummy dum0 address 192.168.2.1/24", router);
+		parser.executeCommand("set interfaces ethernet eth0 vif 1000 address 192.168.3.1/24", router);
+
+		parser.executeCommand("set interfaces dummy dum0 disable", router);
+		assertEquals(AdminState.ADMIN_DOWN, router.findFromName("dum0").getStatus().getAdmin());
+		parser.executeCommand("delete interfaces dummy dum0 disable", router);
+		assertEquals(AdminState.UP, router.findFromName("dum0").getStatus().getAdmin());
+
+		parser.executeCommand("set interfaces ethernet eth0 vif 1000 disable", router);
+		assertEquals(AdminState.UP, router.findFromName("eth0").getStatus().getAdmin());
+		assertEquals(AdminState.ADMIN_DOWN, router.findFromName("eth0.1000").getStatus().getAdmin());
+		parser.executeCommand("delete interfaces ethernet eth0 vif 1000 disable", router);
+		assertEquals(AdminState.UP, router.findFromName("eth0.1000").getStatus().getAdmin());
+
+		parser.executeCommand("set interfaces ethernet eth0 disable", router);
+		assertEquals(AdminState.ADMIN_DOWN, router.findFromName("eth0").getStatus().getAdmin());
+		assertEquals(AdminState.ADMIN_DOWN, router.findFromName("eth0.1000").getStatus().getAdmin());
+		parser.executeCommand("delete interfaces ethernet eth0 disable", router);
+		assertEquals(AdminState.UP, router.findFromName("eth0").getStatus().getAdmin());
+		assertEquals(AdminState.UP, router.findFromName("eth0.1000").getStatus().getAdmin());
+	}
+
+	@Test
+	void testParserDeletesDummyAndVifAddresses() {
+		parser.executeCommand("configure", router);
+		parser.executeCommand("set interfaces dummy dum0 address 192.168.2.1/24", router);
+		parser.executeCommand("set interfaces ethernet eth0 vif 1000 address 192.168.3.1/24", router);
+
+		parser.executeCommand("delete interfaces dummy dum0 address 192.168.2.1/24", router);
+		parser.executeCommand("delete interfaces ethernet eth0 vif 1000 address 192.168.3.1/24", router);
+
+		assertNull(router.findFromName("dum0").getInterfaceAddress());
+		assertNull(router.findFromName("eth0.1000").getInterfaceAddress());
 	}
 
 	@Test

@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.uj.routingemulator.common.*;
 import org.uj.routingemulator.host.Host;
 import org.uj.routingemulator.host.HostInterface;
+import org.uj.routingemulator.router.AdminState;
+import org.uj.routingemulator.router.LinkState;
 import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.RouterInterface;
 import org.uj.routingemulator.switching.Switch;
@@ -99,6 +101,71 @@ class NetworkTopologyTest {
 
 		assertEquals(1, topology.getConnections().size());
 		assertTrue(topology.getConnections().contains(connection));
+	}
+
+	@Test
+	void testDummyInterfaceLinkAlwaysUp() {
+		Router dummyRouter = new Router("R1", List.of(new RouterInterface("dum0", LinkState.UP)));
+		topology.addRouter(dummyRouter);
+		RouterInterface dummy = dummyRouter.getInterfaces().getFirst();
+		assertEquals(LinkState.UP, dummy.getStatus().getLink());
+
+		Host dummyNeighbor = new Host("PC1", new HostInterface(
+				"Ethernet0",
+				new Subnet(new IPAddress(192, 168, 2, 2), new SubnetMask(24)),
+				new IPAddress(192, 168, 2, 1)
+		));
+		topology.addHost(dummyNeighbor);
+		Connection connection = new Connection(dummy, dummyNeighbor.getHostInterface());
+		topology.addConnection(connection);
+		assertEquals(LinkState.UP, dummy.getStatus().getLink());
+
+		topology.removeConnection(connection);
+		assertEquals(LinkState.UP, dummy.getStatus().getLink());
+	}
+
+	@Test
+	void testVifFollowsEthernetConnectionAndAdminStateCascade() {
+		RouterInterface ethernet = new RouterInterface("eth0");
+		RouterInterface vif = new RouterInterface("eth0.1000");
+		Router router = new Router("R1", new java.util.ArrayList<>(List.of(ethernet, vif)));
+		topology.addRouter(router);
+
+		Host neighbor = new Host("PC1", new HostInterface(
+				"Ethernet0",
+				new Subnet(new IPAddress(192, 168, 1, 2), new SubnetMask(24)),
+				new IPAddress(192, 168, 1, 1)
+		));
+		topology.addHost(neighbor);
+		topology.addConnection(new Connection(ethernet, neighbor.getHostInterface()));
+
+		assertEquals(LinkState.UP, ethernet.getStatus().getLink());
+		assertEquals(LinkState.UP, vif.getStatus().getLink());
+		Connection connection = topology.getConnectionForInterface(ethernet);
+		topology.removeConnection(connection);
+		assertEquals(LinkState.DOWN, ethernet.getStatus().getLink());
+		assertEquals(LinkState.DOWN, vif.getStatus().getLink());
+
+		topology.addConnection(new Connection(ethernet, neighbor.getHostInterface()));
+		assertEquals(LinkState.UP, ethernet.getStatus().getLink());
+		assertEquals(LinkState.UP, vif.getStatus().getLink());
+
+		router.setMode(org.uj.routingemulator.router.RouterMode.CONFIGURATION);
+		RouterInterface stagedEthernet = router.findFromName("eth0");
+		RouterInterface stagedVif = router.findFromName("eth0.1000");
+		router.disableInterface("eth0.1000");
+		assertEquals(AdminState.UP, stagedEthernet.getStatus().getAdmin());
+		assertEquals(AdminState.ADMIN_DOWN, stagedVif.getStatus().getAdmin());
+		router.enableInterface("eth0.1000");
+		assertEquals(AdminState.UP, stagedVif.getStatus().getAdmin());
+
+		router.disableInterface("eth0");
+		assertEquals(AdminState.ADMIN_DOWN, stagedEthernet.getStatus().getAdmin());
+		assertEquals(AdminState.ADMIN_DOWN, stagedVif.getStatus().getAdmin());
+
+		router.enableInterface("eth0");
+		assertEquals(AdminState.UP, stagedEthernet.getStatus().getAdmin());
+		assertEquals(AdminState.UP, stagedVif.getStatus().getAdmin());
 	}
 
 	@Test

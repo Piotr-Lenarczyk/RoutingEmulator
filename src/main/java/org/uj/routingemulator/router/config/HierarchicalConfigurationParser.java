@@ -4,10 +4,7 @@ import org.uj.routingemulator.common.IPAddress;
 import org.uj.routingemulator.common.InterfaceAddress;
 import org.uj.routingemulator.common.Subnet;
 import org.uj.routingemulator.common.SubnetMask;
-import org.uj.routingemulator.router.Router;
-import org.uj.routingemulator.router.RouterInterface;
-import org.uj.routingemulator.router.RouterMode;
-import org.uj.routingemulator.router.StaticRoutingEntry;
+import org.uj.routingemulator.router.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,53 +24,35 @@ import java.util.List;
  */
 public class HierarchicalConfigurationParser implements ConfigurationParser {
 
+	private static final String DISABLE = "disable";
 	private List<String> lines;
 	private int position;
 
-	/**
-	 * Loads and applies hierarchical configuration to the specified router.
-	 * <p>
-	 * The method:
-	 * <ul>
-	 *   <li>Preprocesses the configuration (removes comments, empty lines)</li>
-	 *   <li>Puts router in configuration mode</li>
-	 *   <li>Clears existing staged configuration</li>
-	 *   <li>Recursively parses configuration blocks</li>
-	 *   <li>Commits changes on success</li>
-	 *   <li>Rolls back on error</li>
-	 *   <li>Restores original router mode</li>
-	 * </ul>
-	 *
-	 * @param router the router to configure
-	 * @param config the configuration text in hierarchical format
-	 * @throws ConfigurationParseException if the configuration is invalid
-	 */
-	@Override
-	public void loadConfiguration(Router router, String config) {
-		this.lines = preprocessConfig(config);
-		this.position = 0;
+	private static boolean addRoute(Router router, String nextHop, Subnet subnet, int distance, String interfaceName) {
+		if (nextHop != null) {
+			return addNextHopRoute(router, nextHop, subnet, distance);
+		} else if (interfaceName != null) {
+			RouterInterface iface = router.findFromName(interfaceName);
 
-		RouterMode originalMode = router.getMode();
-		router.setMode(RouterMode.CONFIGURATION);
-
-		try {
-			router.clearStagedConfiguration();
-			parseConfiguration(router, new ArrayList<>());
-			router.commitChanges();
-		} catch (RuntimeException e) {
-			router.discardChanges();
-			throw e;
-		} finally {
-			router.setMode(originalMode);
+			// Support dynamic creation of VIF and Dummy interfaces for routes
+			if (iface == null) {
+				InterfaceType type = InterfaceType.fromName(interfaceName);
+				if (type == InterfaceType.VIF) {
+					iface = new RouterInterface(interfaceName);
+				} else if (type == InterfaceType.DUMMY) {
+					iface = new RouterInterface(interfaceName, org.uj.routingemulator.router.LinkState.UP);
+				} else {
+					throw new ConfigurationParseException(
+							String.format("Interface %s does not exist on this router", interfaceName)
+					);
+				}
+				router.getStagedInterfaces().add(iface);
+			}
+			return addInterfaceRoute(router, subnet, iface, distance);
 		}
+		return false;
 	}
 
-	/**
-	 * Preprocesses configuration by removing comments and empty lines.
-	 *
-	 * @param config the raw configuration text
-	 * @return list of non-empty, non-comment lines
-	 */
 	private List<String> preprocessConfig(String config) {
 		List<String> result = new ArrayList<>();
 		for (String line : config.split("\n")) {
@@ -87,12 +66,6 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 		return result;
 	}
 
-	/**
-	 * Recursively parses configuration blocks.
-	 *
-	 * @param router the router to configure
-	 * @param path current configuration path (e.g., ["interfaces", "ethernet", "eth0"])
-	 */
 	private void parseConfiguration(Router router, List<String> path) {
 		while (position < lines.size()) {
 			String line = lines.get(position);
@@ -129,6 +102,15 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 		}
 	}
 
+	private static void parseDummy(Router router, List<String> path) {
+		String interfaceName = path.get(2);
+		if (path.get(3).equals("address")) {
+			configureInterface(router, path.get(4), interfaceName);
+		} else if (path.get(3).equals(DISABLE)) {
+			disableInterface(router, interfaceName);
+		}
+	}
+
 	private static void applyRouteConfiguration(Router router, String nextHop, Subnet subnet, int distance, String interfaceName, boolean disabled) {
 		if (addRoute(router, nextHop, subnet, distance, interfaceName)) return;
 
@@ -143,19 +125,20 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 		}
 	}
 
-	private static boolean addRoute(Router router, String nextHop, Subnet subnet, int distance, String interfaceName) {
-		if (nextHop != null) {
-			return addNextHopRoute(router, nextHop, subnet, distance);
-		} else if (interfaceName != null) {
-			RouterInterface iface = router.findFromName(interfaceName);
-			if (iface == null) {
-				throw new ConfigurationParseException(
-						String.format("Interface %s does not exist on this router", interfaceName)
-				);
-			}
-			return addInterfaceRoute(router, subnet, iface, distance);
+	private static void parseEthernetOrVif(Router router, List<String> path) {
+		String interfaceName = path.get(2);
+		int propIdx = 3;
+
+		if (path.get(3).equals("vif") && path.size() >= 6) {
+			interfaceName += "." + path.get(4);
+			propIdx = 5;
 		}
-		return false;
+
+		if (path.get(propIdx).equals("address")) {
+			configureInterface(router, path.get(propIdx + 1), interfaceName);
+		} else if (path.get(propIdx).equals(DISABLE)) {
+			disableInterface(router, interfaceName);
+		}
 	}
 
 	private static boolean addInterfaceRoute(Router router, Subnet subnet, RouterInterface iface, int distance) {
@@ -194,23 +177,13 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 		return false;
 	}
 
-	private static void disableInterface(Router router, String interfaceName) {
-		try {
-			router.disableInterface(interfaceName);
-		} catch (RuntimeException e) {
-			if (e.getMessage() != null && e.getMessage().contains("already exists")) {
-				return;
-			}
-			throw e;
-		}
-	}
-
 	private static void configureInterface(Router router, String address, String interfaceName) {
 		try {
 			String[] parts = address.split("/");
 			IPAddress ip = IPAddress.fromString(parts[0]);
 			SubnetMask mask = SubnetMask.fromString(parts[1]);
 			InterfaceAddress interfaceAddress = new InterfaceAddress(ip, mask);
+
 			router.configureInterface(interfaceName, interfaceAddress);
 		} catch (RuntimeException e) {
 			if (e.getMessage() != null && e.getMessage().equals("Configuration already exists")) {
@@ -221,20 +194,47 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 	}
 
 	/**
-	 * Parses a complete route block and collects all configuration values.
+	 * Loads and applies hierarchical configuration to the specified router.
 	 * <p>
-	 * Route blocks in hierarchical format contain multiple configuration lines
-	 * (next-hop, interface, distance, disable). This method collects all values
-	 * before creating the routing entry.
+	 * The method:
+	 * <ul>
+	 *   <li>Preprocesses the configuration (removes comments, empty lines)</li>
+	 *   <li>Puts router in configuration mode</li>
+	 *   <li>Clears existing staged configuration</li>
+	 *   <li>Recursively parses configuration blocks</li>
+	 *   <li>Commits changes atomically on success</li>
+	 *   <li>Rolls back on error</li>
+	 *   <li>Restores original router mode</li>
+	 * </ul>
 	 *
 	 * @param router the router to configure
-	 * @param path current path including route destination (e.g., ["protocols", "static", "route", "192.168.1.0/24"])
-	 * @throws ConfigurationParseException if route configuration is invalid
+	 * @param config the configuration text in hierarchical format
+	 * @throws ConfigurationParseException if the configuration is invalid
 	 */
-	private void parseRouteBlock(Router router, List<String> path) {
-		// path is: ["protocols", "static", "route", "192.168.1.0/24"]
-		String destination = path.get(3);
+	@Override
+	public void loadConfiguration(Router router, String config) {
+		this.lines = preprocessConfig(config);
+		this.position = 0;
 
+		RouterMode originalMode = router.getMode();
+		router.setMode(RouterMode.CONFIGURATION);
+
+		try {
+			router.clearStagedConfiguration();
+			parseConfiguration(router, new ArrayList<>());
+
+			// Single, atomic commit for the entire hierarchical file
+			router.commitChanges();
+		} catch (RuntimeException e) {
+			router.discardChanges();
+			throw e;
+		} finally {
+			router.setMode(originalMode);
+		}
+	}
+
+	private void parseRouteBlock(Router router, List<String> path) {
+		String destination = path.get(3);
 		String nextHop = null;
 		String interfaceName = null;
 		int distance = 1;
@@ -252,79 +252,63 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 
 			String[] parts = trimmed.split("\\s+");
 
-			if (parts.length >= 2) {
+			// Allow processing of single-word lines like "disable"
+			if (parts.length >= 1) {
 				switch (parts[0]) {
 					case "next-hop":
-						nextHop = parts[1];
+						if (parts.length >= 2) nextHop = parts[1];
 						break;
 					case "interface":
-						interfaceName = parts[1];
+						if (parts.length >= 2) interfaceName = parts[1];
 						break;
 					case "distance":
-						try {
-							distance = Integer.parseInt(parts[1]);
-						} catch (NumberFormatException e) {
-							throw new ConfigurationParseException("Invalid distance value: " + parts[1]);
+						if (parts.length >= 2) {
+							try {
+								distance = Integer.parseInt(parts[1]);
+							} catch (NumberFormatException e) {
+								throw new ConfigurationParseException("Invalid distance value: " + parts[1]);
+							}
 						}
 						break;
-					case "disable":
+					case DISABLE:
 						disabled = true;
 						break;
 					default:
 						throw new ConfigurationParseException("Unknown route configuration option: " + parts[0]);
 				}
-
 			}
-
 			position++;
 		}
 
 		// Apply route configuration
 		try {
 			Subnet subnet = Subnet.fromString(destination);
-
 			applyRouteConfiguration(router, nextHop, subnet, distance, interfaceName, disabled);
 		} catch (ConfigurationParseException e) {
 			throw new ConfigurationParseException("Error parsing route: " + e.getMessage());
 		}
 	}
 
-	/**
-	 * Applies a single configuration path to the router.
-	 * <p>
-	 * Used for interface configuration (routes are handled by parseRouteBlock).
-	 * Handles configuration lines that are not part of a nested block structure.
-	 *
-	 * @param router the router to configure
-	 * @param path the full configuration path as a list of tokens
-	 * @throws ConfigurationParseException if configuration cannot be applied
-	 */
+	private static void disableInterface(Router router, String interfaceName) {
+		try {
+			router.disableInterface(interfaceName);
+		} catch (RuntimeException e) {
+			if (e.getMessage() != null && e.getMessage().contains("already exists")) {
+				return;
+			}
+			throw e;
+		}
+	}
+
 	private void applyConfiguration(Router router, List<String> path) {
 		if (path.size() < 2) return;
 
 		try {
 			if (path.get(0).equals("interfaces")) {
 				if (path.get(1).equals("ethernet") && path.size() >= 4) {
-					String interfaceName = path.get(2);
-					int propIdx = 3;
-
-					if (path.get(3).equals("vif") && path.size() >= 6) {
-						interfaceName += "." + path.get(4);
-						propIdx = 5;
-					}
-
-					if (path.get(propIdx).equals("address")) {
-						configureInterface(router, path.get(propIdx + 1), interfaceName);
-					} else if (path.get(propIdx).equals("disable")) {
-						disableInterface(router, interfaceName);
-					}
+					parseEthernetOrVif(router, path);
 				} else if (path.get(1).equals("dummy") && path.size() >= 4) {
-					String interfaceName = path.get(2);
-					if (path.get(3).equals("address")) {
-						configureInterface(router, path.get(4), interfaceName);
-					} else if (path.get(3).equals("disable")) {
-						disableInterface(router, interfaceName);
-					}
+					parseDummy(router, path);
 				}
 			}
 		} catch (ConfigurationParseException e) {
@@ -334,4 +318,3 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 		}
 	}
 }
-

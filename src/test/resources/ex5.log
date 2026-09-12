@@ -1,0 +1,1840 @@
+wrz 12, 2026 6:11:54 PM org.uj.routingemulator.Main main
+INFO: Starting Network Routing Emulator...
+wrz 12, 2026 6:11:54 PM org.uj.routingemulator.Main main
+INFO: Running in GUI mode...
+wrz 12, 2026 6:11:56 PM org.uj.routingemulator.common.NetworkTopology <init>
+CONFIG: Initialized new empty network topology
+wrz 12, 2026 6:13:00 PM org.uj.routingemulator.router.Router <init>
+FINE: Creating new router R1 with custom interfaces: [RouterInterface(interfaceName=eth0, type=ETHERNET, interfaceAddress=null, macAddress=6A:BC:13:7A:35:7A, description=null, vrf=default, mtu=1500, status=u/D), RouterInterface(interfaceName=eth1, type=ETHERNET, interfaceAddress=null, macAddress=2E:AB:E0:A3:C4:7D, description=null, vrf=default, mtu=1500, status=u/D), RouterInterface(interfaceName=eth2, type=ETHERNET, interfaceAddress=null, macAddress=76:F0:E8:0F:79:E1, description=null, vrf=default, mtu=1500, status=u/D)]
+wrz 12, 2026 6:13:00 PM org.uj.routingemulator.common.NetworkTopology addRouter
+INFO: Router R1 added to topology
+wrz 12, 2026 6:13:06 PM org.uj.routingemulator.router.Router <init>
+FINE: Creating new router R2 with custom interfaces: [RouterInterface(interfaceName=eth0, type=ETHERNET, interfaceAddress=null, macAddress=7A:5E:11:3A:E2:73, description=null, vrf=default, mtu=1500, status=u/D), RouterInterface(interfaceName=eth1, type=ETHERNET, interfaceAddress=null, macAddress=3E:7A:BF:03:FA:5F, description=null, vrf=default, mtu=1500, status=u/D), RouterInterface(interfaceName=eth2, type=ETHERNET, interfaceAddress=null, macAddress=1A:31:04:1B:DF:61, description=null, vrf=default, mtu=1500, status=u/D)]
+wrz 12, 2026 6:13:06 PM org.uj.routingemulator.common.NetworkTopology addRouter
+INFO: Router R2 added to topology
+wrz 12, 2026 6:13:12 PM org.uj.routingemulator.router.Router <init>
+FINE: Creating new router R3 with custom interfaces: [RouterInterface(interfaceName=eth0, type=ETHERNET, interfaceAddress=null, macAddress=DA:E4:47:CE:10:B0, description=null, vrf=default, mtu=1500, status=u/D), RouterInterface(interfaceName=eth1, type=ETHERNET, interfaceAddress=null, macAddress=AE:E7:46:B2:05:C1, description=null, vrf=default, mtu=1500, status=u/D), RouterInterface(interfaceName=eth2, type=ETHERNET, interfaceAddress=null, macAddress=02:D3:6B:29:F2:14, description=null, vrf=default, mtu=1500, status=u/D)]
+wrz 12, 2026 6:13:12 PM org.uj.routingemulator.common.NetworkTopology addRouter
+INFO: Router R3 added to topology
+wrz 12, 2026 6:15:56 PM org.uj.routingemulator.common.Connection <init>
+FINE: Setting up connection between eth1 and eth1
+wrz 12, 2026 6:15:56 PM org.uj.routingemulator.common.Connection <init>
+FINE: Setting up connection between eth1 and eth1
+wrz 12, 2026 6:15:56 PM org.uj.routingemulator.common.NetworkTopology addConnection
+INFO: Adding connection between eth1 and eth1
+wrz 12, 2026 6:15:56 PM org.uj.routingemulator.common.NetworkTopology addConnection
+FINER: Updating link states for interface eth1
+wrz 12, 2026 6:15:56 PM org.uj.routingemulator.common.NetworkTopology updateInterfaceLinkState
+FINE: Updating link state for router interface eth1
+wrz 12, 2026 6:15:56 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:15:56 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:15:56 PM org.uj.routingemulator.common.NetworkTopology hasActiveConnection
+FINE: Checking if interface eth1 neighbor eth1 is administratively up
+wrz 12, 2026 6:15:56 PM org.uj.routingemulator.router.RouterInterface updateLinkState
+FINER: Updating link state for interface eth1 to UP
+wrz 12, 2026 6:15:56 PM org.uj.routingemulator.common.NetworkTopology addConnection
+FINER: Updating link states for interface eth1
+wrz 12, 2026 6:15:56 PM org.uj.routingemulator.common.NetworkTopology updateInterfaceLinkState
+FINE: Updating link state for router interface eth1
+wrz 12, 2026 6:15:56 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:15:56 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:15:56 PM org.uj.routingemulator.common.NetworkTopology hasActiveConnection
+FINE: Checking if interface eth1 neighbor eth1 is administratively up
+wrz 12, 2026 6:15:56 PM org.uj.routingemulator.router.RouterInterface updateLinkState
+FINER: Updating link state for interface eth1 to UP
+wrz 12, 2026 6:17:06 PM org.uj.routingemulator.common.Connection <init>
+FINE: Setting up connection between eth2 and eth2
+wrz 12, 2026 6:17:06 PM org.uj.routingemulator.common.Connection <init>
+FINE: Setting up connection between eth2 and eth2
+wrz 12, 2026 6:17:06 PM org.uj.routingemulator.common.NetworkTopology addConnection
+FINEST: Checking connection eth1 <-> eth1
+wrz 12, 2026 6:17:06 PM org.uj.routingemulator.common.NetworkTopology addConnection
+INFO: Adding connection between eth2 and eth2
+wrz 12, 2026 6:17:06 PM org.uj.routingemulator.common.NetworkTopology addConnection
+FINER: Updating link states for interface eth2
+wrz 12, 2026 6:17:06 PM org.uj.routingemulator.common.NetworkTopology updateInterfaceLinkState
+FINE: Updating link state for router interface eth2
+wrz 12, 2026 6:17:06 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:17:06 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:17:06 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:17:06 PM org.uj.routingemulator.common.NetworkTopology hasActiveConnection
+FINE: Checking if interface eth2 neighbor eth2 is administratively up
+wrz 12, 2026 6:17:06 PM org.uj.routingemulator.router.RouterInterface updateLinkState
+FINER: Updating link state for interface eth2 to UP
+wrz 12, 2026 6:17:06 PM org.uj.routingemulator.common.NetworkTopology addConnection
+FINER: Updating link states for interface eth2
+wrz 12, 2026 6:17:06 PM org.uj.routingemulator.common.NetworkTopology updateInterfaceLinkState
+FINE: Updating link state for router interface eth2
+wrz 12, 2026 6:17:06 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:17:06 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:17:06 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:17:06 PM org.uj.routingemulator.common.NetworkTopology hasActiveConnection
+FINE: Checking if interface eth2 neighbor eth2 is administratively up
+wrz 12, 2026 6:17:06 PM org.uj.routingemulator.router.RouterInterface updateLinkState
+FINER: Updating link state for interface eth2 to UP
+wrz 12, 2026 6:17:46 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: configure
+wrz 12, 2026 6:17:46 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: configure for input string: configure
+wrz 12, 2026 6:17:46 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Creating deep copy of interfaces for staged configuration
+wrz 12, 2026 6:17:46 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Copying interface eth0 with address null
+wrz 12, 2026 6:17:46 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Copying interface eth1 with address null
+wrz 12, 2026 6:17:46 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Copying interface eth2 with address null
+wrz 12, 2026 6:17:46 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Copying routing table with updated interfaces
+wrz 12, 2026 6:18:00 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: exit
+wrz 12, 2026 6:18:00 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: exit for input string: exit
+wrz 12, 2026 6:18:03 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: show interfaces
+wrz 12, 2026 6:18:03 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: show interfaces for input string: show interfaces
+wrz 12, 2026 6:18:14 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: configure
+wrz 12, 2026 6:18:14 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: configure for input string: configure
+wrz 12, 2026 6:18:14 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Creating deep copy of interfaces for staged configuration
+wrz 12, 2026 6:18:14 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Copying interface eth0 with address null
+wrz 12, 2026 6:18:14 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Copying interface eth1 with address null
+wrz 12, 2026 6:18:14 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Copying interface eth2 with address null
+wrz 12, 2026 6:18:14 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Copying routing table with updated interfaces
+wrz 12, 2026 6:18:44 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: set interfaces ethernet eth0 address 10.0.0.1/8
+wrz 12, 2026 6:18:44 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: set interfaces ethernet <interface> [vif <id>] address <address> for input string: set interfaces ethernet eth0 address 10.0.0.1/8
+wrz 12, 2026 6:19:07 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: set interfaces ethernet eth1 address 192.168.0.1/25
+wrz 12, 2026 6:19:07 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: set interfaces ethernet <interface> [vif <id>] address <address> for input string: set interfaces ethernet eth1 address 192.168.0.1/25
+wrz 12, 2026 6:19:12 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: commit
+wrz 12, 2026 6:19:12 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: commit for input string: commit
+wrz 12, 2026 6:19:12 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth0 with address 10.0.0.1/8
+wrz 12, 2026 6:19:12 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth0 in-place
+wrz 12, 2026 6:19:12 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth1 with address 192.168.0.1/25
+wrz 12, 2026 6:19:12 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth1 in-place
+wrz 12, 2026 6:19:12 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth2 with address null
+wrz 12, 2026 6:19:12 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth2 in-place
+wrz 12, 2026 6:19:12 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Copying routing table with updated interfaces
+wrz 12, 2026 6:19:12 PM org.uj.routingemulator.router.Router commitChanges
+INFO: R1: Commit complete
+wrz 12, 2026 6:19:21 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Executing command: configure
+wrz 12, 2026 6:19:21 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Command match found: configure for input string: configure
+wrz 12, 2026 6:19:21 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Creating deep copy of interfaces for staged configuration
+wrz 12, 2026 6:19:21 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Copying interface eth0 with address null
+wrz 12, 2026 6:19:21 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Copying interface eth1 with address null
+wrz 12, 2026 6:19:21 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Copying interface eth2 with address null
+wrz 12, 2026 6:19:21 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Copying routing table with updated interfaces
+wrz 12, 2026 6:19:41 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Executing command: set interfaces ethernet eth1 address 192.168.0.2/25
+wrz 12, 2026 6:19:41 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Command match found: set interfaces ethernet <interface> [vif <id>] address <address> for input string: set interfaces ethernet eth1 address 192.168.0.2/25
+wrz 12, 2026 6:20:12 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Executing command: set interfaces ethernet eth2 address 192.168.0.129/26
+wrz 12, 2026 6:20:12 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Command match found: set interfaces ethernet <interface> [vif <id>] address <address> for input string: set interfaces ethernet eth2 address 192.168.0.129/26
+wrz 12, 2026 6:20:16 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Executing command: commit
+wrz 12, 2026 6:20:16 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Command match found: commit for input string: commit
+wrz 12, 2026 6:20:16 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth0 with address null
+wrz 12, 2026 6:20:16 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth0 in-place
+wrz 12, 2026 6:20:16 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth1 with address 192.168.0.2/25
+wrz 12, 2026 6:20:16 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth1 in-place
+wrz 12, 2026 6:20:16 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth2 with address 192.168.0.129/26
+wrz 12, 2026 6:20:16 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth2 in-place
+wrz 12, 2026 6:20:16 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Copying routing table with updated interfaces
+wrz 12, 2026 6:20:16 PM org.uj.routingemulator.router.Router commitChanges
+INFO: R2: Commit complete
+wrz 12, 2026 6:20:28 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R3: Executing command: show interfaces
+wrz 12, 2026 6:20:28 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R3: Command match found: show interfaces for input string: show interfaces
+wrz 12, 2026 6:21:10 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R3: Executing command: configure
+wrz 12, 2026 6:21:10 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R3: Command match found: configure for input string: configure
+wrz 12, 2026 6:21:10 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Creating deep copy of interfaces for staged configuration
+wrz 12, 2026 6:21:10 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Copying interface eth0 with address null
+wrz 12, 2026 6:21:10 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Copying interface eth1 with address null
+wrz 12, 2026 6:21:10 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Copying interface eth2 with address null
+wrz 12, 2026 6:21:10 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Copying routing table with updated interfaces
+wrz 12, 2026 6:21:29 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R3: Executing command: set interfaces ethernet eth2 address 192.168.0.130/26
+wrz 12, 2026 6:21:29 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R3: Command match found: set interfaces ethernet <interface> [vif <id>] address <address> for input string: set interfaces ethernet eth2 address 192.168.0.130/26
+wrz 12, 2026 6:21:51 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R3: Executing command: set interfaces ethernet eth0 address 20.0.0.1/8
+wrz 12, 2026 6:21:51 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R3: Command match found: set interfaces ethernet <interface> [vif <id>] address <address> for input string: set interfaces ethernet eth0 address 20.0.0.1/8
+wrz 12, 2026 6:21:53 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R3: Executing command: commit
+wrz 12, 2026 6:21:53 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R3: Command match found: commit for input string: commit
+wrz 12, 2026 6:21:53 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth0 with address 20.0.0.1/8
+wrz 12, 2026 6:21:53 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth0 in-place
+wrz 12, 2026 6:21:53 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth1 with address null
+wrz 12, 2026 6:21:53 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth1 in-place
+wrz 12, 2026 6:21:53 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth2 with address 192.168.0.130/26
+wrz 12, 2026 6:21:53 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth2 in-place
+wrz 12, 2026 6:21:53 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Copying routing table with updated interfaces
+wrz 12, 2026 6:21:53 PM org.uj.routingemulator.router.Router commitChanges
+INFO: R3: Commit complete
+wrz 12, 2026 6:22:43 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: set protocols static route 192.168.0.128/26 interface eth1
+wrz 12, 2026 6:22:43 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: set protocols static route <destination> interface <interface> for input string: set protocols static route 192.168.0.128/26 interface eth1
+wrz 12, 2026 6:22:43 PM org.uj.routingemulator.router.Router addRoute
+INFO: R1: Creating static route StaticRoutingEntry{subnet=192.168.0.128/26, routerInterface=RouterInterface(interfaceName=eth1, type=ETHERNET, interfaceAddress=192.168.0.1/25, macAddress=2E:AB:E0:A3:C4:7D, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false}
+wrz 12, 2026 6:22:59 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: set protocols static route 20.0.0.0/8 interface eth1
+wrz 12, 2026 6:22:59 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: set protocols static route <destination> interface <interface> for input string: set protocols static route 20.0.0.0/8 interface eth1
+wrz 12, 2026 6:22:59 PM org.uj.routingemulator.router.Router addRoute
+INFO: R1: Creating static route StaticRoutingEntry{subnet=20.0.0.0/8, routerInterface=RouterInterface(interfaceName=eth1, type=ETHERNET, interfaceAddress=192.168.0.1/25, macAddress=2E:AB:E0:A3:C4:7D, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false}
+wrz 12, 2026 6:23:02 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: commit
+wrz 12, 2026 6:23:02 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: commit for input string: commit
+wrz 12, 2026 6:23:02 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth0 with address 10.0.0.1/8
+wrz 12, 2026 6:23:02 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth0 in-place
+wrz 12, 2026 6:23:02 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth1 with address 192.168.0.1/25
+wrz 12, 2026 6:23:02 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth1 in-place
+wrz 12, 2026 6:23:02 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth2 with address null
+wrz 12, 2026 6:23:02 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth2 in-place
+wrz 12, 2026 6:23:02 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Copying routing table with updated interfaces
+wrz 12, 2026 6:23:02 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Processing route StaticRoutingEntry{subnet=192.168.0.128/26, routerInterface=RouterInterface(interfaceName=eth1, type=ETHERNET, interfaceAddress=192.168.0.1/25, macAddress=2E:AB:E0:A3:C4:7D, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false} for subnet 192.168.0.128/26
+wrz 12, 2026 6:23:02 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Route is interface-based, finding corresponding interface in new configuration
+wrz 12, 2026 6:23:02 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Creating new interface-based route with default administrative distance
+wrz 12, 2026 6:23:02 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Processing route StaticRoutingEntry{subnet=20.0.0.0/8, routerInterface=RouterInterface(interfaceName=eth1, type=ETHERNET, interfaceAddress=192.168.0.1/25, macAddress=2E:AB:E0:A3:C4:7D, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false} for subnet 20.0.0.0/8
+wrz 12, 2026 6:23:02 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Route is interface-based, finding corresponding interface in new configuration
+wrz 12, 2026 6:23:02 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Creating new interface-based route with default administrative distance
+wrz 12, 2026 6:23:02 PM org.uj.routingemulator.router.Router commitChanges
+INFO: R1: Commit complete
+wrz 12, 2026 6:23:33 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Executing command: set protocols static route 10.0.0.0/8 interface eth1
+wrz 12, 2026 6:23:33 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Command match found: set protocols static route <destination> interface <interface> for input string: set protocols static route 10.0.0.0/8 interface eth1
+wrz 12, 2026 6:23:33 PM org.uj.routingemulator.router.Router addRoute
+INFO: R2: Creating static route StaticRoutingEntry{subnet=10.0.0.0/8, routerInterface=RouterInterface(interfaceName=eth1, type=ETHERNET, interfaceAddress=192.168.0.2/25, macAddress=3E:7A:BF:03:FA:5F, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false}
+wrz 12, 2026 6:23:40 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Executing command: set protocols static route 20.0.0.0/8 interface eth2
+wrz 12, 2026 6:23:40 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Command match found: set protocols static route <destination> interface <interface> for input string: set protocols static route 20.0.0.0/8 interface eth2
+wrz 12, 2026 6:23:40 PM org.uj.routingemulator.router.Router addRoute
+INFO: R2: Creating static route StaticRoutingEntry{subnet=20.0.0.0/8, routerInterface=RouterInterface(interfaceName=eth2, type=ETHERNET, interfaceAddress=192.168.0.129/26, macAddress=1A:31:04:1B:DF:61, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false}
+wrz 12, 2026 6:23:44 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Executing command: commit
+wrz 12, 2026 6:23:44 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Command match found: commit for input string: commit
+wrz 12, 2026 6:23:44 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth0 with address null
+wrz 12, 2026 6:23:44 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth0 in-place
+wrz 12, 2026 6:23:44 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth1 with address 192.168.0.2/25
+wrz 12, 2026 6:23:44 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth1 in-place
+wrz 12, 2026 6:23:44 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth2 with address 192.168.0.129/26
+wrz 12, 2026 6:23:44 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth2 in-place
+wrz 12, 2026 6:23:44 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Copying routing table with updated interfaces
+wrz 12, 2026 6:23:44 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Processing route StaticRoutingEntry{subnet=10.0.0.0/8, routerInterface=RouterInterface(interfaceName=eth1, type=ETHERNET, interfaceAddress=192.168.0.2/25, macAddress=3E:7A:BF:03:FA:5F, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false} for subnet 10.0.0.0/8
+wrz 12, 2026 6:23:44 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Route is interface-based, finding corresponding interface in new configuration
+wrz 12, 2026 6:23:44 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Creating new interface-based route with default administrative distance
+wrz 12, 2026 6:23:44 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Processing route StaticRoutingEntry{subnet=20.0.0.0/8, routerInterface=RouterInterface(interfaceName=eth2, type=ETHERNET, interfaceAddress=192.168.0.129/26, macAddress=1A:31:04:1B:DF:61, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false} for subnet 20.0.0.0/8
+wrz 12, 2026 6:23:44 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Route is interface-based, finding corresponding interface in new configuration
+wrz 12, 2026 6:23:44 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Creating new interface-based route with default administrative distance
+wrz 12, 2026 6:23:44 PM org.uj.routingemulator.router.Router commitChanges
+INFO: R2: Commit complete
+wrz 12, 2026 6:24:08 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R3: Executing command: set protocols static route 10.0.0.0/8 interface eth2
+wrz 12, 2026 6:24:08 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R3: Command match found: set protocols static route <destination> interface <interface> for input string: set protocols static route 10.0.0.0/8 interface eth2
+wrz 12, 2026 6:24:08 PM org.uj.routingemulator.router.Router addRoute
+INFO: R3: Creating static route StaticRoutingEntry{subnet=10.0.0.0/8, routerInterface=RouterInterface(interfaceName=eth2, type=ETHERNET, interfaceAddress=192.168.0.130/26, macAddress=02:D3:6B:29:F2:14, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false}
+wrz 12, 2026 6:24:24 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R3: Executing command: set protocols static route 192.168.0.0/25 interface eth2
+wrz 12, 2026 6:24:24 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R3: Command match found: set protocols static route <destination> interface <interface> for input string: set protocols static route 192.168.0.0/25 interface eth2
+wrz 12, 2026 6:24:24 PM org.uj.routingemulator.router.Router addRoute
+INFO: R3: Creating static route StaticRoutingEntry{subnet=192.168.0.0/25, routerInterface=RouterInterface(interfaceName=eth2, type=ETHERNET, interfaceAddress=192.168.0.130/26, macAddress=02:D3:6B:29:F2:14, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false}
+wrz 12, 2026 6:24:25 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R3: Executing command: commit
+wrz 12, 2026 6:24:25 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R3: Command match found: commit for input string: commit
+wrz 12, 2026 6:24:25 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth0 with address 20.0.0.1/8
+wrz 12, 2026 6:24:25 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth0 in-place
+wrz 12, 2026 6:24:25 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth1 with address null
+wrz 12, 2026 6:24:25 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth1 in-place
+wrz 12, 2026 6:24:25 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth2 with address 192.168.0.130/26
+wrz 12, 2026 6:24:25 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth2 in-place
+wrz 12, 2026 6:24:25 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Copying routing table with updated interfaces
+wrz 12, 2026 6:24:25 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Processing route StaticRoutingEntry{subnet=10.0.0.0/8, routerInterface=RouterInterface(interfaceName=eth2, type=ETHERNET, interfaceAddress=192.168.0.130/26, macAddress=02:D3:6B:29:F2:14, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false} for subnet 10.0.0.0/8
+wrz 12, 2026 6:24:25 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Route is interface-based, finding corresponding interface in new configuration
+wrz 12, 2026 6:24:25 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Creating new interface-based route with default administrative distance
+wrz 12, 2026 6:24:25 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Processing route StaticRoutingEntry{subnet=192.168.0.0/25, routerInterface=RouterInterface(interfaceName=eth2, type=ETHERNET, interfaceAddress=192.168.0.130/26, macAddress=02:D3:6B:29:F2:14, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false} for subnet 192.168.0.0/25
+wrz 12, 2026 6:24:25 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Route is interface-based, finding corresponding interface in new configuration
+wrz 12, 2026 6:24:25 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Creating new interface-based route with default administrative distance
+wrz 12, 2026 6:24:25 PM org.uj.routingemulator.router.Router commitChanges
+INFO: R3: Commit complete
+wrz 12, 2026 6:24:30 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: exit
+wrz 12, 2026 6:24:30 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: exit for input string: exit
+wrz 12, 2026 6:24:34 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: show ip route
+wrz 12, 2026 6:24:34 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: show ip route for input string: show ip route
+wrz 12, 2026 6:25:10 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: ping 10.0.0.1
+wrz 12, 2026 6:25:10 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: ping [-c <count>] [-t <ttl>] <ip> for input string: ping 10.0.0.1
+wrz 12, 2026 6:25:10 PM org.uj.routingemulator.common.PingService ping
+FINE: R1: Router pinging 10.0.0.1 with 4 probes (ttl=64)...
+wrz 12, 2026 6:25:10 PM org.uj.routingemulator.common.PingService performPing
+FINEST: Probe 1: Router R1 sending ICMP Echo Request from 10.0.0.1 to 10.0.0.1 with ttl=64
+wrz 12, 2026 6:25:10 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 10.0.0.1 to 10.0.0.1
+wrz 12, 2026 6:25:10 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R1 for destination 10.0.0.1
+wrz 12, 2026 6:25:10 PM org.uj.routingemulator.common.ForwardingEngine resolveOwnInterfaceReached
+FINE: Forwarding success: reached destination router R1 interface eth0
+wrz 12, 2026 6:25:10 PM org.uj.routingemulator.common.PingService performPing
+FINEST: Probe 2: Router R1 sending ICMP Echo Request from 10.0.0.1 to 10.0.0.1 with ttl=64
+wrz 12, 2026 6:25:10 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 10.0.0.1 to 10.0.0.1
+wrz 12, 2026 6:25:10 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R1 for destination 10.0.0.1
+wrz 12, 2026 6:25:10 PM org.uj.routingemulator.common.ForwardingEngine resolveOwnInterfaceReached
+FINE: Forwarding success: reached destination router R1 interface eth0
+wrz 12, 2026 6:25:10 PM org.uj.routingemulator.common.PingService performPing
+FINEST: Probe 3: Router R1 sending ICMP Echo Request from 10.0.0.1 to 10.0.0.1 with ttl=64
+wrz 12, 2026 6:25:10 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 10.0.0.1 to 10.0.0.1
+wrz 12, 2026 6:25:10 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R1 for destination 10.0.0.1
+wrz 12, 2026 6:25:10 PM org.uj.routingemulator.common.ForwardingEngine resolveOwnInterfaceReached
+FINE: Forwarding success: reached destination router R1 interface eth0
+wrz 12, 2026 6:25:10 PM org.uj.routingemulator.common.PingService performPing
+FINEST: Probe 4: Router R1 sending ICMP Echo Request from 10.0.0.1 to 10.0.0.1 with ttl=64
+wrz 12, 2026 6:25:10 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 10.0.0.1 to 10.0.0.1
+wrz 12, 2026 6:25:10 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R1 for destination 10.0.0.1
+wrz 12, 2026 6:25:10 PM org.uj.routingemulator.common.ForwardingEngine resolveOwnInterfaceReached
+FINE: Forwarding success: reached destination router R1 interface eth0
+wrz 12, 2026 6:25:20 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: ping 192.168.0.1
+wrz 12, 2026 6:25:20 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: ping [-c <count>] [-t <ttl>] <ip> for input string: ping 192.168.0.1
+wrz 12, 2026 6:25:20 PM org.uj.routingemulator.common.PingService ping
+FINE: R1: Router pinging 192.168.0.1 with 4 probes (ttl=64)...
+wrz 12, 2026 6:25:20 PM org.uj.routingemulator.common.PingService performPing
+FINEST: Probe 1: Router R1 sending ICMP Echo Request from 192.168.0.1 to 192.168.0.1 with ttl=64
+wrz 12, 2026 6:25:20 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.1 to 192.168.0.1
+wrz 12, 2026 6:25:20 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R1 for destination 192.168.0.1
+wrz 12, 2026 6:25:20 PM org.uj.routingemulator.common.ForwardingEngine resolveOwnInterfaceReached
+FINE: Forwarding success: reached destination router R1 interface eth1
+wrz 12, 2026 6:25:20 PM org.uj.routingemulator.common.PingService performPing
+FINEST: Probe 2: Router R1 sending ICMP Echo Request from 192.168.0.1 to 192.168.0.1 with ttl=64
+wrz 12, 2026 6:25:20 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.1 to 192.168.0.1
+wrz 12, 2026 6:25:20 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R1 for destination 192.168.0.1
+wrz 12, 2026 6:25:20 PM org.uj.routingemulator.common.ForwardingEngine resolveOwnInterfaceReached
+FINE: Forwarding success: reached destination router R1 interface eth1
+wrz 12, 2026 6:25:20 PM org.uj.routingemulator.common.PingService performPing
+FINEST: Probe 3: Router R1 sending ICMP Echo Request from 192.168.0.1 to 192.168.0.1 with ttl=64
+wrz 12, 2026 6:25:20 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.1 to 192.168.0.1
+wrz 12, 2026 6:25:20 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R1 for destination 192.168.0.1
+wrz 12, 2026 6:25:20 PM org.uj.routingemulator.common.ForwardingEngine resolveOwnInterfaceReached
+FINE: Forwarding success: reached destination router R1 interface eth1
+wrz 12, 2026 6:25:20 PM org.uj.routingemulator.common.PingService performPing
+FINEST: Probe 4: Router R1 sending ICMP Echo Request from 192.168.0.1 to 192.168.0.1 with ttl=64
+wrz 12, 2026 6:25:20 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.1 to 192.168.0.1
+wrz 12, 2026 6:25:20 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R1 for destination 192.168.0.1
+wrz 12, 2026 6:25:20 PM org.uj.routingemulator.common.ForwardingEngine resolveOwnInterfaceReached
+FINE: Forwarding success: reached destination router R1 interface eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: ping 192.168.0.2
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: ping [-c <count>] [-t <ttl>] <ip> for input string: ping 192.168.0.2
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.PingService ping
+FINE: R1: Router pinging 192.168.0.2 with 4 probes (ttl=64)...
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.PingService performPing
+FINEST: Probe 1: Router R1 sending ICMP Echo Request from 192.168.0.1 to 192.168.0.2 with ttl=64
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.1 to 192.168.0.2
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R1 for destination 192.168.0.2
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINER: Verifying return route from destination router R2 interface eth1 to source IP 192.168.0.1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Forwarding from router R2 interface eth1 to destination IP 192.168.0.1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.ForwardingEngine resolveReturnRouteDirectSubnet
+FINER: Return route verification success: destination IP 192.168.0.1 matches neighbor router interface eth1 on router R2
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINEST: Return route verification result: reachable
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.ForwardingEngine resolveNeighborInterfaceReached
+FINE: Forwarding success: reached destination router R2 interface eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.PingService performPing
+FINEST: Probe 2: Router R1 sending ICMP Echo Request from 192.168.0.1 to 192.168.0.2 with ttl=64
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.1 to 192.168.0.2
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R1 for destination 192.168.0.2
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINER: Verifying return route from destination router R2 interface eth1 to source IP 192.168.0.1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Forwarding from router R2 interface eth1 to destination IP 192.168.0.1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.ForwardingEngine resolveReturnRouteDirectSubnet
+FINER: Return route verification success: destination IP 192.168.0.1 matches neighbor router interface eth1 on router R2
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINEST: Return route verification result: reachable
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.ForwardingEngine resolveNeighborInterfaceReached
+FINE: Forwarding success: reached destination router R2 interface eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.PingService performPing
+FINEST: Probe 3: Router R1 sending ICMP Echo Request from 192.168.0.1 to 192.168.0.2 with ttl=64
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.1 to 192.168.0.2
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R1 for destination 192.168.0.2
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINER: Verifying return route from destination router R2 interface eth1 to source IP 192.168.0.1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Forwarding from router R2 interface eth1 to destination IP 192.168.0.1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.ForwardingEngine resolveReturnRouteDirectSubnet
+FINER: Return route verification success: destination IP 192.168.0.1 matches neighbor router interface eth1 on router R2
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINEST: Return route verification result: reachable
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.ForwardingEngine resolveNeighborInterfaceReached
+FINE: Forwarding success: reached destination router R2 interface eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.PingService performPing
+FINEST: Probe 4: Router R1 sending ICMP Echo Request from 192.168.0.1 to 192.168.0.2 with ttl=64
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.1 to 192.168.0.2
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R1 for destination 192.168.0.2
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINER: Verifying return route from destination router R2 interface eth1 to source IP 192.168.0.1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Forwarding from router R2 interface eth1 to destination IP 192.168.0.1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.ForwardingEngine resolveReturnRouteDirectSubnet
+FINER: Return route verification success: destination IP 192.168.0.1 matches neighbor router interface eth1 on router R2
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINEST: Return route verification result: reachable
+wrz 12, 2026 6:25:23 PM org.uj.routingemulator.common.ForwardingEngine resolveNeighborInterfaceReached
+FINE: Forwarding success: reached destination router R2 interface eth1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: ping 192.168.0.129
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: ping [-c <count>] [-t <ttl>] <ip> for input string: ping 192.168.0.129
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.PingService ping
+FINE: R1: Router pinging 192.168.0.129 with 4 probes (ttl=64)...
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.PingService performPing
+FINEST: Probe 1: Router R1 sending ICMP Echo Request from 192.168.0.1 to 192.168.0.129 with ttl=64
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.1 to 192.168.0.129
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R1 for destination 192.168.0.129
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: No directly connected subnet matches destination. Looking for static routes on router R1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R2 for destination 192.168.0.129
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.ForwardingEngine resolveOwnInterfaceReached
+FINE: Forwarding success: reached destination router R2 interface eth2
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.PingService performPing
+FINEST: Probe 2: Router R1 sending ICMP Echo Request from 192.168.0.1 to 192.168.0.129 with ttl=64
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.1 to 192.168.0.129
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R1 for destination 192.168.0.129
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: No directly connected subnet matches destination. Looking for static routes on router R1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R2 for destination 192.168.0.129
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.ForwardingEngine resolveOwnInterfaceReached
+FINE: Forwarding success: reached destination router R2 interface eth2
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.PingService performPing
+FINEST: Probe 3: Router R1 sending ICMP Echo Request from 192.168.0.1 to 192.168.0.129 with ttl=64
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.1 to 192.168.0.129
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R1 for destination 192.168.0.129
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: No directly connected subnet matches destination. Looking for static routes on router R1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R2 for destination 192.168.0.129
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.ForwardingEngine resolveOwnInterfaceReached
+FINE: Forwarding success: reached destination router R2 interface eth2
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.PingService performPing
+FINEST: Probe 4: Router R1 sending ICMP Echo Request from 192.168.0.1 to 192.168.0.129 with ttl=64
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.1 to 192.168.0.129
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R1 for destination 192.168.0.129
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: No directly connected subnet matches destination. Looking for static routes on router R1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R2 for destination 192.168.0.129
+wrz 12, 2026 6:25:34 PM org.uj.routingemulator.common.ForwardingEngine resolveOwnInterfaceReached
+FINE: Forwarding success: reached destination router R2 interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: ping 192.168.0.130
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: ping [-c <count>] [-t <ttl>] <ip> for input string: ping 192.168.0.130
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.PingService ping
+FINE: R1: Router pinging 192.168.0.130 with 4 probes (ttl=64)...
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.PingService performPing
+FINEST: Probe 1: Router R1 sending ICMP Echo Request from 192.168.0.1 to 192.168.0.130 with ttl=64
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.1 to 192.168.0.130
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R1 for destination 192.168.0.130
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: No directly connected subnet matches destination. Looking for static routes on router R1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R2 for destination 192.168.0.130
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINER: Verifying return route from destination router R3 interface eth2 to source IP 192.168.0.1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Forwarding from router R3 interface eth2 to destination IP 192.168.0.1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine resolveReturnRouteDirectSubnet
+FINER: Return route verification success: destination IP 192.168.0.1 matches neighbor router interface eth1 on router R2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINEST: Return route verification result: reachable
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine resolveNeighborInterfaceReached
+FINE: Forwarding success: reached destination router R3 interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.PingService performPing
+FINEST: Probe 2: Router R1 sending ICMP Echo Request from 192.168.0.1 to 192.168.0.130 with ttl=64
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.1 to 192.168.0.130
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R1 for destination 192.168.0.130
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: No directly connected subnet matches destination. Looking for static routes on router R1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R2 for destination 192.168.0.130
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINER: Verifying return route from destination router R3 interface eth2 to source IP 192.168.0.1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Forwarding from router R3 interface eth2 to destination IP 192.168.0.1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine resolveReturnRouteDirectSubnet
+FINER: Return route verification success: destination IP 192.168.0.1 matches neighbor router interface eth1 on router R2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINEST: Return route verification result: reachable
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine resolveNeighborInterfaceReached
+FINE: Forwarding success: reached destination router R3 interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.PingService performPing
+FINEST: Probe 3: Router R1 sending ICMP Echo Request from 192.168.0.1 to 192.168.0.130 with ttl=64
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.1 to 192.168.0.130
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R1 for destination 192.168.0.130
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: No directly connected subnet matches destination. Looking for static routes on router R1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R2 for destination 192.168.0.130
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINER: Verifying return route from destination router R3 interface eth2 to source IP 192.168.0.1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Forwarding from router R3 interface eth2 to destination IP 192.168.0.1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine resolveReturnRouteDirectSubnet
+FINER: Return route verification success: destination IP 192.168.0.1 matches neighbor router interface eth1 on router R2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINEST: Return route verification result: reachable
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine resolveNeighborInterfaceReached
+FINE: Forwarding success: reached destination router R3 interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.PingService performPing
+FINEST: Probe 4: Router R1 sending ICMP Echo Request from 192.168.0.1 to 192.168.0.130 with ttl=64
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.1 to 192.168.0.130
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R1 for destination 192.168.0.130
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: No directly connected subnet matches destination. Looking for static routes on router R1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R2 for destination 192.168.0.130
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINER: Verifying return route from destination router R3 interface eth2 to source IP 192.168.0.1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine forwardFromRouter
+FINER: Forwarding from router R3 interface eth2 to destination IP 192.168.0.1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine resolveReturnRouteDirectSubnet
+FINER: Return route verification success: destination IP 192.168.0.1 matches neighbor router interface eth1 on router R2
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine verifyReturnRouteFromRouter
+FINEST: Return route verification result: reachable
+wrz 12, 2026 6:25:40 PM org.uj.routingemulator.common.ForwardingEngine resolveNeighborInterfaceReached
+FINE: Forwarding success: reached destination router R3 interface eth2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: ping 20.0.0.1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: ping [-c <count>] [-t <ttl>] <ip> for input string: ping 20.0.0.1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.PingService ping
+FINE: R1: Router pinging 20.0.0.1 with 4 probes (ttl=64)...
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.PingService performPing
+FINEST: Probe 1: Router R1 sending ICMP Echo Request from 192.168.0.1 to 20.0.0.1 with ttl=64
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.1 to 20.0.0.1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R1 for destination 20.0.0.1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: No directly connected subnet matches destination. Looking for static routes on router R1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R2 for destination 20.0.0.1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: No directly connected subnet matches destination. Looking for static routes on router R2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R3 for destination 20.0.0.1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.ForwardingEngine resolveOwnInterfaceReached
+FINE: Forwarding success: reached destination router R3 interface eth0
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.PingService performPing
+FINEST: Probe 2: Router R1 sending ICMP Echo Request from 192.168.0.1 to 20.0.0.1 with ttl=64
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.1 to 20.0.0.1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R1 for destination 20.0.0.1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: No directly connected subnet matches destination. Looking for static routes on router R1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R2 for destination 20.0.0.1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: No directly connected subnet matches destination. Looking for static routes on router R2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R3 for destination 20.0.0.1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.ForwardingEngine resolveOwnInterfaceReached
+FINE: Forwarding success: reached destination router R3 interface eth0
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.PingService performPing
+FINEST: Probe 3: Router R1 sending ICMP Echo Request from 192.168.0.1 to 20.0.0.1 with ttl=64
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.1 to 20.0.0.1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R1 for destination 20.0.0.1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: No directly connected subnet matches destination. Looking for static routes on router R1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R2 for destination 20.0.0.1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: No directly connected subnet matches destination. Looking for static routes on router R2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R3 for destination 20.0.0.1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.ForwardingEngine resolveOwnInterfaceReached
+FINE: Forwarding success: reached destination router R3 interface eth0
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.PingService performPing
+FINEST: Probe 4: Router R1 sending ICMP Echo Request from 192.168.0.1 to 20.0.0.1 with ttl=64
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.1 to 20.0.0.1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R1 for destination 20.0.0.1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: No directly connected subnet matches destination. Looking for static routes on router R1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R2 for destination 20.0.0.1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: No directly connected subnet matches destination. Looking for static routes on router R2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R3 for destination 20.0.0.1
+wrz 12, 2026 6:25:49 PM org.uj.routingemulator.common.ForwardingEngine resolveOwnInterfaceReached
+FINE: Forwarding success: reached destination router R3 interface eth0
+wrz 12, 2026 6:27:13 PM org.uj.routingemulator.common.Connection <init>
+FINE: Setting up connection between eth2 and eth1
+wrz 12, 2026 6:27:13 PM org.uj.routingemulator.common.Connection <init>
+FINE: Setting up connection between eth1 and eth2
+wrz 12, 2026 6:27:13 PM org.uj.routingemulator.common.NetworkTopology addConnection
+FINEST: Checking connection eth1 <-> eth1
+wrz 12, 2026 6:27:13 PM org.uj.routingemulator.common.NetworkTopology addConnection
+FINEST: Checking connection eth2 <-> eth2
+wrz 12, 2026 6:27:13 PM org.uj.routingemulator.common.NetworkTopology addConnection
+INFO: Adding connection between eth2 and eth1
+wrz 12, 2026 6:27:13 PM org.uj.routingemulator.common.NetworkTopology addConnection
+FINER: Updating link states for interface eth2
+wrz 12, 2026 6:27:13 PM org.uj.routingemulator.common.NetworkTopology updateInterfaceLinkState
+FINE: Updating link state for router interface eth2
+wrz 12, 2026 6:27:13 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth2
+wrz 12, 2026 6:27:13 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:27:13 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:27:13 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth1
+wrz 12, 2026 6:27:13 PM org.uj.routingemulator.common.NetworkTopology hasActiveConnection
+FINE: Checking if interface eth2 neighbor eth1 is administratively up
+wrz 12, 2026 6:27:13 PM org.uj.routingemulator.router.RouterInterface updateLinkState
+FINER: Updating link state for interface eth2 to UP
+wrz 12, 2026 6:27:13 PM org.uj.routingemulator.common.NetworkTopology addConnection
+FINER: Updating link states for interface eth1
+wrz 12, 2026 6:27:13 PM org.uj.routingemulator.common.NetworkTopology updateInterfaceLinkState
+FINE: Updating link state for router interface eth1
+wrz 12, 2026 6:27:13 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:27:13 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:27:13 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth2
+wrz 12, 2026 6:27:13 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth2 and eth1
+wrz 12, 2026 6:27:13 PM org.uj.routingemulator.common.NetworkTopology hasActiveConnection
+FINE: Checking if interface eth1 neighbor eth2 is administratively up
+wrz 12, 2026 6:27:13 PM org.uj.routingemulator.router.RouterInterface updateLinkState
+FINER: Updating link state for interface eth1 to UP
+wrz 12, 2026 6:27:24 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: configure
+wrz 12, 2026 6:27:24 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: configure for input string: configure
+wrz 12, 2026 6:27:24 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Creating deep copy of interfaces for staged configuration
+wrz 12, 2026 6:27:24 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Copying interface eth0 with address 10.0.0.1/8
+wrz 12, 2026 6:27:24 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Copying interface eth1 with address 192.168.0.1/25
+wrz 12, 2026 6:27:24 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Copying interface eth2 with address null
+wrz 12, 2026 6:27:24 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Copying routing table with updated interfaces
+wrz 12, 2026 6:27:24 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Processing route StaticRoutingEntry{subnet=192.168.0.128/26, routerInterface=RouterInterface(interfaceName=eth1, type=ETHERNET, interfaceAddress=192.168.0.1/25, macAddress=2E:AB:E0:A3:C4:7D, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false} for subnet 192.168.0.128/26
+wrz 12, 2026 6:27:24 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Route is interface-based, finding corresponding interface in new configuration
+wrz 12, 2026 6:27:24 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Creating new interface-based route with default administrative distance
+wrz 12, 2026 6:27:24 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Processing route StaticRoutingEntry{subnet=20.0.0.0/8, routerInterface=RouterInterface(interfaceName=eth1, type=ETHERNET, interfaceAddress=192.168.0.1/25, macAddress=2E:AB:E0:A3:C4:7D, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false} for subnet 20.0.0.0/8
+wrz 12, 2026 6:27:24 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Route is interface-based, finding corresponding interface in new configuration
+wrz 12, 2026 6:27:24 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Creating new interface-based route with default administrative distance
+wrz 12, 2026 6:27:49 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: set interfaces ethernet eth2 address 192.168.0.193/26
+wrz 12, 2026 6:27:49 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: set interfaces ethernet <interface> [vif <id>] address <address> for input string: set interfaces ethernet eth2 address 192.168.0.193/26
+wrz 12, 2026 6:28:48 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: set protocols static route 20.0.0.0/8 interface eth2
+wrz 12, 2026 6:28:48 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: set protocols static route <destination> interface <interface> for input string: set protocols static route 20.0.0.0/8 interface eth2
+wrz 12, 2026 6:28:48 PM org.uj.routingemulator.router.Router addRoute
+INFO: R1: Creating static route StaticRoutingEntry{subnet=20.0.0.0/8, routerInterface=RouterInterface(interfaceName=eth2, type=ETHERNET, interfaceAddress=192.168.0.193/26, macAddress=76:F0:E8:0F:79:E1, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false}
+wrz 12, 2026 6:28:53 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: commit
+wrz 12, 2026 6:28:53 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: commit for input string: commit
+wrz 12, 2026 6:28:53 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth0 with address 10.0.0.1/8
+wrz 12, 2026 6:28:53 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth0 in-place
+wrz 12, 2026 6:28:53 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth1 with address 192.168.0.1/25
+wrz 12, 2026 6:28:53 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth1 in-place
+wrz 12, 2026 6:28:53 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth2 with address 192.168.0.193/26
+wrz 12, 2026 6:28:53 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth2 in-place
+wrz 12, 2026 6:28:53 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Copying routing table with updated interfaces
+wrz 12, 2026 6:28:53 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Processing route StaticRoutingEntry{subnet=192.168.0.128/26, routerInterface=RouterInterface(interfaceName=eth1, type=ETHERNET, interfaceAddress=192.168.0.1/25, macAddress=2E:AB:E0:A3:C4:7D, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false} for subnet 192.168.0.128/26
+wrz 12, 2026 6:28:53 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Route is interface-based, finding corresponding interface in new configuration
+wrz 12, 2026 6:28:53 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Creating new interface-based route with default administrative distance
+wrz 12, 2026 6:28:53 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Processing route StaticRoutingEntry{subnet=20.0.0.0/8, routerInterface=RouterInterface(interfaceName=eth1, type=ETHERNET, interfaceAddress=192.168.0.1/25, macAddress=2E:AB:E0:A3:C4:7D, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false} for subnet 20.0.0.0/8
+wrz 12, 2026 6:28:53 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Route is interface-based, finding corresponding interface in new configuration
+wrz 12, 2026 6:28:53 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Creating new interface-based route with default administrative distance
+wrz 12, 2026 6:28:53 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Processing route StaticRoutingEntry{subnet=20.0.0.0/8, routerInterface=RouterInterface(interfaceName=eth2, type=ETHERNET, interfaceAddress=192.168.0.193/26, macAddress=76:F0:E8:0F:79:E1, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false} for subnet 20.0.0.0/8
+wrz 12, 2026 6:28:53 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Route is interface-based, finding corresponding interface in new configuration
+wrz 12, 2026 6:28:53 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Creating new interface-based route with default administrative distance
+wrz 12, 2026 6:28:53 PM org.uj.routingemulator.router.Router commitChanges
+INFO: R1: Commit complete
+wrz 12, 2026 6:28:54 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: exit
+wrz 12, 2026 6:28:54 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: exit for input string: exit
+wrz 12, 2026 6:28:56 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: show ip route
+wrz 12, 2026 6:28:56 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: show ip route for input string: show ip route
+wrz 12, 2026 6:29:58 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: configure
+wrz 12, 2026 6:29:58 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: configure for input string: configure
+wrz 12, 2026 6:29:58 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Creating deep copy of interfaces for staged configuration
+wrz 12, 2026 6:29:58 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Copying interface eth0 with address 10.0.0.1/8
+wrz 12, 2026 6:29:58 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Copying interface eth1 with address 192.168.0.1/25
+wrz 12, 2026 6:29:58 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Copying interface eth2 with address 192.168.0.193/26
+wrz 12, 2026 6:29:58 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Copying routing table with updated interfaces
+wrz 12, 2026 6:29:58 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Processing route StaticRoutingEntry{subnet=192.168.0.128/26, routerInterface=RouterInterface(interfaceName=eth1, type=ETHERNET, interfaceAddress=192.168.0.1/25, macAddress=2E:AB:E0:A3:C4:7D, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false} for subnet 192.168.0.128/26
+wrz 12, 2026 6:29:58 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Route is interface-based, finding corresponding interface in new configuration
+wrz 12, 2026 6:29:58 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Creating new interface-based route with default administrative distance
+wrz 12, 2026 6:29:58 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Processing route StaticRoutingEntry{subnet=20.0.0.0/8, routerInterface=RouterInterface(interfaceName=eth1, type=ETHERNET, interfaceAddress=192.168.0.1/25, macAddress=2E:AB:E0:A3:C4:7D, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false} for subnet 20.0.0.0/8
+wrz 12, 2026 6:29:58 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Route is interface-based, finding corresponding interface in new configuration
+wrz 12, 2026 6:29:58 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Creating new interface-based route with default administrative distance
+wrz 12, 2026 6:29:58 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Processing route StaticRoutingEntry{subnet=20.0.0.0/8, routerInterface=RouterInterface(interfaceName=eth2, type=ETHERNET, interfaceAddress=192.168.0.193/26, macAddress=76:F0:E8:0F:79:E1, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false} for subnet 20.0.0.0/8
+wrz 12, 2026 6:29:58 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Route is interface-based, finding corresponding interface in new configuration
+wrz 12, 2026 6:29:58 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Creating new interface-based route with default administrative distance
+wrz 12, 2026 6:30:30 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: set protocols static route 192.168.0.128/26 interface eth2
+wrz 12, 2026 6:30:30 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: set protocols static route <destination> interface <interface> for input string: set protocols static route 192.168.0.128/26 interface eth2
+wrz 12, 2026 6:30:30 PM org.uj.routingemulator.router.Router addRoute
+INFO: R1: Creating static route StaticRoutingEntry{subnet=192.168.0.128/26, routerInterface=RouterInterface(interfaceName=eth2, type=ETHERNET, interfaceAddress=192.168.0.193/26, macAddress=76:F0:E8:0F:79:E1, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false}
+wrz 12, 2026 6:30:32 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Executing command: commit
+wrz 12, 2026 6:30:32 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R1: Command match found: commit for input string: commit
+wrz 12, 2026 6:30:32 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth0 with address 10.0.0.1/8
+wrz 12, 2026 6:30:32 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth0 in-place
+wrz 12, 2026 6:30:32 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth1 with address 192.168.0.1/25
+wrz 12, 2026 6:30:32 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth1 in-place
+wrz 12, 2026 6:30:32 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth2 with address 192.168.0.193/26
+wrz 12, 2026 6:30:32 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth2 in-place
+wrz 12, 2026 6:30:32 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Copying routing table with updated interfaces
+wrz 12, 2026 6:30:32 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Processing route StaticRoutingEntry{subnet=192.168.0.128/26, routerInterface=RouterInterface(interfaceName=eth1, type=ETHERNET, interfaceAddress=192.168.0.1/25, macAddress=2E:AB:E0:A3:C4:7D, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false} for subnet 192.168.0.128/26
+wrz 12, 2026 6:30:32 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Route is interface-based, finding corresponding interface in new configuration
+wrz 12, 2026 6:30:32 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Creating new interface-based route with default administrative distance
+wrz 12, 2026 6:30:32 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Processing route StaticRoutingEntry{subnet=20.0.0.0/8, routerInterface=RouterInterface(interfaceName=eth1, type=ETHERNET, interfaceAddress=192.168.0.1/25, macAddress=2E:AB:E0:A3:C4:7D, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false} for subnet 20.0.0.0/8
+wrz 12, 2026 6:30:32 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Route is interface-based, finding corresponding interface in new configuration
+wrz 12, 2026 6:30:32 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Creating new interface-based route with default administrative distance
+wrz 12, 2026 6:30:32 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Processing route StaticRoutingEntry{subnet=20.0.0.0/8, routerInterface=RouterInterface(interfaceName=eth2, type=ETHERNET, interfaceAddress=192.168.0.193/26, macAddress=76:F0:E8:0F:79:E1, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false} for subnet 20.0.0.0/8
+wrz 12, 2026 6:30:32 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Route is interface-based, finding corresponding interface in new configuration
+wrz 12, 2026 6:30:32 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Creating new interface-based route with default administrative distance
+wrz 12, 2026 6:30:32 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Processing route StaticRoutingEntry{subnet=192.168.0.128/26, routerInterface=RouterInterface(interfaceName=eth2, type=ETHERNET, interfaceAddress=192.168.0.193/26, macAddress=76:F0:E8:0F:79:E1, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false} for subnet 192.168.0.128/26
+wrz 12, 2026 6:30:32 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Route is interface-based, finding corresponding interface in new configuration
+wrz 12, 2026 6:30:32 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Creating new interface-based route with default administrative distance
+wrz 12, 2026 6:30:32 PM org.uj.routingemulator.router.Router commitChanges
+INFO: R1: Commit complete
+wrz 12, 2026 6:31:06 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Executing command: exit
+wrz 12, 2026 6:31:06 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Command match found: exit for input string: exit
+wrz 12, 2026 6:31:16 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Executing command: ping 192.168.0.193
+wrz 12, 2026 6:31:16 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Command match found: ping [-c <count>] [-t <ttl>] <ip> for input string: ping 192.168.0.193
+wrz 12, 2026 6:31:16 PM org.uj.routingemulator.common.PingService ping
+FINE: R2: Router pinging 192.168.0.193 with 4 probes (ttl=64)...
+wrz 12, 2026 6:31:16 PM org.uj.routingemulator.common.PingService performPing
+FINEST: Probe 1: Router R2 sending ICMP Echo Request from 192.168.0.2 to 192.168.0.193 with ttl=64
+wrz 12, 2026 6:31:16 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.2 to 192.168.0.193
+wrz 12, 2026 6:31:16 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R2 for destination 192.168.0.193
+wrz 12, 2026 6:31:16 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: No directly connected subnet matches destination. Looking for static routes on router R2
+wrz 12, 2026 6:31:16 PM org.uj.routingemulator.common.ForwardingEngine resolveNextRouterViaStaticRoute
+FINE: Forwarding failure: no route to destination 192.168.0.193 on router R2
+wrz 12, 2026 6:31:16 PM org.uj.routingemulator.common.PingService performPing
+FINEST: Probe 2: Router R2 sending ICMP Echo Request from 192.168.0.2 to 192.168.0.193 with ttl=64
+wrz 12, 2026 6:31:16 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.2 to 192.168.0.193
+wrz 12, 2026 6:31:16 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R2 for destination 192.168.0.193
+wrz 12, 2026 6:31:16 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: No directly connected subnet matches destination. Looking for static routes on router R2
+wrz 12, 2026 6:31:16 PM org.uj.routingemulator.common.ForwardingEngine resolveNextRouterViaStaticRoute
+FINE: Forwarding failure: no route to destination 192.168.0.193 on router R2
+wrz 12, 2026 6:31:16 PM org.uj.routingemulator.common.PingService performPing
+FINEST: Probe 3: Router R2 sending ICMP Echo Request from 192.168.0.2 to 192.168.0.193 with ttl=64
+wrz 12, 2026 6:31:16 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.2 to 192.168.0.193
+wrz 12, 2026 6:31:16 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R2 for destination 192.168.0.193
+wrz 12, 2026 6:31:16 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: No directly connected subnet matches destination. Looking for static routes on router R2
+wrz 12, 2026 6:31:16 PM org.uj.routingemulator.common.ForwardingEngine resolveNextRouterViaStaticRoute
+FINE: Forwarding failure: no route to destination 192.168.0.193 on router R2
+wrz 12, 2026 6:31:16 PM org.uj.routingemulator.common.PingService performPing
+FINEST: Probe 4: Router R2 sending ICMP Echo Request from 192.168.0.2 to 192.168.0.193 with ttl=64
+wrz 12, 2026 6:31:16 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.2 to 192.168.0.193
+wrz 12, 2026 6:31:16 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R2 for destination 192.168.0.193
+wrz 12, 2026 6:31:16 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: No directly connected subnet matches destination. Looking for static routes on router R2
+wrz 12, 2026 6:31:16 PM org.uj.routingemulator.common.ForwardingEngine resolveNextRouterViaStaticRoute
+FINE: Forwarding failure: no route to destination 192.168.0.193 on router R2
+wrz 12, 2026 6:31:28 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Executing command: configure
+wrz 12, 2026 6:31:28 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Command match found: configure for input string: configure
+wrz 12, 2026 6:31:28 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Creating deep copy of interfaces for staged configuration
+wrz 12, 2026 6:31:28 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Copying interface eth0 with address null
+wrz 12, 2026 6:31:28 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Copying interface eth1 with address 192.168.0.2/25
+wrz 12, 2026 6:31:28 PM org.uj.routingemulator.router.Router deepCopyInterfaces
+FINEST: Copying interface eth2 with address 192.168.0.129/26
+wrz 12, 2026 6:31:28 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Copying routing table with updated interfaces
+wrz 12, 2026 6:31:28 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Processing route StaticRoutingEntry{subnet=10.0.0.0/8, routerInterface=RouterInterface(interfaceName=eth1, type=ETHERNET, interfaceAddress=192.168.0.2/25, macAddress=3E:7A:BF:03:FA:5F, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false} for subnet 10.0.0.0/8
+wrz 12, 2026 6:31:28 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Route is interface-based, finding corresponding interface in new configuration
+wrz 12, 2026 6:31:28 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Creating new interface-based route with default administrative distance
+wrz 12, 2026 6:31:28 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Processing route StaticRoutingEntry{subnet=20.0.0.0/8, routerInterface=RouterInterface(interfaceName=eth2, type=ETHERNET, interfaceAddress=192.168.0.129/26, macAddress=1A:31:04:1B:DF:61, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false} for subnet 20.0.0.0/8
+wrz 12, 2026 6:31:28 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Route is interface-based, finding corresponding interface in new configuration
+wrz 12, 2026 6:31:28 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Creating new interface-based route with default administrative distance
+wrz 12, 2026 6:31:54 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Executing command: set protocols static route 192.168.0.192/26 interface eth1
+wrz 12, 2026 6:31:54 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Command match found: set protocols static route <destination> interface <interface> for input string: set protocols static route 192.168.0.192/26 interface eth1
+wrz 12, 2026 6:31:54 PM org.uj.routingemulator.router.Router addRoute
+INFO: R2: Creating static route StaticRoutingEntry{subnet=192.168.0.192/26, routerInterface=RouterInterface(interfaceName=eth1, type=ETHERNET, interfaceAddress=192.168.0.2/25, macAddress=3E:7A:BF:03:FA:5F, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false}
+wrz 12, 2026 6:31:56 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Executing command: set protocols static route 192.168.0.192/26 interface eth2
+wrz 12, 2026 6:31:56 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Command match found: set protocols static route <destination> interface <interface> for input string: set protocols static route 192.168.0.192/26 interface eth2
+wrz 12, 2026 6:31:56 PM org.uj.routingemulator.router.Router addRoute
+INFO: R2: Creating static route StaticRoutingEntry{subnet=192.168.0.192/26, routerInterface=RouterInterface(interfaceName=eth2, type=ETHERNET, interfaceAddress=192.168.0.129/26, macAddress=1A:31:04:1B:DF:61, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false}
+wrz 12, 2026 6:31:59 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Executing command: commit
+wrz 12, 2026 6:31:59 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Command match found: commit for input string: commit
+wrz 12, 2026 6:31:59 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth0 with address null
+wrz 12, 2026 6:31:59 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth0 in-place
+wrz 12, 2026 6:31:59 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth1 with address 192.168.0.2/25
+wrz 12, 2026 6:31:59 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth1 in-place
+wrz 12, 2026 6:31:59 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Committing interface eth2 with address 192.168.0.129/26
+wrz 12, 2026 6:31:59 PM org.uj.routingemulator.router.Router commitChanges
+FINEST: Updating existing interface eth2 in-place
+wrz 12, 2026 6:31:59 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Copying routing table with updated interfaces
+wrz 12, 2026 6:31:59 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Processing route StaticRoutingEntry{subnet=10.0.0.0/8, routerInterface=RouterInterface(interfaceName=eth1, type=ETHERNET, interfaceAddress=192.168.0.2/25, macAddress=3E:7A:BF:03:FA:5F, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false} for subnet 10.0.0.0/8
+wrz 12, 2026 6:31:59 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Route is interface-based, finding corresponding interface in new configuration
+wrz 12, 2026 6:31:59 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Creating new interface-based route with default administrative distance
+wrz 12, 2026 6:31:59 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Processing route StaticRoutingEntry{subnet=20.0.0.0/8, routerInterface=RouterInterface(interfaceName=eth2, type=ETHERNET, interfaceAddress=192.168.0.129/26, macAddress=1A:31:04:1B:DF:61, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false} for subnet 20.0.0.0/8
+wrz 12, 2026 6:31:59 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Route is interface-based, finding corresponding interface in new configuration
+wrz 12, 2026 6:31:59 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Creating new interface-based route with default administrative distance
+wrz 12, 2026 6:31:59 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Processing route StaticRoutingEntry{subnet=192.168.0.192/26, routerInterface=RouterInterface(interfaceName=eth1, type=ETHERNET, interfaceAddress=192.168.0.2/25, macAddress=3E:7A:BF:03:FA:5F, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false} for subnet 192.168.0.192/26
+wrz 12, 2026 6:31:59 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Route is interface-based, finding corresponding interface in new configuration
+wrz 12, 2026 6:31:59 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Creating new interface-based route with default administrative distance
+wrz 12, 2026 6:31:59 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Processing route StaticRoutingEntry{subnet=192.168.0.192/26, routerInterface=RouterInterface(interfaceName=eth2, type=ETHERNET, interfaceAddress=192.168.0.129/26, macAddress=1A:31:04:1B:DF:61, description=null, vrf=default, mtu=1500, status=u/u), nextHop=null, administrativeDistance=1, isDisabled=false} for subnet 192.168.0.192/26
+wrz 12, 2026 6:31:59 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Route is interface-based, finding corresponding interface in new configuration
+wrz 12, 2026 6:31:59 PM org.uj.routingemulator.router.Router copyRoutingTableWithUpdatedInterfaces
+FINEST: Creating new interface-based route with default administrative distance
+wrz 12, 2026 6:31:59 PM org.uj.routingemulator.router.Router commitChanges
+INFO: R2: Commit complete
+wrz 12, 2026 6:32:00 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Executing command: exit
+wrz 12, 2026 6:32:00 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Command match found: exit for input string: exit
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Executing command: ping 192.168.0.193
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.router.cli.RouterCLIParser executeCommand
+INFO: R2: Command match found: ping [-c <count>] [-t <ttl>] <ip> for input string: ping 192.168.0.193
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.PingService ping
+FINE: R2: Router pinging 192.168.0.193 with 4 probes (ttl=64)...
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.PingService performPing
+FINEST: Probe 1: Router R2 sending ICMP Echo Request from 192.168.0.2 to 192.168.0.193 with ttl=64
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.2 to 192.168.0.193
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R2 for destination 192.168.0.193
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: No directly connected subnet matches destination. Looking for static routes on router R2
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R1 for destination 192.168.0.193
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.ForwardingEngine resolveOwnInterfaceReached
+FINE: Forwarding success: reached destination router R1 interface eth2
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.PingService performPing
+FINEST: Probe 2: Router R2 sending ICMP Echo Request from 192.168.0.2 to 192.168.0.193 with ttl=64
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.2 to 192.168.0.193
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R2 for destination 192.168.0.193
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: No directly connected subnet matches destination. Looking for static routes on router R2
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R1 for destination 192.168.0.193
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.ForwardingEngine resolveOwnInterfaceReached
+FINE: Forwarding success: reached destination router R1 interface eth2
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.PingService performPing
+FINEST: Probe 3: Router R2 sending ICMP Echo Request from 192.168.0.2 to 192.168.0.193 with ttl=64
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.2 to 192.168.0.193
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R2 for destination 192.168.0.193
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: No directly connected subnet matches destination. Looking for static routes on router R2
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R1 for destination 192.168.0.193
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.ForwardingEngine resolveOwnInterfaceReached
+FINE: Forwarding success: reached destination router R1 interface eth2
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.PingService performPing
+FINEST: Probe 4: Router R2 sending ICMP Echo Request from 192.168.0.2 to 192.168.0.193 with ttl=64
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.ForwardingEngine forward
+FINE: Starting forwarding (router source) of packet from 192.168.0.2 to 192.168.0.193
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R2 for destination 192.168.0.193
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: No directly connected subnet matches destination. Looking for static routes on router R2
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINER: Searching for connection involving interface eth1
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.NetworkTopology getConnectionForInterface
+FINE: Checking connection between eth1 and eth1
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.ForwardingEngine traverse
+FINER: Checking interfaces of router R1 for destination 192.168.0.193
+wrz 12, 2026 6:32:04 PM org.uj.routingemulator.common.ForwardingEngine resolveOwnInterfaceReached
+FINE: Forwarding success: reached destination router R1 interface eth2

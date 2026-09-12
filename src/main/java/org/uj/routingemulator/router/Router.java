@@ -288,15 +288,16 @@ public class Router {
 
 		// Dynamically create interface if it doesn't exist (supports vifs and dummies)
 		if (routerInterface == null) {
-			if (determinedType == InterfaceType.VIF) {
-				logger.fine("Creating new VIF interface %s".formatted(routerInterfaceName));
-				routerInterface = new RouterInterface(routerInterfaceName);
-			} else if (determinedType == InterfaceType.DUMMY) {
-				logger.fine("Creating new dummy interface %s".formatted(routerInterfaceName));
-				routerInterface = new RouterInterface(routerInterfaceName, LinkState.UP);
-			} else {
-				// If it is a regular interface but not found, throw error to avoid creating arbitrary names
-				throw new InterfaceNotFoundException(INTERFACE_NOT_EXISTS.formatted(routerInterfaceName));
+			switch (determinedType) {
+				case VIF -> {
+					logger.fine("Creating new VIF interface %s".formatted(routerInterfaceName));
+					routerInterface = new RouterInterface(routerInterfaceName);
+				}
+				case DUMMY -> {
+					logger.fine("Creating new dummy interface %s".formatted(routerInterfaceName));
+					routerInterface = new RouterInterface(routerInterfaceName, LinkState.UP);
+				}
+				default -> throw new InterfaceNotFoundException(INTERFACE_NOT_EXISTS.formatted(routerInterfaceName));
 			}
 			stagedInterfaces.add(routerInterface);
 		}

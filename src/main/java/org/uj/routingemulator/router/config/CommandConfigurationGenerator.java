@@ -15,6 +15,19 @@ import org.uj.routingemulator.router.StaticRoutingEntry;
  * </ul>
  */
 public class CommandConfigurationGenerator implements ConfigurationGenerator {
+	private static String getPrefixFromInterfaceType(RouterInterface iface, String name) {
+		String prefix;
+		if (iface.getType() == InterfaceType.DUMMY) {
+			prefix = "set interfaces dummy " + name;
+		} else if (iface.getType() == InterfaceType.VIF) {
+			String[] parts = name.split("\\.");
+			prefix = "set interfaces ethernet " + parts[0] + " vif " + parts[1];
+		} else {
+			prefix = "set interfaces ethernet " + name;
+		}
+		return prefix;
+	}
+
 	/**
 	 * Generates configuration commands for the specified router.
 	 * <p>
@@ -32,14 +45,7 @@ public class CommandConfigurationGenerator implements ConfigurationGenerator {
 			String name = iface.getInterfaceName();
 			String prefix;
 
-			if (iface.getType() == InterfaceType.DUMMY) {
-				prefix = "set interfaces dummy " + name;
-			} else if (iface.getType() == InterfaceType.VIF) {
-				String[] parts = name.split("\\.");
-				prefix = "set interfaces ethernet " + parts[0] + " vif " + parts[1];
-			} else {
-				prefix = "set interfaces ethernet " + name;
-			}
+			prefix = getPrefixFromInterfaceType(iface, name);
 
 			if (iface.getInterfaceAddress() != null) {
 				configBuilder.append(String.format("%s address %s%n", prefix, iface.getInterfaceAddress()));
