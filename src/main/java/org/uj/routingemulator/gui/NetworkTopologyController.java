@@ -64,8 +64,8 @@ public class NetworkTopologyController {
 	private Button saveConfigButton;
 
 	private NetworkTopology topology;
-	private Map<Object, DeviceNode> deviceNodes; // Device (Router/Switch/Host) -> Visual Node
-	private Map<Connection, Line> connectionLines; // Connection -> Visual Line
+	private Map<Object, DeviceNode> deviceNodes;
+	private Map<Connection, Line> connectionLines;
 	private DeviceNode selectedNode;
 	private DeviceNode connectionStartNode;
 

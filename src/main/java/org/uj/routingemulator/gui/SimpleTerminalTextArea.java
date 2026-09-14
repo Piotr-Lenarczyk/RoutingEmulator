@@ -29,14 +29,12 @@ public class SimpleTerminalTextArea extends TextArea {
 	private String currentPrompt = "";
 
 	/**
-	 * -- SETTER --
 	 * Sets the command submit handler.
 	 */
 	@Setter
 	private Consumer<String> onCommandSubmit;
 
 	/**
-	 * -- SETTER --
 	 * Sets the tab completion handler.
 	 */
 	@Setter

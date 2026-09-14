@@ -35,10 +35,6 @@ public class ForwardingEngine {
     private static final String ROUTER_INTERFACE_REACHED = "Reached (router interface)";
     private static final String TRAFFIC_DISCARDED_EGRESS_DUMMY_INTERFACE = "Traffic via egress dummy interface discarded";
 
-    // ==================================================================================
-    // Public entry points
-    // ==================================================================================
-
     /**
      * Forwards the packet starting from the source host towards destination IP using topology and routers.
      * Returns ForwardingOutcome with reached=true if destination is reachable.
@@ -69,10 +65,6 @@ public class ForwardingEngine {
         normalizeTtl(packet);
         return traverse(packet, srcRouter, 0, topology, false);
     }
-
-    // ==================================================================================
-    // Host-source preamble helpers
-    // ==================================================================================
 
     private void normalizeTtl(Packet packet) {
         if (packet.getTtl() <= 0) {
@@ -158,10 +150,6 @@ public class ForwardingEngine {
         }
     }
 
-    // ==================================================================================
-    // VIF and Topology Helpers
-    // ==================================================================================
-
     /**
      * Retrieves the physical interface underlying a given interface.
      * E.g., for VIF eth0.1000, it returns eth0.
@@ -183,10 +171,7 @@ public class ForwardingEngine {
         return topology.areInterfacesL2Connected(localPhysical, neighborPhysical);
     }
 
-
-    // ==================================================================================
     // Shared traversal core (used by both public forward() overloads)
-    // ==================================================================================
 
     private ForwardingOutcome resolveDirectSubnet(Router currentRouter, RouterInterface dstIf, Packet packet,
                                                   NetworkTopology topology, int hopsBeforeThisHop,
@@ -405,9 +390,7 @@ public class ForwardingEngine {
         return outcome.reached();
     }
 
-    // ==================================================================================
-    // Return-route verification (used to check that the destination can reach back to source)
-    // ==================================================================================
+    // Return-route verification
 
     // Simulate forwarding originating at a router/interface towards a destination IP
     private ForwardingOutcome forwardFromRouter(Router startRouter, RouterInterface startIf, IPAddress dstIp, NetworkTopology topology) {
@@ -601,10 +584,6 @@ public class ForwardingEngine {
                 | ((long) subnet.networkAddress().getOctet3() << 8) | subnet.networkAddress().getOctet4();
         return (ipAsLong & networkMask) == (net & networkMask);
     }
-
-    // ==================================================================================
-    // Shared low-level lookups
-    // ==================================================================================
 
     private record GatewayResolution(Router router, ForwardingOutcome failure) {
         static GatewayResolution of(Router router) {

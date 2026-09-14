@@ -736,8 +736,6 @@ public class Router {
 		return copy;
 	}
 
-	// ---- Confirmation mechanism (for dangerous/stage-but-ask commands) ----
-
 	public PingStatistics ping(String dst, NetworkTopology topology) {
 		logger.info("Initializing new PingService for host %s".formatted(this.name));
 		PingService svc = new PingService();

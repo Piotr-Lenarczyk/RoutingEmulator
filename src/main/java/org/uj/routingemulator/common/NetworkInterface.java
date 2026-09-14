@@ -1,5 +1,9 @@
 package org.uj.routingemulator.common;
 
+import org.uj.routingemulator.host.HostInterface;
+import org.uj.routingemulator.router.RouterInterface;
+import org.uj.routingemulator.switching.SwitchPort;
+
 /**
  * Base interface for all network interfaces in the system.
  * <p>
@@ -9,9 +13,9 @@ package org.uj.routingemulator.common;
  * <p>
  * Implementations include:
  * <ul>
- *   <li>{@link org.uj.routingemulator.router.RouterInterface} - Router network interface</li>
- *   <li>{@link org.uj.routingemulator.switching.SwitchPort} - Switch port</li>
- *   <li>{@link org.uj.routingemulator.host.HostInterface} - Host network interface</li>
+ *   <li>{@link RouterInterface} - Router network interface</li>
+ *   <li>{@link SwitchPort} - Switch port</li>
+ *   <li>{@link HostInterface} - Host network interface</li>
  * </ul>
  */
 public interface NetworkInterface {

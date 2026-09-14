@@ -37,7 +37,7 @@ public class Main extends Application {
 	}
 
 	public static void main(String[] args) {
-		configureLogging();
+		configureLogging(Level.WARNING);
 
 
 		logger.info("Starting Network Routing Emulator...");
@@ -57,12 +57,12 @@ public class Main extends Application {
 	 * Configure java.util.logging globally by resetting the LogManager and installing a ConsoleHandler
 	 * on the root logger. Call with desired Level (e.g. Level.INFO or Level.ALL).
 	 */
-	private static void configureLogging() {
+	private static void configureLogging(Level level) {
 		LogManager.getLogManager().reset();
 		Logger rootLogger = Logger.getLogger("org.uj.routingemulator");
-		rootLogger.setLevel(Level.WARNING);
+		rootLogger.setLevel(level);
 		ConsoleHandler consoleHandler = new ConsoleHandler();
-		consoleHandler.setLevel(Level.WARNING);
+		consoleHandler.setLevel(level);
 		rootLogger.addHandler(consoleHandler);
 	}
 

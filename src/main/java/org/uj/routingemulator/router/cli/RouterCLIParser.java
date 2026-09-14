@@ -64,10 +64,10 @@ public class RouterCLIParser {
 		this.reader = LineReaderBuilder.builder()
 				.terminal(terminal)
 				.completer(new RouterCommandCompleter(router))
-				.option(org.jline.reader.LineReader.Option.CASE_INSENSITIVE, false)
-				.option(org.jline.reader.LineReader.Option.AUTO_LIST, true)
-				.option(org.jline.reader.LineReader.Option.AUTO_MENU, true)
-				.variable(org.jline.reader.LineReader.HISTORY_FILE, historyFile)
+				.option(LineReader.Option.CASE_INSENSITIVE, false)
+				.option(LineReader.Option.AUTO_LIST, true)
+				.option(LineReader.Option.AUTO_MENU, true)
+				.variable(LineReader.HISTORY_FILE, historyFile)
 				.build();
 	}
 

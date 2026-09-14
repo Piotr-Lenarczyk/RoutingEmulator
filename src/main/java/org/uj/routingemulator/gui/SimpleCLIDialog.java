@@ -90,14 +90,12 @@ public class SimpleCLIDialog extends Dialog<Void> {
             terminal.appendColoredText(output);
         }
 
-        // NOTE: confirmation mechanism was removed from Router; GUI confirmation dialog is no longer needed
-
         showPrompt();
         saveTerminalBuffer();
     }
 
     private void handleTabCompletion(String input, java.util.function.Consumer<List<String>> callback) {
-        // Use completer to get suggestions (restore previous behavior)
+        // Use completer to get suggestions
         ParsedLine parsedLine = new SimpleParsedLine(input);
         List<org.jline.reader.Candidate> candidates = new ArrayList<>();
 

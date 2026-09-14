@@ -43,7 +43,7 @@ public class PingFormatter {
         sb.append("\n--- ").append(dstStr).append(" ping statistics ---\n");
         int transmitted = stats.getSent();
         int received = stats.getReceived();
-        long errors = (long) transmitted - received; // simple
+        long errors = (long) transmitted - received;
         double loss = transmitted == 0 ? 100.0 : (100.0 * (transmitted - received) / transmitted);
         sb.append(String.format("%d packets transmitted, %d received, %s errors, %.0f%% packet loss, time %dms%n",
                 transmitted, received, (errors > 0 ? "+" + errors : "0"), loss, 0));
