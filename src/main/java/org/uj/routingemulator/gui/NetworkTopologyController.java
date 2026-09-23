@@ -68,6 +68,7 @@ public class NetworkTopologyController {
 	private Map<Connection, Line> connectionLines;
 	private DeviceNode selectedNode;
 	private DeviceNode connectionStartNode;
+	private boolean firstConnectionPromptShown = false;
 
 	/**
 	 * Initializes the controller.
@@ -373,7 +374,10 @@ public class NetworkTopologyController {
 			return;
 		}
 		connectionStartNode = selectedNode;
-		showInfo("Now select the second device to complete the connection");
+		if (!firstConnectionPromptShown) {
+			showInfo("Now select the second device to complete the connection");
+			firstConnectionPromptShown = true;
+		}
 	}
 
 	private void removeDeviceConnections(Object device) {
