@@ -37,6 +37,7 @@ import java.util.*;
  * Manages the visual representation of the network and user interactions.
  */
 public class NetworkTopologyController {
+
 	private static final String COMMAND_CONFIG_FILE_EXTENSION = "*.conf";
 	private static final String HIERARCHICAL_CONFIG_FILE_EXTENSION = "*.cfg";
 	private static final String TEXT_FILE_EXTENSION = "*.txt";
@@ -64,10 +65,12 @@ public class NetworkTopologyController {
 	private Button saveConfigButton;
 
 	private NetworkTopology topology;
-	private Map<Object, DeviceNode> deviceNodes;
-	private Map<Connection, Line> connectionLines;
+	private Map<Object, DeviceNode> deviceNodes; // Device (Router/Switch/Host) -> Visual Node
+	private Map<Connection, ConnectionVisual> connectionLines; // Connection -> Visual Elements
 	private DeviceNode selectedNode;
 	private DeviceNode connectionStartNode;
+
+	// Tracks if the informational prompt was shown
 	private boolean firstConnectionPromptShown = false;
 
 	/**
@@ -367,6 +370,7 @@ public class NetworkTopologyController {
 
 	/**
 	 * Starts connection mode, allowing the user to create a connection between two devices.
+	 * Shows an informational prompt only the very first time it is used.
 	 */
 	private void startConnectionMode() {
 		if (selectedNode == null) {
@@ -374,6 +378,7 @@ public class NetworkTopologyController {
 			return;
 		}
 		connectionStartNode = selectedNode;
+
 		if (!firstConnectionPromptShown) {
 			showInfo("Now select the second device to complete the connection");
 			firstConnectionPromptShown = true;
@@ -389,9 +394,9 @@ public class NetworkTopologyController {
 		}
 
 		for (Connection conn : connectionsToRemove) {
-			Line line = connectionLines.remove(conn);
-			if (line != null) {
-				canvasPane.getChildren().remove(line);
+			ConnectionVisual visual = connectionLines.remove(conn);
+			if (visual != null) {
+				canvasPane.getChildren().removeAll(visual.line(), visual.labelA(), visual.labelB());
 			}
 		}
 	}
@@ -461,7 +466,6 @@ public class NetworkTopologyController {
 
 		container.setOnMouseClicked(e -> {
 			if (e.getButton() == MouseButton.PRIMARY) {
-				// Pass the event 'e' to the handler so we can check click count
 				handleNodeClick(deviceNode, e);
 				e.consume();
 			}
@@ -474,7 +478,7 @@ public class NetworkTopologyController {
 		Point2D mousePosition = canvasPane.sceneToLocal(event.getSceneX(), event.getSceneY());
 		container.setLayoutX(mousePosition.getX() + dragDelta.x);
 		container.setLayoutY(mousePosition.getY() + dragDelta.y);
-		updateConnectionLines(device);
+		updateAllConnectionLines();
 	}
 
 	/**
@@ -530,16 +534,18 @@ public class NetworkTopologyController {
 		Optional<Connection> result = dialog.showAndWait();
 		result.ifPresent(conn -> {
 			topology.removeConnection(conn);
-			Line line = connectionLines.remove(conn);
-			if (line != null) {
-				canvasPane.getChildren().remove(line);
+			ConnectionVisual visual = connectionLines.remove(conn);
+			if (visual != null) {
+				canvasPane.getChildren().removeAll(visual.line(), visual.labelA(), visual.labelB());
 			}
+			updateAllConnectionLines(); // Re-relax the remaining labels
 		});
 	}
 
 	/**
 	 * Handles click on a device node.
 	 * @param node the clicked node
+	 * @param event the mouse event that triggered the click
 	 */
 	private void handleNodeClick(DeviceNode node, MouseEvent event) {
 		if (connectionStartNode != null && connectionStartNode != node) {
@@ -594,41 +600,210 @@ public class NetworkTopologyController {
 	}
 
 	/**
-	 * Updates all connection lines related to a device.
-	 * @param device the device that was moved
+	 * Triggers a visual update for all connections and intelligently resolves any label clipping
 	 */
-	private void updateConnectionLines(Object device) {
-		for (Map.Entry<Connection, Line> entry : connectionLines.entrySet()) {
+	private void updateAllConnectionLines() {
+		// 1. Reset all labels to their optimal (but potentially clipping) layout starting positions
+		for (Map.Entry<Connection, ConnectionVisual> entry : connectionLines.entrySet()) {
 			Connection conn = entry.getKey();
-			Line line = entry.getValue();
+			ConnectionVisual visual = entry.getValue();
 
 			Object deviceA = findDevice(conn.interfaceA());
 			Object deviceB = findDevice(conn.interfaceB());
 
-			// Using Identity checks (==) since IdentityHashMap maps unique memory addresses
-			if (device == deviceA || device == deviceB) {
+			if (deviceA != null && deviceB != null) {
 				DeviceNode nodeA = deviceNodes.get(deviceA);
 				DeviceNode nodeB = deviceNodes.get(deviceB);
 				if (nodeA != null && nodeB != null) {
-					updateConnectionLine(line, nodeA, nodeB);
+					updateConnectionVisual(visual, nodeA, nodeB);
 				}
 			}
+		}
+
+		// 2. Perform global force-directed collision resolution on all labels
+		resolveAllLabelOverlaps();
+	}
+
+	/**
+	 * Updates a connection visual group between two nodes.
+	 * @param visual the visual group containing line and labels
+	 * @param nodeA the first node
+	 * @param nodeB the second node
+	 */
+	private void updateConnectionVisual(ConnectionVisual visual, DeviceNode nodeA, DeviceNode nodeB) {
+		Point2D start = canvasPane.sceneToLocal(nodeA.circle().localToScene(0, 0));
+		Point2D end = canvasPane.sceneToLocal(nodeB.circle().localToScene(0, 0));
+
+		visual.line().setStartX(start.getX());
+		visual.line().setStartY(start.getY());
+		visual.line().setEndX(end.getX());
+		visual.line().setEndY(end.getY());
+
+		double dx = end.getX() - start.getX();
+		double dy = end.getY() - start.getY();
+		double distance = Math.hypot(dx, dy);
+
+		// Hide labels if nodes are dragged too close together to avoid clutter
+		if (distance < 50) {
+			visual.labelA().setVisible(false);
+			visual.labelB().setVisible(false);
+			return;
+		} else {
+			visual.labelA().setVisible(true);
+			visual.labelB().setVisible(true);
+		}
+
+		// Calculate the unit vector (direction) of the line
+		double unitX = dx / distance;
+		double unitY = dy / distance;
+
+		// Circle radius is 25. Anchor the label 38 pixels from the center (13px padding).
+		double offsetFromCenter = 38.0;
+
+		// Prevent labels from crossing the midpoint on very short lines
+		double actualOffsetA = Math.min(offsetFromCenter, distance / 2.5);
+		double actualOffsetB = Math.min(offsetFromCenter, distance / 2.5);
+
+		// Base anchor points for the text
+		double anchorAX = start.getX() + unitX * actualOffsetA;
+		double anchorAY = start.getY() + unitY * actualOffsetA;
+
+		double anchorBX = end.getX() - unitX * actualOffsetB;
+		double anchorBY = end.getY() - unitY * actualOffsetB;
+
+		// Get actual text dimensions to prevent clipping into the circles
+		double widthA = visual.labelA().getLayoutBounds().getWidth();
+		double widthB = visual.labelB().getLayoutBounds().getWidth();
+
+		// Smoothly shift the anchor point based on the line's angle.
+		double shiftAX = -widthA * (0.5 - 0.5 * unitX);
+		double shiftBX = -widthB * (0.5 + 0.5 * unitX);
+
+		// Calculate a perpendicular vector (-y, x) to lift the text off the line
+		double perpX = -unitY * 12;
+		double perpY = unitX * 12;
+
+		// Apply coordinates (adding +4 to Y to account for JavaFX Text baseline rendering)
+		visual.labelA().setX(anchorAX + shiftAX + perpX);
+		visual.labelA().setY(anchorAY + perpY + 4);
+
+		visual.labelB().setX(anchorBX + shiftBX + perpX);
+		visual.labelB().setY(anchorBY + perpY + 4);
+	}
+
+	/**
+	 * Resolves layout overlaps using iterative force-directed relaxation.
+	 * Prevents text nodes from clipping into each other or the router nodes.
+	 */
+	private void resolveAllLabelOverlaps() {
+		List<Text> allLabels = new ArrayList<>();
+		Map<Text, Point2D> labelToNodeMap = new HashMap<>();
+
+		// 1. Gather all visible labels and associate them with their owning router's exact center coordinates
+		for (Map.Entry<Connection, ConnectionVisual> entry : connectionLines.entrySet()) {
+			Connection conn = entry.getKey();
+			ConnectionVisual visual = entry.getValue();
+
+			Object deviceA = findDevice(conn.interfaceA());
+			if (deviceA != null && visual.labelA().isVisible()) {
+				DeviceNode nodeA = deviceNodes.get(deviceA);
+				if (nodeA != null) {
+					allLabels.add(visual.labelA());
+					labelToNodeMap.put(visual.labelA(), canvasPane.sceneToLocal(nodeA.circle().localToScene(0, 0)));
+				}
+			}
+
+			Object deviceB = findDevice(conn.interfaceB());
+			if (deviceB != null && visual.labelB().isVisible()) {
+				DeviceNode nodeB = deviceNodes.get(deviceB);
+				if (nodeB != null) {
+					allLabels.add(visual.labelB());
+					labelToNodeMap.put(visual.labelB(), canvasPane.sceneToLocal(nodeB.circle().localToScene(0, 0)));
+				}
+			}
+		}
+
+		// 2. Iterative Relaxation Loop (Execute physics ticks instantly)
+		for (int i = 0; i < 20; i++) {
+			boolean moved = false;
+
+			for (int j = 0; j < allLabels.size(); j++) {
+				Text t1 = allLabels.get(j);
+				javafx.geometry.Bounds b1 = getBounds(t1);
+
+				// Pass A: Check intersection with its owning node (keep it outside radius 35)
+				Point2D nodeCenter = labelToNodeMap.get(t1);
+				if (nodeCenter != null) {
+					double c1x = b1.getMinX() + b1.getWidth() / 2;
+					double c1y = b1.getMinY() + b1.getHeight() / 2;
+					double distToNode = Math.hypot(c1x - nodeCenter.getX(), c1y - nodeCenter.getY());
+
+					if (distToNode < 35) { // Minimum safe distance from center
+						moved = true;
+						double dx = c1x - nodeCenter.getX();
+						double dy = c1y - nodeCenter.getY();
+						if (distToNode < 0.1) {
+							dx = 1;
+							dy = 1;
+							distToNode = Math.sqrt(2);
+						} // Prevent div by 0
+
+						// Push away from the node center
+						t1.setX(t1.getX() + (dx / distToNode) * 3);
+						t1.setY(t1.getY() + (dy / distToNode) * 3);
+						b1 = getBounds(t1); // refresh bounds
+					}
+				}
+
+				// Pass B: Check intersection with OTHER labels
+				for (int k = j + 1; k < allLabels.size(); k++) {
+					Text t2 = allLabels.get(k);
+					javafx.geometry.Bounds b2 = getBounds(t2);
+
+					if (b1.intersects(b2)) {
+						moved = true;
+						double c1x = b1.getMinX() + b1.getWidth() / 2;
+						double c1y = b1.getMinY() + b1.getHeight() / 2;
+						double c2x = b2.getMinX() + b2.getWidth() / 2;
+						double c2y = b2.getMinY() + b2.getHeight() / 2;
+
+						double dx = c1x - c2x;
+						double dy = c1y - c2y;
+						double dist = Math.hypot(dx, dy);
+
+						// Add slight random perturbation if they are perfectly stacked identically
+						if (dist < 0.1) {
+							dx = Math.random() - 0.5;
+							dy = Math.random() - 0.5;
+							dist = Math.hypot(dx, dy);
+						}
+
+						// Push them apart dynamically
+						double pushX = (dx / dist) * 2;
+						double pushY = (dy / dist) * 2;
+
+						t1.setX(t1.getX() + pushX);
+						t1.setY(t1.getY() + pushY);
+
+						t2.setX(t2.getX() - pushX);
+						t2.setY(t2.getY() - pushY);
+
+						b1 = getBounds(t1); // update bounds after moving
+					}
+				}
+			}
+			if (!moved) break; // Break early if nothing overlaps anymore
 		}
 	}
 
 	/**
-	 * Updates a connection line between two nodes.
-	 * @param line the line to update
-	 * @param nodeA the first node
-	 * @param nodeB the second node
+	 * Generates a padded bounding box representing the active collision area of a text node.
 	 */
-	private void updateConnectionLine(Line line, DeviceNode nodeA, DeviceNode nodeB) {
-		Point2D start = canvasPane.sceneToLocal(nodeA.circle.localToScene(0, 0));
-		Point2D end = canvasPane.sceneToLocal(nodeB.circle.localToScene(0, 0));
-		line.setStartX(start.getX());
-		line.setStartY(start.getY());
-		line.setEndX(end.getX());
-		line.setEndY(end.getY());
+	private javafx.geometry.Bounds getBounds(Text t) {
+		double w = t.getLayoutBounds().getWidth();
+		double h = t.getLayoutBounds().getHeight();
+		// Pad by 2 pixels to give the text elements breathing room
+		return new javafx.geometry.BoundingBox(t.getX() - 2, t.getY() - h - 2, w + 4, h + 4);
 	}
 
 	/**
@@ -842,16 +1017,30 @@ public class NetworkTopologyController {
 			Connection connection = new Connection(startResult.get(), endResult.get());
 			topology.addConnection(connection);
 
-			// Create visual line
 			Line line = new Line();
 			line.setStrokeWidth(3);
 			line.setStroke(Color.DARKGRAY);
 			line.setMouseTransparent(true);
 
-			updateConnectionLine(line, startNode, endNode);
-			canvasPane.getChildren().addFirst(line); // Add to back
+			Text labelA = new Text(startResult.get().getInterfaceName());
+			labelA.setStyle("-fx-font-size: 11px; -fx-fill: #333333; -fx-font-weight: bold;");
+			labelA.setMouseTransparent(true);
 
-			connectionLines.put(connection, line);
+			Text labelB = new Text(endResult.get().getInterfaceName());
+			labelB.setStyle("-fx-font-size: 11px; -fx-fill: #333333; -fx-font-weight: bold;");
+			labelB.setMouseTransparent(true);
+
+			ConnectionVisual visual = new ConnectionVisual(line, labelA, labelB);
+			connectionLines.put(connection, visual);
+
+			// Add elements to the canvas. Adding them behind the circles so nodes stay clickable
+			canvasPane.getChildren().addFirst(labelB);
+			canvasPane.getChildren().addFirst(labelA);
+			canvasPane.getChildren().addFirst(line);
+
+			// Re-render and resolve overlaps
+			updateAllConnectionLines();
+
 		} catch (Exception ex) {
 			showError("Failed to create connection: " + ex.getMessage());
 		}
@@ -959,9 +1148,9 @@ public class NetworkTopologyController {
 	 */
 	private void updateInterfaceStates(Router router) {
 		// Update connection line colors based on interface states
-		for (Map.Entry<Connection, Line> entry : connectionLines.entrySet()) {
+		for (Map.Entry<Connection, ConnectionVisual> entry : connectionLines.entrySet()) {
 			Connection conn = entry.getKey();
-			Line line = entry.getValue();
+			ConnectionVisual visual = entry.getValue();
 
 			// Check if this connection involves the router
 			boolean hasRouterInterface = false;
@@ -976,7 +1165,7 @@ public class NetworkTopologyController {
 
 			// Update line color if it involves this router
 			if (hasRouterInterface) {
-				line.setStroke(allInterfacesUp ? Color.DARKGRAY : Color.RED);
+				visual.line().setStroke(allInterfacesUp ? Color.DARKGRAY : Color.RED);
 			}
 		}
 	}
@@ -985,6 +1174,12 @@ public class NetworkTopologyController {
 	 * Internal class representing a visual device node.
 	 */
 	private record DeviceNode(Object device, VBox stackPane, Circle circle) {
+	}
+
+	/**
+	 * Internal class representing a visual connection.
+	 */
+	private record ConnectionVisual(Line line, Text labelA, Text labelB) {
 	}
 
 	/**
