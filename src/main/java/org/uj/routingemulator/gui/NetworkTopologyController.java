@@ -457,7 +457,8 @@ public class NetworkTopologyController {
 
 		container.setOnMouseClicked(e -> {
 			if (e.getButton() == MouseButton.PRIMARY) {
-				handleNodeClick(deviceNode);
+				// Pass the event 'e' to the handler so we can check click count
+				handleNodeClick(deviceNode, e);
 				e.consume();
 			}
 		});
@@ -536,21 +537,23 @@ public class NetworkTopologyController {
 	 * Handles click on a device node.
 	 * @param node the clicked node
 	 */
-	private void handleNodeClick(DeviceNode node) {
+	private void handleNodeClick(DeviceNode node, MouseEvent event) {
 		if (connectionStartNode != null && connectionStartNode != node) {
 			// Complete connection
 			createConnection(connectionStartNode, node);
 			connectionStartNode = null;
 		} else if (node.device instanceof Router router) {
-			// Double-click detection for router CLI
-			if (selectedNode == node) {
+			// Strict double-click detection for router CLI
+			if (event.getClickCount() == 2) {
 				openRouterCLI(router);
 			}
 			selectedNode = node;
 			updateSelection();
-		} else if (node.device instanceof Host host && selectedNode == node) {
-			// Double-click detection for host configuration
-			openHostDialog(host);
+		} else if (node.device instanceof Host host) {
+			// Strict double-click detection for host configuration
+			if (event.getClickCount() == 2) {
+				openHostDialog(host);
+			}
 			selectedNode = node;
 			updateSelection();
 		} else {
