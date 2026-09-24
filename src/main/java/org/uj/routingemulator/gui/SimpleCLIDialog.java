@@ -43,7 +43,7 @@ public class SimpleCLIDialog extends Dialog<Void> {
         // Create terminal widget
         terminal = new SimpleTerminalTextArea();
         terminal.setPrefRowCount(24);
-        terminal.setPrefColumnCount(80);
+        terminal.setPrefColumnCount(95);
 
         // Restore previous terminal buffer
         boolean hasExistingBuffer = !router.getTerminalBuffer().isEmpty();
