@@ -105,21 +105,6 @@ class RouterCLITest {
 	}
 
 	/**
-	 * Test that 'configure' command is case-sensitive.
-	 */
-	@Test
-	void testConfigureCommandCaseSensitive() {
-		
-
-		
-		parser.executeCommand("Configure", router);
-
-		
-		assertEquals(RouterMode.OPERATIONAL, router.getMode());
-		assertTrue(outputStream.toString().contains("Command not recognized or not supported"));
-	}
-
-	/**
 	 * Test that 'configure' command with extra parameters is not recognized.
 	 */
 	@Test

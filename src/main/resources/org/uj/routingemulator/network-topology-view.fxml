@@ -3,65 +3,48 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
-<BorderPane xmlns:fx="http://javafx.com/fxml"
-            fx:controller="org.uj.routingemulator.gui.NetworkTopologyController"
-            prefWidth="1200" prefHeight="800">
-
-    <!-- Top Menu Bar -->
-    <top>
-        <MenuBar>
-            <Menu text="File">
-                <MenuItem text="New Topology"/>
-                <MenuItem text="Open Topology"/>
-                <MenuItem text="Save Topology"/>
-                <SeparatorMenuItem/>
-                <MenuItem text="Exit"/>
-            </Menu>
-            <Menu text="Help">
-                <MenuItem text="About"/>
-            </Menu>
-        </MenuBar>
-    </top>
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="800" prefWidth="1200"
+            xmlns="http://javafx.com/javafx/17.0.12"
+            fx:controller="org.uj.routingemulator.gui.NetworkTopologyController">
 
     <!-- Left Sidebar - Device List and Controls -->
     <left>
         <VBox spacing="10" style="-fx-background-color: #f0f0f0; -fx-padding: 10;">
-            <Label text="Network Devices" style="-fx-font-weight: bold; -fx-font-size: 14px;"/>
+            <Label style="-fx-font-weight: bold; -fx-font-size: 14px;" text="Network Devices"/>
 
-            <ListView fx:id="deviceListView" prefWidth="250" prefHeight="400"/>
-
-            <Separator/>
-
-            <Label text="Add Device" style="-fx-font-weight: bold;"/>
-            <Button fx:id="addRouterButton" text="Add Router" maxWidth="Infinity"/>
-            <Button fx:id="addSwitchButton" text="Add Switch" maxWidth="Infinity"/>
-            <Button fx:id="addHostButton" text="Add Host" maxWidth="Infinity"/>
+            <ListView fx:id="deviceListView" prefHeight="400" prefWidth="250"/>
 
             <Separator/>
 
-            <Label text="Connections" style="-fx-font-weight: bold;"/>
-            <Button fx:id="addConnectionButton" text="Add Connection" maxWidth="Infinity"/>
-            <Button fx:id="removeConnectionButton" text="Remove Connection" maxWidth="Infinity"/>
+            <Label style="-fx-font-weight: bold;" text="Add Device"/>
+            <Button fx:id="addRouterButton" maxWidth="Infinity" text="Add Router"/>
+            <Button fx:id="addSwitchButton" maxWidth="Infinity" text="Add Switch"/>
+            <Button fx:id="addHostButton" maxWidth="Infinity" text="Add Host"/>
 
             <Separator/>
 
-            <Label text="Device Operations" style="-fx-font-weight: bold;"/>
-            <Button fx:id="removeDeviceButton" text="Remove Device" maxWidth="Infinity"
-                    style="-fx-background-color: #ff6b6b; -fx-text-fill: white;"/>
+            <Label style="-fx-font-weight: bold;" text="Connections"/>
+            <Button fx:id="addConnectionButton" maxWidth="Infinity" text="Add Connection"/>
+            <Button fx:id="removeConnectionButton" maxWidth="Infinity" text="Remove Connection"/>
 
             <Separator/>
 
-            <Label text="Router Configuration" style="-fx-font-weight: bold;"/>
-            <Button fx:id="loadConfigButton" text="Load Configuration" maxWidth="Infinity"/>
-            <Button fx:id="saveConfigButton" text="Save Configuration" maxWidth="Infinity"/>
+            <Label style="-fx-font-weight: bold;" text="Device Operations"/>
+            <Button fx:id="removeDeviceButton" maxWidth="Infinity"
+                    style="-fx-background-color: #ff6b6b; -fx-text-fill: white;" text="Remove Device"/>
+
+            <Separator/>
+
+            <Label style="-fx-font-weight: bold;" text="Router Configuration"/>
+            <Button fx:id="loadConfigButton" maxWidth="Infinity" text="Load Configuration"/>
+            <Button fx:id="saveConfigButton" maxWidth="Infinity" text="Save Configuration"/>
 
             <Region VBox.vgrow="ALWAYS"/>
 
-            <Label text="Instructions:" style="-fx-font-weight: bold; -fx-font-size: 12px;"/>
-            <TextArea editable="false" wrapText="true" prefHeight="150"
+            <Label style="-fx-font-weight: bold; -fx-font-size: 12px;" text="Instructions:"/>
+            <TextArea editable="false" prefHeight="150" style="-fx-font-size: 10px;"
                       text="• Click a device to select it&#10;• Double-click a router to open CLI&#10;• Drag devices to move them&#10;• Use 'Add Connection' to link devices&#10;• Select devices for connection by clicking them"
-                      style="-fx-font-size: 10px;"/>
+                      wrapText="true"/>
         </VBox>
     </left>
 
@@ -70,7 +53,7 @@
         <StackPane>
             <Pane fx:id="canvasPane" style="-fx-background-color: white;">
                 <BorderPane.margin>
-                    <Insets top="10" right="10" bottom="10" left="10"/>
+                    <Insets bottom="10" left="10" right="10" top="10"/>
                 </BorderPane.margin>
             </Pane>
         </StackPane>
@@ -86,4 +69,3 @@
     </bottom>
 
 </BorderPane>
-
