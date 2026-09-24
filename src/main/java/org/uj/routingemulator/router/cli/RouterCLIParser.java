@@ -1,8 +1,10 @@
 package org.uj.routingemulator.router.cli;
 
 import lombok.Getter;
+import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.ParsedLine;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.uj.routingemulator.router.Router;
@@ -22,12 +24,17 @@ import java.util.List;
 import java.util.logging.Logger;
 
 public class RouterCLIParser {
+
 	private static final Logger logger = Logger.getLogger(RouterCLIParser.class.getName());
+
 	@Getter
 	private final List<RouterCommand> commands;
+
 	@Getter
 	private Terminal terminal;
+
 	private LineReader reader;
+
 	@Getter
 	private PrintWriter writer;
 
@@ -43,6 +50,7 @@ public class RouterCLIParser {
 			this.terminal = null;
 			this.writer = null;
 		}
+
 		registerCommands();
 	}
 
@@ -53,12 +61,7 @@ public class RouterCLIParser {
 	 * @param router Router instance for context-aware completions
 	 */
 	public void initializeReader(Router router) {
-		// Each router has a separate history but might not necessarily have a unique name
-		// Therefore, object hash code needs to be included
-		String historyFile = System.getProperty("user.home") + "/.vyos_history"
-				+ router.getName() + "_" + System.identityHashCode(router);
-
-		// Mark history file for deletion on JVM exit
+		String historyFile = System.getProperty("user.home") + "/.vyos_history" + router.getName() + "_" + System.identityHashCode(router);
 		new File(historyFile).deleteOnExit();
 
 		this.reader = LineReaderBuilder.builder()
@@ -71,12 +74,6 @@ public class RouterCLIParser {
 				.build();
 	}
 
-	/**
-	 * Reads a line of input with JLine features (history, completion, etc.).
-	 *
-	 * @param prompt Prompt to display
-	 * @return User input string
-	 */
 	public String readLine(String prompt) {
 		if (reader == null) {
 			throw new IllegalStateException("LineReader not initialized. Call initializeReader() first.");
@@ -84,39 +81,37 @@ public class RouterCLIParser {
 		return reader.readLine(prompt);
 	}
 
-
-	/**
-	 * Registers all available CLI commands.
-	 * Order is important: more specific patterns must be registered before general ones.
-	 */
 	private void registerCommands() {
-		// Show commands (should be early to avoid conflicts)
+		// Show commands
 		commands.add(new ShowIpRouteCommand());
 		commands.add(new ShowConfigurationCommand());
 		commands.add(new ShowInterfacesCommand());
+
 		// Ping (operational)
 		commands.add(new PingCommand());
+
 		// Configuration mode commands
 		commands.add(new ConfigureCommand());
 		commands.add(new CommitCommand());
 		commands.add(new ExitCommand());
 		commands.add(new ForceExitCommand());
-		// Register route commands - order matters: more specific patterns first
-		// Delete commands (with distance first, then without)
+
+		// Register route commands
 		commands.add(new DeleteRouteNextHopDistanceCommand());
 		commands.add(new DeleteRouteInterfaceDistanceCommand());
 		commands.add(new DeleteRouteNextHopCommand());
 		commands.add(new DeleteRouteInterfaceCommand());
-		// Disable commands (with distance first, then without)
+
 		commands.add(new DisableRouteNextHopDistanceCommand());
 		commands.add(new DisableRouteInterfaceDistanceCommand());
 		commands.add(new DisableRouteNextHopCommand());
 		commands.add(new DisableRouteInterfaceCommand());
-		// Set commands (with distance first, then without)
+
 		commands.add(new SetRouteNextHopDistanceCommand());
 		commands.add(new SetRouteInterfaceDistanceCommand());
 		commands.add(new SetRouteNextHopCommand());
 		commands.add(new SetRouteInterfaceCommand());
+
 		// Interface commands (Ethernet)
 		commands.add(new DeleteInterfaceEthernetCommand());
 		commands.add(new DisableInterfaceEthernetCommand());
@@ -129,23 +124,27 @@ public class RouterCLIParser {
 	}
 
 	public void executeCommand(String input, Router router) {
-		// CLIContext should be set by the caller before calling this method
-		// In terminal mode, it's set in RouterCLI.start()
-		// In GUI mode, it's set by captureOutput() wrapper
-
 		logger.info("%s: Executing command: %s".formatted(router.getName(), input));
+		PrintWriter out = CLIContext.getWriter();
 
-		PrintWriter out = CLIContext.getWriter(); // This has a fallback to System.out
+		String expandedInput;
+		try {
+			// Pre-process the input to expand abbreviations (e.g. "show int" -> "show interfaces")
+			expandedInput = expandCommand(input, router);
+		} catch (RuntimeException e) {
+			out.println(e.getMessage());
+			out.flush();
+			return;
+		}
 
-		// First, try exact match
+		// Try exact match using the fully expanded command string
 		for (RouterCommand command : commands) {
-			if (command.matches(input)) {
+			if (command.matches(expandedInput)) {
 				try {
-					logger.info("%s: Command match found: %s for input string: %s".formatted(router.getName(), command.getCommandPattern(), input));
+					logger.info("%s: Command match found: %s for input string: %s".formatted(router.getName(), command.getCommandPattern(), expandedInput));
 					command.execute(router);
 					out.flush();
 				} catch (RuntimeException e) {
-					// Print message and do not prompt for confirmation; warnings are logged by Router
 					out.println(e.getMessage());
 					out.flush();
 				}
@@ -153,102 +152,116 @@ public class RouterCLIParser {
 			}
 		}
 
-		// No exact match found - try prefix matching
-		// This allows "con" to match "configure" if it's unambiguous
-		RouterCommand prefixMatch = findUniquePrefixMatch(input);
-		if (prefixMatch != null) {
-			try {
-				prefixMatch.execute(router);
-				out.flush();
-			} catch (RuntimeException e) {
-				out.println(e.getMessage());
-				out.flush();
-			}
-			return;
-		}
-
 		out.println("Command not recognized or not supported");
 		out.flush();
 	}
 
 	/**
-	 * Finds a command that uniquely matches the input as a prefix.
-	 * Returns the command if exactly one command's pattern starts with the input.
-	 * Returns null if no match or multiple matches (ambiguous).
+	 * Expands abbreviated commands word-by-word using the RouterCommandCompleter logic.
+	 * E.g., "set int eth eth0 dis" expands to "set interfaces ethernet eth0 disable".
 	 *
-	 * @param input User input
-	 * @return Matching command or null
+	 * @param input  User input
+	 * @param router Router context
+	 * @return Fully expanded command string
 	 */
-	private RouterCommand findUniquePrefixMatch(String input) {
-		String inputTrim = input.trim();
-		if (inputTrim.isEmpty()) {
-			return null;
+	private String expandCommand(String input, Router router) {
+		String[] words = input.trim().split("\\s+");
+		if (words.length == 0 || words[0].isEmpty()) {
+			return "";
 		}
 
-		// Split input to get the first word (the command keyword)
-		String[] inputWords = inputTrim.split("\\s+");
-		String firstWord = inputWords[0];
+		StringBuilder expanded = new StringBuilder();
+		RouterCommandCompleter completer = new RouterCommandCompleter(router);
 
-		List<RouterCommand> matches = new ArrayList<>();
+		for (int i = 0; i < words.length; i++) {
+			String currentWord = words[i];
 
-		for (RouterCommand command : commands) {
-			String pattern = command.getCommandPattern();
-			// Get the first word of the pattern
-			String[] patternWords = pattern.split("\\s+");
-			if (patternWords.length > 0 && patternWords[0].startsWith(firstWord)) {
-				// Check if the rest of the input also matches (for multi-word commands)
-				if (inputWords.length == 1) {
-					// Only checking the first word
-					matches.add(command);
-				} else {
-					// For multi-word commands, check if the full input matches the pattern prefix
-					String patternPrefix = extractPatternPrefix(pattern, inputWords.length);
-					if (inputTrim.equals(patternPrefix)) {
-						matches.add(command);
-					}
+			// Build the line context up to the current word
+			String lineSoFar = expanded.toString();
+			if (i > 0 && !lineSoFar.endsWith(" ")) {
+				lineSoFar += " ";
+			}
+
+			ParsedLine parsedLine = new SimpleParsedLine(lineSoFar);
+			List<Candidate> candidates = new ArrayList<>();
+			completer.complete(null, parsedLine, candidates);
+
+			// Filter out placeholder hints (e.g., <x.x.x.x>)
+			List<String> validCompletions = candidates.stream()
+					.map(Candidate::value)
+					.filter(val -> !val.startsWith("<"))
+					.toList();
+
+			List<String> matches = new ArrayList<>();
+			String exactMatch = null;
+
+			for (String val : validCompletions) {
+				if (val.equalsIgnoreCase(currentWord)) {
+					exactMatch = val;
+				}
+				if (val.toLowerCase().startsWith(currentWord.toLowerCase())) {
+					matches.add(val);
 				}
 			}
-		}
 
-		// Return the command only if there's exactly one match
-		return matches.size() == 1 ? matches.getFirst() : null;
+			// Determine how to append the current word
+			if (exactMatch != null) {
+				expanded.append(exactMatch);
+			} else if (matches.size() == 1) {
+				expanded.append(matches.get(0));
+			} else if (matches.size() > 1) {
+				throw new RuntimeException("Ambiguous command: " + currentWord);
+			} else {
+				// If 0 matches, it's likely a dynamic user argument (like an IP address). Pass it through verbatim.
+				expanded.append(currentWord);
+			}
+
+			// Append space if it's not the last word
+			if (i < words.length - 1) {
+				expanded.append(" ");
+			}
+		}
+		return expanded.toString();
 	}
 
-	/**
-	 * Extracts the first N words from a pattern, stopping at placeholders.
-	 *
-	 * @param pattern   Command pattern
-	 * @param wordCount Number of words to extract
-	 * @return Pattern prefix or null if it contains placeholders
-	 */
-	private String extractPatternPrefix(String pattern, int wordCount) {
-		String[] words = pattern.split("\\s+");
-		if (words.length < wordCount) {
-			return null;
-		}
-
-		StringBuilder prefix = new StringBuilder();
-		for (int i = 0; i < wordCount; i++) {
-			// Stop if we encounter a placeholder (words with < or >)
-			if (words[i].contains("<") || words[i].contains(">")) {
-				return null;
-			}
-			if (i > 0) {
-				prefix.append(" ");
-			}
-			prefix.append(words[i]);
-		}
-		return prefix.toString();
-	}
-
-	/**
-	 * Prints help information for all registered commands.
-	 */
 	public void printHelp() {
 		PrintWriter out = (writer != null) ? writer : CLIContext.getWriter();
 		for (RouterCommand command : commands) {
 			out.printf(" - %s: %s%n", command.getCommandPattern(), command.getDescription());
 		}
 		out.flush();
+	}
+
+	/**
+	 * Helper record to feed the current command state into the JLine Completer
+	 */
+	private record SimpleParsedLine(String line) implements ParsedLine {
+		@Override
+		public String word() {
+			if (line.endsWith(" ") || line.endsWith("\t")) return "";
+			String[] words = line.split("\\s+");
+			return words.length > 0 ? words[words.length - 1] : "";
+		}
+
+		@Override
+		public int wordCursor() {
+			return word().length();
+		}
+
+		@Override
+		public int wordIndex() {
+			if (line.endsWith(" ") || line.endsWith("\t")) return line.split("\\s+").length;
+			return line.split("\\s+").length - 1;
+		}
+
+		@Override
+		public List<String> words() {
+			return List.of(line.split("\\s+"));
+		}
+
+		@Override
+		public int cursor() {
+			return line.length();
+		}
 	}
 }

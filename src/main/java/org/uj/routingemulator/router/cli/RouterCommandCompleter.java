@@ -16,6 +16,7 @@ import java.util.List;
  * Provides context-aware command completion based on the router's current mode and partial input.
  */
 public class RouterCommandCompleter implements Completer {
+
 	private static final String PROTOCOLS = "protocols";
 	private static final String STATIC = "static";
 	private static final String ETHERNET = "ethernet";
@@ -59,11 +60,11 @@ public class RouterCommandCompleter implements Completer {
 		} else if (!currentWord.isEmpty() && isCompleteCommand(words, currentWord)) {
 			// Check if current word is a complete match for any command at this level
 			// If so, treat it as if we're completing the next level
-				currentWord = "";
-				String[] newWords = new String[words.length + 1];
-				System.arraycopy(words, 0, newWords, 0, words.length);
-				newWords[words.length] = "";
-				words = newWords;
+			currentWord = "";
+			String[] newWords = new String[words.length + 1];
+			System.arraycopy(words, 0, newWords, 0, words.length);
+			newWords[words.length] = "";
+			words = newWords;
 		}
 
 		if (router.getMode() == RouterMode.OPERATIONAL) {
@@ -92,20 +93,18 @@ public class RouterCommandCompleter implements Completer {
 			}
 		} else { // CONFIGURATION mode
 			return verifyConfigurationMode(words, currentWord);
-			// Note: "address", "disable", "distance" are terminal - they don't have subcommands
 		}
+		// Note: "address", "disable", "distance" are terminal - they don't have subcommands
 		return false;
 	}
 
 	private boolean verifyConfigurationMode(String[] words, String currentWord) {
 		if (words.length == 1) {
 			// Only "set" and "delete" have subcommands, others are complete commands
-			return currentWord.equalsIgnoreCase("set") ||
-					currentWord.equalsIgnoreCase(DELETE);
+			return currentWord.equalsIgnoreCase("set") || currentWord.equalsIgnoreCase(DELETE);
 		} else if (words.length == 2 && (words[0].equalsIgnoreCase("set") || words[0].equalsIgnoreCase(DELETE))) {
 			// Both "interfaces" and "protocols" have subcommands
-			return currentWord.equalsIgnoreCase(INTERFACES) ||
-					currentWord.equalsIgnoreCase(PROTOCOLS);
+			return currentWord.equalsIgnoreCase(INTERFACES) || currentWord.equalsIgnoreCase(PROTOCOLS);
 		} else if (words.length == 3 && words[1].equalsIgnoreCase(INTERFACES)) {
 			// "ethernet" has subcommands (interface name)
 			return currentWord.equalsIgnoreCase(ETHERNET);
@@ -117,8 +116,7 @@ public class RouterCommandCompleter implements Completer {
 			return currentWord.equalsIgnoreCase(ROUTE);
 		} else if (words.length == 6 && words[3].equalsIgnoreCase(ROUTE)) {
 			// "next-hop" and "interface" expect values
-			return currentWord.equalsIgnoreCase(NEXT_HOP) ||
-					currentWord.equalsIgnoreCase(INTERFACE);
+			return currentWord.equalsIgnoreCase(NEXT_HOP) || currentWord.equalsIgnoreCase(INTERFACE);
 		}
 		return false;
 	}
@@ -134,9 +132,9 @@ public class RouterCommandCompleter implements Completer {
 				addCandidateIfMatches(candidates, "ip", "Show IP information", currentWord);
 				addCandidateIfMatches(candidates, INTERFACES, "Show interface information", currentWord);
 				addCandidateIfMatches(candidates, "configuration", "Show configuration", currentWord);
+			} else if (words.length == 3 && words[1].equalsIgnoreCase("ip")) {
+				addCandidateIfMatches(candidates, ROUTE, "Show IP routing table", currentWord);
 			}
-		} else if (words.length == 3 && words[1].equalsIgnoreCase("ip")) {
-			addCandidateIfMatches(candidates, ROUTE, "Show IP routing table", currentWord);
 		}
 	}
 
@@ -174,8 +172,7 @@ public class RouterCommandCompleter implements Completer {
 			// After "route" keyword - user needs to enter destination network
 			if (currentWord.isEmpty()) {
 				// Show hint about destination network format
-				candidates.add(new Candidate(ADDRESS_FORMAT, ADDRESS_FORMAT, null,
-						"Enter destination network (e.g., 192.168.1.0/24)", null, null, false));
+				candidates.add(new Candidate(ADDRESS_FORMAT, ADDRESS_FORMAT, null, "Enter destination network (e.g., 192.168.1.0/24)", null, null, false));
 			}
 		} else if (words.length == 6 && words[3].equalsIgnoreCase(ROUTE)) {
 			// After destination network - show next-hop or interface options
@@ -198,8 +195,7 @@ public class RouterCommandCompleter implements Completer {
 		if (words.length == 7 && words[5].equalsIgnoreCase(NEXT_HOP)) {
 			// After "next-hop" keyword - user needs to enter next-hop IP
 			if (currentWord.isEmpty()) {
-				candidates.add(new Candidate("<x.x.x.x>", "<x.x.x.x>", null,
-						"Enter next-hop IP address (e.g., 192.168.1.254)", null, null, false));
+				candidates.add(new Candidate("<x.x.x.x>", "<x.x.x.x>", null, "Enter next-hop IP address (e.g., 192.168.1.254)", null, null, false));
 			}
 		} else if (words.length == 7 && words[5].equalsIgnoreCase(INTERFACE)) {
 			// After "interface" keyword - show available interfaces
@@ -212,8 +208,7 @@ public class RouterCommandCompleter implements Completer {
 			addCandidateIfMatches(candidates, DISABLE, "Disable route", currentWord);
 		} else if (words.length == 9 && words[7].equalsIgnoreCase("distance") && currentWord.isEmpty()) {
 			// After "distance" keyword - user needs to enter distance value
-			candidates.add(new Candidate("<1-255>", "<1-255>", null,
-					"Enter administrative distance (1-255, default: 1)", null, null, false));
+			candidates.add(new Candidate("<1-255>", "<1-255>", null, "Enter administrative distance (1-255, default: 1)", null, null, false));
 		}
 	}
 
@@ -222,11 +217,9 @@ public class RouterCommandCompleter implements Completer {
 			// e.g., "set interfaces <type>"
 			addCandidateIfMatches(candidates, ETHERNET, "Configure Ethernet interface", currentWord);
 			addCandidateIfMatches(candidates, "dummy", "Configure Dummy interface", currentWord);
-
 		} else if (words.length == 4) {
 			// e.g., "set interfaces ethernet/dummy <interface>"
 			checkInterfaceType(words, currentWord, candidates);
-
 		} else if (words.length == 5) {
 			// e.g., "set interfaces ethernet eth0 <command>"
 			addCandidateIfMatches(candidates, ADDRESS, "Set IP address", currentWord);
@@ -236,18 +229,15 @@ public class RouterCommandCompleter implements Completer {
 			if (words[2].equalsIgnoreCase(ETHERNET)) {
 				addCandidateIfMatches(candidates, "vif", "Virtual Local Area Network (VLAN) ID", currentWord);
 			}
-
 		} else if (words.length == 6) {
 			// e.g., "set interfaces ethernet eth0 address <ip>" OR "set interfaces ethernet eth0 vif <id>"
 			suggestInterfaceArgument(words, currentWord, candidates);
-
 		} else if (words.length == 7) {
 			// e.g., "set interfaces ethernet eth0 vif 1000 <command>"
 			if (words[4].equalsIgnoreCase("vif")) {
 				addCandidateIfMatches(candidates, ADDRESS, "Set IP address", currentWord);
 				addCandidateIfMatches(candidates, DISABLE, "Disable interface", currentWord);
 			}
-
 		} else if (words.length == 8 && words[4].equalsIgnoreCase("vif") && words[6].equalsIgnoreCase(ADDRESS) && currentWord.isEmpty()) {
 			// e.g., "set interfaces ethernet eth0 vif 1000 address <ip>"
 			candidates.add(new Candidate(ADDRESS_FORMAT, ADDRESS_FORMAT, null, "Enter IP address with prefix (e.g., 192.168.10.1/24)", null, null, false));
@@ -274,6 +264,8 @@ public class RouterCommandCompleter implements Completer {
 
 	/**
 	 * Adds a candidate only if it starts with the current word (case-insensitive).
+	 * By explicitly setting the complete flag to true and passing the value as both value and displ,
+	 * JLine can confidently replace the partial word.
 	 *
 	 * @param candidates  List to add the candidate to
 	 * @param value       The completion value
@@ -282,8 +274,8 @@ public class RouterCommandCompleter implements Completer {
 	 */
 	private void addCandidateIfMatches(List<Candidate> candidates, String value, String description, String currentWord) {
 		// If currentWord is empty or value starts with currentWord (case-insensitive), add it
-		if (currentWord == null || currentWord.isEmpty() ||
-				value.toLowerCase().startsWith(currentWord.toLowerCase())) {
+		if (currentWord == null || currentWord.isEmpty() || value.toLowerCase().startsWith(currentWord.toLowerCase())) {
+			// The key here is passing 'value' as both the value and the display string, and setting complete to true.
 			candidates.add(new Candidate(value, value, null, description, null, null, true));
 		}
 	}

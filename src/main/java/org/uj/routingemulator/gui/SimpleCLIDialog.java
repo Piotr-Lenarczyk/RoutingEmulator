@@ -58,8 +58,8 @@ public class SimpleCLIDialog extends Dialog<Void> {
         VBox content = new VBox(10);
         content.setPadding(new Insets(10));
         content.getChildren().add(terminal);
-
         getDialogPane().setContent(content);
+
         getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
 
         // Show initial prompt and focus terminal
@@ -86,6 +86,7 @@ public class SimpleCLIDialog extends Dialog<Void> {
 
         // Execute command and capture output
         String output = captureOutput(() -> parser.executeCommand(command, router));
+
         if (output != null && !output.isEmpty()) {
             terminal.appendColoredText(output);
         }
@@ -98,11 +99,12 @@ public class SimpleCLIDialog extends Dialog<Void> {
         // Use completer to get suggestions
         ParsedLine parsedLine = new SimpleParsedLine(input);
         List<org.jline.reader.Candidate> candidates = new ArrayList<>();
-
         completer.complete(null, parsedLine, candidates);
 
+        // Filter out informational candidates (those starting with '<')
         List<String> completions = candidates.stream()
                 .map(Candidate::value)
+                .filter(val -> !val.startsWith("<"))
                 .toList();
 
         callback.accept(completions);
@@ -186,7 +188,6 @@ public class SimpleCLIDialog extends Dialog<Void> {
         public List<String> words() {
             return List.of(line.split("\\s+"));
         }
-
 
         @Override
         public int cursor() {
