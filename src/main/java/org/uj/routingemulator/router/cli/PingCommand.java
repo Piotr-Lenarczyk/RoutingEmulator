@@ -2,7 +2,6 @@ package org.uj.routingemulator.router.cli;
 
 import org.uj.routingemulator.common.*;
 import org.uj.routingemulator.router.Router;
-import org.uj.routingemulator.router.RouterMode;
 
 import java.io.PrintWriter;
 import java.util.regex.Pattern;
@@ -70,12 +69,6 @@ public class PingCommand implements RouterCommand {
     public void execute(Router router) {
         PrintWriter out = CLIContext.getWriter();
 
-        // Only allowed in OPERATIONAL mode
-        if (router.getMode() != RouterMode.OPERATIONAL) {
-            out.println("Invalid command: ping");
-            out.flush();
-            return;
-        }
 
         String input = rawInput == null ? "" : rawInput;
         String[] parts = input.trim().split("\\s+");
