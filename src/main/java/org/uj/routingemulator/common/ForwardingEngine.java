@@ -43,9 +43,34 @@ public class ForwardingEngine {
         logger.fine("Starting forwarding of packet from %s to %s".formatted(packet.getSource(), packet.getDestination()));
         normalizeTtl(packet);
 
-        if (isDestinationOnHostSubnet(packet, srcHost)) {
-            return new ForwardingOutcome(true, 1, "Reached (same subnet)");
+
+        if (srcHost.getHostInterface() != null && srcHost.getHostInterface().getSubnet() != null) {
+            if (srcHost.getHostInterface().getSubnet().networkAddress().equals(packet.getDestination())) {
+                return new ForwardingOutcome(true, 0, "Reached (self)");
+            }
         }
+
+
+        if (isDestinationOnHostSubnet(packet, srcHost)) {
+            Connection conn = topology.getConnectionForInterface(srcHost.getHostInterface());
+            if (conn != null) {
+                // Przeszukujemy topologię w poszukiwaniu innego hosta z tym IP
+                HostInterface foundHost = topology.findHostInterfaceByIpConnectedToInterface(srcHost.getHostInterface(), packet.getDestination());
+                if (foundHost != null) {
+                    return new ForwardingOutcome(true, 1, "Reached (same subnet host)");
+                }
+
+
+                RouterInterface foundRouter = topology.findRouterInterfaceByIpConnectedToInterface(srcHost.getHostInterface(), packet.getDestination());
+                if (foundRouter != null) {
+                    return new ForwardingOutcome(true, 1, "Reached (same subnet router)");
+                }
+            }
+
+
+            return new ForwardingOutcome(false, 1, "Host not found on connected subnet");
+        }
+
 
         GatewayResolution gateway = resolveHostGateway(srcHost, topology);
         if (gateway.failure() != null) {

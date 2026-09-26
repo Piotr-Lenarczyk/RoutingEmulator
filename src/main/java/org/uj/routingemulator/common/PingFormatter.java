@@ -7,9 +7,11 @@ import java.util.List;
  * Formats PingStatistics into VyOS-like textual output.
  */
 public class PingFormatter {
+
     private PingFormatter() {
         // Prevent instantiation
     }
+
     /**
      * Formats ping results into human-readable VyOS-style output.
      *
@@ -27,16 +29,20 @@ public class PingFormatter {
         sb.append("PING ").append(dstStr).append(" (").append(dstStr).append("): 56(84) bytes of data.\n");
 
         List<PingResult> results = stats.results();
-
         for (PingResult r : results) {
             if (r.success()) {
                 sb.append(String.format("64 bytes from %s: icmp_seq=%d ttl=%d time=%dms%n", dstStr, r.sequence(), ttl, r.rttMs()));
             } else {
                 String reason = r.errorMessage();
+
                 if (reason == null || reason.isEmpty()) {
-                    reason = "Destination Host Unreachable";
+                    // This handles empty reasons translated by PingService,
+                    // producing the authentic VyOS/Linux timeout string.
+                    sb.append(String.format("no answer yet for icmp_seq=%d%n", r.sequence()));
+                } else {
+                    // For Net or Host Unreachable: print the 'From' source IP
+                    sb.append(String.format("From %s icmp_seq=%d %s%n", srcStr, r.sequence(), reason));
                 }
-                sb.append(String.format("From %s icmp_seq=%d %s%n", srcStr, r.sequence(), reason));
             }
         }
 
@@ -45,6 +51,7 @@ public class PingFormatter {
         int received = stats.getReceived();
         long errors = (long) transmitted - received;
         double loss = transmitted == 0 ? 100.0 : (100.0 * (transmitted - received) / transmitted);
+
         sb.append(String.format("%d packets transmitted, %d received, %s errors, %.0f%% packet loss, time %dms%n",
                 transmitted, received, (errors > 0 ? "+" + errors : "0"), loss, 0));
 
@@ -62,4 +69,3 @@ public class PingFormatter {
         return sb.toString();
     }
 }
-

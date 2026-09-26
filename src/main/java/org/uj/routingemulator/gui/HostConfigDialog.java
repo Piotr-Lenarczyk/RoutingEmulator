@@ -12,6 +12,7 @@ import org.uj.routingemulator.host.HostInterface;
  * Dialog for configuring a Host (IP address, gateway) and issuing ping commands.
  */
 public class HostConfigDialog extends Dialog<Void> {
+
     private final Host host;
     private final NetworkTopology topology;
 
@@ -51,10 +52,22 @@ public class HostConfigDialog extends Dialog<Void> {
 
         VBox vbox = new VBox(10);
         vbox.setPadding(new Insets(10));
-        vbox.getChildren().addAll(grid, applyBtn, new Separator(), new Label("Ping target:"), pingTarget, pingBtn, new Separator(), outputArea);
+        vbox.getChildren().addAll(
+                grid,
+                applyBtn,
+                new Separator(),
+                new Label("Ping target:"),
+                pingTarget,
+                pingBtn,
+                new Separator(),
+                outputArea
+        );
 
         outputArea.setEditable(false);
-        outputArea.setPrefRowCount(10);
+        outputArea.setPrefRowCount(20);
+        outputArea.setPrefColumnCount(80);
+        // Ensure standard terminal font for proper alignment
+        outputArea.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px;");
 
         getDialogPane().setContent(vbox);
 
@@ -73,9 +86,11 @@ public class HostConfigDialog extends Dialog<Void> {
         try {
             String ipText = ipField.getText().trim();
             int prefix = Integer.parseInt(prefixField.getText().trim());
+
             IPAddress ip = IPAddress.fromString(ipText);
             SubnetMask mask = new SubnetMask(prefix);
             Subnet subnet = new Subnet(ip, mask);
+
             HostInterface hi = host.getHostInterface();
             if (hi == null) {
                 hi = new HostInterface();
@@ -96,11 +111,23 @@ public class HostConfigDialog extends Dialog<Void> {
 
     private void doPing(String target) {
         try {
-            PingStatistics stats = host.ping(target, topology);
-            outputArea.appendText(stats.toString() + "\n");
+            IPAddress dstIp = IPAddress.fromString(target.trim());
+            PingStatistics stats = host.ping(dstIp.toString(), topology);
+
+            // Determine source IP for the formatter
+            IPAddress srcIp = null;
+            if (host.getHostInterface() != null && host.getHostInterface().getSubnet() != null) {
+                srcIp = host.getHostInterface().getSubnet().networkAddress();
+            }
+            if (srcIp == null) {
+                srcIp = new IPAddress(0, 0, 0, 0);
+            }
+
+            // Use the authentic VyOS formatter instead of standard toString()
+            String formattedOutput = PingFormatter.format(dstIp, srcIp, 64, stats);
+            outputArea.appendText(formattedOutput + "\n");
         } catch (Exception ex) {
             outputArea.appendText("Ping failed: " + ex.getMessage() + "\n");
         }
     }
 }
-
