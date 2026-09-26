@@ -50,6 +50,14 @@ public class Router {
 	private StringBuilder terminalBuffer = new StringBuilder();
 
 	/**
+	 * Stores the command history for GUI sessions to preserve arrow up/down
+	 * navigation across dialog open/close cycles.
+	 */
+	@Getter
+	@Setter
+	private List<String> commandHistory = new ArrayList<>();
+
+	/**
 	 * Constructs a router with default configuration in VyOS.
 	 * Default router configuration includes 2 interfaces: eth0 and lo
 	 *

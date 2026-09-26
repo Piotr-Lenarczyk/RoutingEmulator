@@ -75,6 +75,28 @@ public class SimpleTerminalTextArea extends TextArea {
 	}
 
 	/**
+	 * Returns a copy of the current command history.
+	 *
+	 * @return List of historical commands
+	 */
+	public List<String> getCommandHistory() {
+		return new ArrayList<>(commandHistory);
+	}
+
+	/**
+	 * Loads an existing command history into the terminal.
+	 *
+	 * @param history The historical commands to load
+	 */
+	public void loadCommandHistory(List<String> history) {
+		this.commandHistory.clear();
+		if (history != null) {
+			this.commandHistory.addAll(history);
+		}
+		this.historyIndex = this.commandHistory.size();
+	}
+
+	/**
 	 * Displays a prompt and waits for input.
 	 */
 	public void showPrompt(String prompt) {

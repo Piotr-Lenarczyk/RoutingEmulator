@@ -45,11 +45,12 @@ public class SimpleCLIDialog extends Dialog<Void> {
         terminal.setPrefRowCount(24);
         terminal.setPrefColumnCount(95);
 
-        // Restore previous terminal buffer
+        // Restore previous terminal buffer and history
         boolean hasExistingBuffer = !router.getTerminalBuffer().isEmpty();
         if (hasExistingBuffer) {
             terminal.restoreFromBuffer(router.getTerminalBuffer().toString());
         }
+        terminal.loadCommandHistory(router.getCommandHistory());
 
         // Setup handlers
         terminal.setOnCommandSubmit(this::processCommand);
@@ -72,15 +73,15 @@ public class SimpleCLIDialog extends Dialog<Void> {
             terminal.requestFocus();
         });
 
-        // Save terminal buffer when dialog is closed
-        setOnCloseRequest(event -> saveTerminalBuffer());
+        // Save terminal state when dialog is closed
+        setOnCloseRequest(event -> saveTerminalState());
     }
 
     private void processCommand(String command) {
         // Early return for empty commands - just show prompt
         if (command.trim().isEmpty()) {
             showPrompt();
-            saveTerminalBuffer();
+            saveTerminalState();
             return;
         }
 
@@ -92,7 +93,7 @@ public class SimpleCLIDialog extends Dialog<Void> {
         }
 
         showPrompt();
-        saveTerminalBuffer();
+        saveTerminalState();
     }
 
     private void handleTabCompletion(String input, java.util.function.Consumer<List<String>> callback) {
@@ -139,11 +140,12 @@ public class SimpleCLIDialog extends Dialog<Void> {
     }
 
     /**
-     * Saves the current terminal content to the router's terminal buffer.
-     * This allows the terminal history to persist across dialog sessions.
+     * Saves the current terminal content and command history to the router object.
+     * This allows both buffer text and UP/DOWN history to persist across dialog sessions.
      */
-    private void saveTerminalBuffer() {
+    private void saveTerminalState() {
         router.setTerminalBuffer(new StringBuilder(terminal.getText()));
+        router.setCommandHistory(terminal.getCommandHistory());
     }
 
     /**
