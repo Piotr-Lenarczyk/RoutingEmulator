@@ -4,10 +4,7 @@ import org.jline.reader.Candidate;
 import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
-import org.uj.routingemulator.router.InterfaceType;
-import org.uj.routingemulator.router.Router;
-import org.uj.routingemulator.router.RouterInterface;
-import org.uj.routingemulator.router.RouterMode;
+import org.uj.routingemulator.router.*;
 
 import java.util.List;
 
@@ -21,12 +18,10 @@ public class RouterCommandCompleter implements Completer {
 	private static final String STATIC = "static";
 	private static final String ETHERNET = "ethernet";
 	private static final String ROUTE = "route";
-	private static final String ADDRESS_FORMAT = "<x.x.x.x/prefix>";
 	private static final String NEXT_HOP = "next-hop";
 	private static final String INTERFACE = "interface";
 	private static final String INTERFACES = "interfaces";
 	private static final String DELETE = "delete";
-	private static final String INTERFACE_UPPERCASE = "Interface ";
 	private static final String ADDRESS = "address";
 	private static final String DISABLE = "disable";
 
@@ -74,60 +69,36 @@ public class RouterCommandCompleter implements Completer {
 		}
 	}
 
-	/**
-	 * Checks if the current word is a complete command at the current level AND has subcommands.
-	 * We only want to advance to the next level if the command expects more input.
-	 *
-	 * @param words       All words in the command so far
-	 * @param currentWord The word being typed
-	 * @return true if currentWord is a complete valid command that expects subcommands
-	 */
-	private boolean isCompleteCommand(String[] words, String currentWord) {
-		if (router.getMode() == RouterMode.OPERATIONAL) {
-			if (words.length == 1) {
-				// "configure" has no subcommands, "show" does
-				return currentWord.equalsIgnoreCase("show");
-			} else if (words.length == 2 && words[0].equalsIgnoreCase("show")) {
-				// "interfaces" and "configuration" are complete, "ip" has subcommands
-				return currentWord.equalsIgnoreCase("ip");
-			}
-		} else { // CONFIGURATION mode
-			return verifyConfigurationMode(words, currentWord);
+	private static void suggestInterfaceArgument(String[] words, String currentWord, List<Candidate> candidates) {
+		if (words[4].equalsIgnoreCase(ADDRESS)) {
+			candidates.add(new Candidate(currentWord, "<x.x.x.x/prefix>", null, "IPv4 address and prefix", null, null, false));
+		} else if (words[4].equalsIgnoreCase("vif")) {
+			candidates.add(new Candidate(currentWord, "0-4094", null, "Virtual Local Area Network (VLAN) ID", null, null, false));
 		}
-		// Note: "address", "disable", "distance" are terminal - they don't have subcommands
-		return false;
 	}
 
 	private boolean verifyConfigurationMode(String[] words, String currentWord) {
 		if (words.length == 1) {
-			// Only "set" and "delete" have subcommands, others are complete commands
 			return currentWord.equalsIgnoreCase("set") || currentWord.equalsIgnoreCase(DELETE);
 		} else if (words.length == 2 && (words[0].equalsIgnoreCase("set") || words[0].equalsIgnoreCase(DELETE))) {
-			// Both "interfaces" and "protocols" have subcommands
 			return currentWord.equalsIgnoreCase(INTERFACES) || currentWord.equalsIgnoreCase(PROTOCOLS);
 		} else if (words.length == 3 && words[1].equalsIgnoreCase(INTERFACES)) {
-			// "ethernet" has subcommands (interface name)
 			return currentWord.equalsIgnoreCase(ETHERNET);
 		} else if (words.length == 3 && words[1].equalsIgnoreCase(PROTOCOLS)) {
-			// "static" has subcommands
 			return currentWord.equalsIgnoreCase(STATIC);
 		} else if (words.length == 4 && words[2].equalsIgnoreCase(STATIC)) {
-			// "route" expects a destination
 			return currentWord.equalsIgnoreCase(ROUTE);
 		} else if (words.length == 6 && words[3].equalsIgnoreCase(ROUTE)) {
-			// "next-hop" and "interface" expect values
 			return currentWord.equalsIgnoreCase(NEXT_HOP) || currentWord.equalsIgnoreCase(INTERFACE);
 		}
 		return false;
 	}
 
 	private void completeOperationalMode(String[] words, String currentWord, List<Candidate> candidates) {
-		// Top-level commands
 		if (words.length <= 1) {
 			addCandidateIfMatches(candidates, "configure", "Enter configuration mode", currentWord);
 			addCandidateIfMatches(candidates, "show", "Show information", currentWord);
 		} else if (words[0].equalsIgnoreCase("show")) {
-			// 'show' commands
 			if (words.length == 2) {
 				addCandidateIfMatches(candidates, "ip", "Show IP information", currentWord);
 				addCandidateIfMatches(candidates, INTERFACES, "Show interface information", currentWord);
@@ -163,19 +134,38 @@ public class RouterCommandCompleter implements Completer {
 		}
 	}
 
+	private boolean isCompleteCommand(String[] words, String currentWord) {
+		if (router.getMode() == RouterMode.OPERATIONAL) {
+			if (words.length == 1) {
+				return currentWord.equalsIgnoreCase("show");
+			} else if (words.length == 2 && words[0].equalsIgnoreCase("show")) {
+				return currentWord.equalsIgnoreCase("ip");
+			}
+		} else {
+			return verifyConfigurationMode(words, currentWord);
+		}
+		return false;
+	}
+
 	private void completeProtocols(String[] words, String currentWord, List<Candidate> candidates) {
 		if (words.length == 3) {
 			addCandidateIfMatches(candidates, STATIC, "Static routing", currentWord);
 		} else if (words.length == 4 && words[2].equalsIgnoreCase(STATIC)) {
 			addCandidateIfMatches(candidates, ROUTE, "Configure static route", currentWord);
 		} else if (words.length == 5 && words[3].equalsIgnoreCase(ROUTE)) {
-			// After "route" keyword - user needs to enter destination network
-			if (currentWord.isEmpty()) {
-				// Show hint about destination network format
-				candidates.add(new Candidate(ADDRESS_FORMAT, ADDRESS_FORMAT, null, "Enter destination network (e.g., 192.168.1.0/24)", null, null, false));
+			// Hint for IPv4 Route
+			candidates.add(new Candidate(currentWord, "<x.x.x.x/x>", null, "IPv4 static route", null, null, false));
+
+			// Suggest existing routes for convenience
+			for (StaticRoutingEntry entry : router.getRoutingTable().getRoutingEntries()) {
+				addCandidateIfMatches(candidates, entry.getSubnet().toString(), null, currentWord);
+			}
+			for (StaticRoutingEntry entry : router.getStagedRoutingTable().getRoutingEntries()) {
+				if (router.getRoutingTable().getRoutingEntries().stream().noneMatch(e -> e.getSubnet().equals(entry.getSubnet()))) {
+					addCandidateIfMatches(candidates, entry.getSubnet().toString(), null, currentWord);
+				}
 			}
 		} else if (words.length == 6 && words[3].equalsIgnoreCase(ROUTE)) {
-			// After destination network - show next-hop or interface options
 			addCandidateIfMatches(candidates, NEXT_HOP, "Specify next-hop IP address", currentWord);
 			addCandidateIfMatches(candidates, INTERFACE, "Specify outgoing interface", currentWord);
 		} else {
@@ -183,99 +173,68 @@ public class RouterCommandCompleter implements Completer {
 		}
 	}
 
-	private static void suggestInterfaceArgument(String[] words, String currentWord, List<Candidate> candidates) {
-		if (words[4].equalsIgnoreCase(ADDRESS) && currentWord.isEmpty()) {
-			candidates.add(new Candidate(ADDRESS_FORMAT, ADDRESS_FORMAT, null, "Enter IP address with prefix (e.g., 192.168.1.1/24)", null, null, false));
-		} else if (words[4].equalsIgnoreCase("vif") && currentWord.isEmpty()) {
-			candidates.add(new Candidate("<1-4094>", "<1-4094>", null, "Enter VLAN ID (1-4094)", null, null, false));
-		}
-	}
-
 	private void completeRouteType(String[] words, String currentWord, List<Candidate> candidates) {
 		if (words.length == 7 && words[5].equalsIgnoreCase(NEXT_HOP)) {
-			// After "next-hop" keyword - user needs to enter next-hop IP
-			if (currentWord.isEmpty()) {
-				candidates.add(new Candidate("<x.x.x.x>", "<x.x.x.x>", null, "Enter next-hop IP address (e.g., 192.168.1.254)", null, null, false));
-			}
+			candidates.add(new Candidate(currentWord, "<x.x.x.x>", null, "IPv4 gateway address", null, null, false));
 		} else if (words.length == 7 && words[5].equalsIgnoreCase(INTERFACE)) {
-			// After "interface" keyword - show available interfaces
+			candidates.add(new Candidate(currentWord, "<ethN>", null, "Ethernet interface name", null, null, false));
 			for (RouterInterface iface : router.getInterfaces()) {
-				addCandidateIfMatches(candidates, iface.getInterfaceName(), INTERFACE_UPPERCASE + iface.getInterfaceName(), currentWord);
+				addCandidateIfMatches(candidates, iface.getInterfaceName(), null, currentWord);
 			}
 		} else if (words.length == 8 && (words[5].equalsIgnoreCase(NEXT_HOP) || words[5].equalsIgnoreCase(INTERFACE))) {
-			// After next-hop IP or interface name - show optional parameters
 			addCandidateIfMatches(candidates, "distance", "Set administrative distance", currentWord);
 			addCandidateIfMatches(candidates, DISABLE, "Disable route", currentWord);
-		} else if (words.length == 9 && words[7].equalsIgnoreCase("distance") && currentWord.isEmpty()) {
-			// After "distance" keyword - user needs to enter distance value
-			candidates.add(new Candidate("<1-255>", "<1-255>", null, "Enter administrative distance (1-255, default: 1)", null, null, false));
+		} else if (words.length == 9 && words[7].equalsIgnoreCase("distance")) {
+			candidates.add(new Candidate(currentWord, "<1-255>", null, "Administrative distance", null, null, false));
 		}
 	}
 
 	private void completeInterfaces(String[] words, String currentWord, List<Candidate> candidates) {
 		if (words.length == 3) {
-			// e.g., "set interfaces <type>"
 			addCandidateIfMatches(candidates, ETHERNET, "Configure Ethernet interface", currentWord);
 			addCandidateIfMatches(candidates, "dummy", "Configure Dummy interface", currentWord);
 		} else if (words.length == 4) {
-			// e.g., "set interfaces ethernet/dummy <interface>"
 			checkInterfaceType(words, currentWord, candidates);
 		} else if (words.length == 5) {
-			// e.g., "set interfaces ethernet eth0 <command>"
 			addCandidateIfMatches(candidates, ADDRESS, "Set IP address", currentWord);
 			addCandidateIfMatches(candidates, DISABLE, "Disable interface", currentWord);
 
-			// Only ethernet interfaces support VLAN sub-interfaces
 			if (words[2].equalsIgnoreCase(ETHERNET)) {
 				addCandidateIfMatches(candidates, "vif", "Virtual Local Area Network (VLAN) ID", currentWord);
 			}
 		} else if (words.length == 6) {
-			// e.g., "set interfaces ethernet eth0 address <ip>" OR "set interfaces ethernet eth0 vif <id>"
 			suggestInterfaceArgument(words, currentWord, candidates);
 		} else if (words.length == 7) {
-			// e.g., "set interfaces ethernet eth0 vif 1000 <command>"
 			if (words[4].equalsIgnoreCase("vif")) {
 				addCandidateIfMatches(candidates, ADDRESS, "Set IP address", currentWord);
 				addCandidateIfMatches(candidates, DISABLE, "Disable interface", currentWord);
 			}
-		} else if (words.length == 8 && words[4].equalsIgnoreCase("vif") && words[6].equalsIgnoreCase(ADDRESS) && currentWord.isEmpty()) {
-			// e.g., "set interfaces ethernet eth0 vif 1000 address <ip>"
-			candidates.add(new Candidate(ADDRESS_FORMAT, ADDRESS_FORMAT, null, "Enter IP address with prefix (e.g., 192.168.10.1/24)", null, null, false));
+		} else if (words.length == 8 && words[4].equalsIgnoreCase("vif") && words[6].equalsIgnoreCase(ADDRESS)) {
+			candidates.add(new Candidate(currentWord, "<x.x.x.x/prefix>", null, "IPv4 address and prefix", null, null, false));
 		}
 	}
 
 	private void checkInterfaceType(String[] words, String currentWord, List<Candidate> candidates) {
 		if (words[2].equalsIgnoreCase(ETHERNET)) {
+			candidates.add(new Candidate(currentWord, "ethN", null, "Ethernet interface name", null, null, false));
 			for (RouterInterface iface : router.getInterfaces()) {
 				if (iface.getType() == InterfaceType.ETHERNET) {
-					addCandidateIfMatches(candidates, iface.getInterfaceName(), INTERFACE_UPPERCASE + iface.getInterfaceName(), currentWord);
+					addCandidateIfMatches(candidates, iface.getInterfaceName(), null, currentWord);
 				}
 			}
 		} else if (words[2].equalsIgnoreCase("dummy")) {
+			candidates.add(new Candidate(currentWord, "dumN", null, "Dummy interface name", null, null, false));
 			for (RouterInterface iface : router.getInterfaces()) {
 				if (iface.getType() == InterfaceType.DUMMY) {
-					addCandidateIfMatches(candidates, iface.getInterfaceName(), INTERFACE_UPPERCASE + iface.getInterfaceName(), currentWord);
+					addCandidateIfMatches(candidates, iface.getInterfaceName(), null, currentWord);
 				}
 			}
-			// Suggest a default one to guide the user if none exist yet
-			addCandidateIfMatches(candidates, "dum0", "Dummy Interface 0", currentWord);
+			addCandidateIfMatches(candidates, "dum0", null, currentWord);
 		}
 	}
 
-	/**
-	 * Adds a candidate only if it starts with the current word (case-insensitive).
-	 * By explicitly setting the complete flag to true and passing the value as both value and displ,
-	 * JLine can confidently replace the partial word.
-	 *
-	 * @param candidates  List to add the candidate to
-	 * @param value       The completion value
-	 * @param description Description of the completion
-	 * @param currentWord The word currently being typed by the user
-	 */
 	private void addCandidateIfMatches(List<Candidate> candidates, String value, String description, String currentWord) {
-		// If currentWord is empty or value starts with currentWord (case-insensitive), add it
 		if (currentWord == null || currentWord.isEmpty() || value.toLowerCase().startsWith(currentWord.toLowerCase())) {
-			// The key here is passing 'value' as both the value and the display string, and setting complete to true.
 			candidates.add(new Candidate(value, value, null, description, null, null, true));
 		}
 	}

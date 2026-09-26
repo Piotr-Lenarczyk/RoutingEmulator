@@ -65,8 +65,6 @@ public class SimpleCLIDialog extends Dialog<Void> {
 
         // Show initial prompt and focus terminal
         Platform.runLater(() -> {
-            // Only show prompt if we didn't restore a buffer (fresh session)
-            // or if buffer doesn't end with a prompt already
             if (!hasExistingBuffer || !bufferEndsWithPrompt()) {
                 showPrompt();
             }
@@ -78,14 +76,12 @@ public class SimpleCLIDialog extends Dialog<Void> {
     }
 
     private void processCommand(String command) {
-        // Early return for empty commands - just show prompt
         if (command.trim().isEmpty()) {
             showPrompt();
             saveTerminalState();
             return;
         }
 
-        // Execute command and capture output
         String output = captureOutput(() -> parser.executeCommand(command, router));
 
         if (output != null && !output.isEmpty()) {
@@ -96,19 +92,14 @@ public class SimpleCLIDialog extends Dialog<Void> {
         saveTerminalState();
     }
 
-    private void handleTabCompletion(String input, java.util.function.Consumer<List<String>> callback) {
-        // Use completer to get suggestions
+    private void handleTabCompletion(String input, java.util.function.Consumer<List<Candidate>> callback) {
         ParsedLine parsedLine = new SimpleParsedLine(input);
-        List<org.jline.reader.Candidate> candidates = new ArrayList<>();
+        List<Candidate> candidates = new ArrayList<>();
         completer.complete(null, parsedLine, candidates);
 
-        // Filter out informational candidates (those starting with '<')
-        List<String> completions = candidates.stream()
-                .map(Candidate::value)
-                .filter(val -> !val.startsWith("<"))
-                .toList();
-
-        callback.accept(completions);
+        // Pass all candidates directly to the terminal, allowing the terminal
+        // to render VyOS style hints appropriately.
+        callback.accept(candidates);
     }
 
     private String captureOutput(Runnable command) {
@@ -117,7 +108,6 @@ public class SimpleCLIDialog extends Dialog<Void> {
 
         try {
             CLIContext.setWriter(printWriter);
-            // expose topology to commands running in this context (so ping in GUI works)
             CLIContext.setNetworkTopology(this.topology);
             command.run();
             printWriter.flush();
@@ -139,19 +129,11 @@ public class SimpleCLIDialog extends Dialog<Void> {
         terminal.showPrompt(prompt);
     }
 
-    /**
-     * Saves the current terminal content and command history to the router object.
-     * This allows both buffer text and UP/DOWN history to persist across dialog sessions.
-     */
     private void saveTerminalState() {
         router.setTerminalBuffer(new StringBuilder(terminal.getText()));
         router.setCommandHistory(terminal.getCommandHistory());
     }
 
-    /**
-     * Checks if the terminal text ends with a prompt.
-     * Used to avoid showing duplicate prompts when reopening the dialog.
-     */
     private boolean bufferEndsWithPrompt() {
         String text = terminal.getText();
         return text.endsWith("vyos@vyos$ ") ||
@@ -164,7 +146,6 @@ public class SimpleCLIDialog extends Dialog<Void> {
 
         @Override
         public String word() {
-            // If line ends with whitespace, we're starting a new word (empty)
             if (line.endsWith(" ") || line.endsWith("\t")) {
                 return "";
             }
@@ -179,7 +160,6 @@ public class SimpleCLIDialog extends Dialog<Void> {
 
         @Override
         public int wordIndex() {
-            // If line ends with space, we're at a new word position
             if (line.endsWith(" ") || line.endsWith("\t")) {
                 return line.split("\\s+").length;
             }

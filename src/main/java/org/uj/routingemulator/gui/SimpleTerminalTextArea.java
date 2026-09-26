@@ -5,6 +5,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import lombok.Setter;
+import org.jline.reader.Candidate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,17 +29,11 @@ public class SimpleTerminalTextArea extends TextArea {
 	private int promptStartPosition = 0;
 	private String currentPrompt = "";
 
-	/**
-	 * Sets the command submit handler.
-	 */
 	@Setter
 	private Consumer<String> onCommandSubmit;
 
-	/**
-	 * Sets the tab completion handler.
-	 */
 	@Setter
-	private BiConsumer<String, Consumer<List<String>>> onTabComplete;
+	private BiConsumer<String, Consumer<List<Candidate>>> onTabComplete;
 
 	public SimpleTerminalTextArea() {
 		super();
@@ -60,34 +55,16 @@ public class SimpleTerminalTextArea extends TextArea {
 		});
 	}
 
-	/**
-	 * Restores terminal content from a buffer and updates the prompt position.
-	 * This should be used instead of setText() when restoring session history.
-	 *
-	 * @param content The terminal content to restore
-	 */
 	public void restoreFromBuffer(String content) {
 		setText(content);
-		// Update prompt start position to be at the end of the restored content
-		// This ensures that the protection mechanism works correctly
 		promptStartPosition = getLength();
 		positionCaret(getLength());
 	}
 
-	/**
-	 * Returns a copy of the current command history.
-	 *
-	 * @return List of historical commands
-	 */
 	public List<String> getCommandHistory() {
 		return new ArrayList<>(commandHistory);
 	}
 
-	/**
-	 * Loads an existing command history into the terminal.
-	 *
-	 * @param history The historical commands to load
-	 */
 	public void loadCommandHistory(List<String> history) {
 		this.commandHistory.clear();
 		if (history != null) {
@@ -96,9 +73,6 @@ public class SimpleTerminalTextArea extends TextArea {
 		this.historyIndex = this.commandHistory.size();
 	}
 
-	/**
-	 * Displays a prompt and waits for input.
-	 */
 	public void showPrompt(String prompt) {
 		this.currentPrompt = prompt;
 		appendText(prompt);
@@ -106,82 +80,66 @@ public class SimpleTerminalTextArea extends TextArea {
 		positionCaret(getLength());
 	}
 
-	/**
-	 * Appends text to the terminal.
-	 * Method name kept for compatibility with existing code.
-	 */
 	public void appendColoredText(String text) {
 		appendText(text);
 	}
 
-	/**
-	 * Handles key press events for history and shortcuts.
-	 */
 	@SuppressWarnings("java:S6916")
 	private void handleKeyPress(KeyEvent event) {
 		switch (event.getCode()) {
 			case KeyCode.ENTER -> {
 				handleEnter();
-				event.consume(); // Prevents default TextArea newline insertion
+				event.consume();
 			}
 			case KeyCode.UP -> {
 				navigateHistory(-1);
-				event.consume(); // Prevents default caret jumping
+				event.consume();
 			}
 			case KeyCode.DOWN -> {
 				navigateHistory(1);
-				event.consume(); // Prevents default caret jumping
+				event.consume();
 			}
 			case KeyCode.TAB -> {
 				handleTab();
-				event.consume(); // Prevents focus loss
+				event.consume();
 			}
 			case KeyCode.U -> {
 				if (event.isControlDown()) {
-					// Ctrl+U: Clear the command (but keep prompt)
 					replaceText(promptStartPosition, getLength(), "");
 					event.consume();
 				}
 			}
 			case KeyCode.BACK_SPACE -> {
-				// Prevent backspace from deleting the prompt
 				if (getCaretPosition() <= promptStartPosition) {
 					event.consume();
 				}
 			}
 			case KeyCode.DELETE -> {
-				// Allow delete only after the prompt
 				if (getCaretPosition() < promptStartPosition) {
 					event.consume();
 				}
 			}
 			case KeyCode.LEFT -> {
-				// Prevent moving cursor before the prompt
 				if (getCaretPosition() <= promptStartPosition) {
 					event.consume();
 				}
 			}
 			case KeyCode.HOME -> {
-				// Home key should move to start of command, not start of line
 				positionCaret(promptStartPosition);
 				event.consume();
 			}
-			// No action for other keys
-			// Additional check: if user somehow manages to position cursor before prompt, move it back
-			default -> Platform.runLater(() -> {
-				if (getCaretPosition() < promptStartPosition) {
-					positionCaret(promptStartPosition);
-				}
-			});
+			default -> {
+				Platform.runLater(() -> {
+					if (getCaretPosition() < promptStartPosition) {
+						positionCaret(promptStartPosition);
+					}
+				});
+			}
 		}
 	}
 
-	/**
-	 * Handles Enter key - submits command.
-	 */
 	private void handleEnter() {
 		String fullText = getText();
-		// Extract command (everything after the prompt)
 		String command = "";
 		if (fullText.length() > promptStartPosition) {
 			command = fullText.substring(promptStartPosition).trim();
@@ -196,19 +154,14 @@ public class SimpleTerminalTextArea extends TextArea {
 				onCommandSubmit.accept(command);
 			}
 		} else {
-			// Empty command
 			if (onCommandSubmit != null) {
 				onCommandSubmit.accept("");
 			}
 		}
 	}
 
-	/**
-	 * Handles Tab key - triggers completion.
-	 */
 	private void handleTab() {
 		String fullText = getText();
-		// Extract command (without prompt)
 		final String currentInput = fullText.length() > promptStartPosition ?
 				fullText.substring(promptStartPosition) : "";
 
@@ -217,16 +170,29 @@ public class SimpleTerminalTextArea extends TextArea {
 		}
 	}
 
-	private void performTabCompletion(List<String> completions, String currentInput) {
-		if (completions != null && !completions.isEmpty()) {
-			if (completions.size() == 1) {
-				// Single completion - replace only the last word
-				handleSingleCompletion(completions, currentInput);
+	private void performTabCompletion(List<Candidate> candidates, String currentInput) {
+		if (candidates != null && !candidates.isEmpty()) {
+
+			// Distinguish between actual input completions vs generic hint rules
+			List<Candidate> realCompletions = candidates.stream()
+					.filter(Candidate::complete)
+					.toList();
+
+			if (candidates.size() == 1 && realCompletions.size() == 1) {
+				// Autocomplete immediately only if there's exactly 1 candidate and it's selectable
+				handleSingleCompletion(realCompletions.getFirst().value(), currentInput);
 			} else {
-				// Multiple completions - show them
-				appendText("\n");
-				for (String completion : completions) {
-					appendText(completion + "  ");
+				// Otherwise print the VyOS styled menu
+				appendText("\nPossible completions:\n");
+				for (Candidate c : candidates) {
+					String val = c.displ() != null ? c.displ() : c.value();
+					String desc = c.descr() != null ? c.descr() : "";
+
+					if (desc.isEmpty()) {
+						appendText(String.format(" > %-14s%n", val));
+					} else {
+						appendText(String.format(" > %-14s %s%n", val, desc));
+					}
 				}
 				appendText("\n");
 				showPrompt(currentPrompt);
@@ -235,32 +201,22 @@ public class SimpleTerminalTextArea extends TextArea {
 		}
 	}
 
-	private void handleSingleCompletion(List<String> completions, String currentInput) {
-		String completion = completions.getFirst();
-		// Find the position where the last word starts
-
-		// If input ends with space, we're completing a new empty word
+	private void handleSingleCompletion(String completion, String currentInput) {
 		boolean endsWithSpace = currentInput.endsWith(" ");
 		String trimmedInput = currentInput.trim();
 
 		int wordStartPos;
 		if (endsWithSpace || trimmedInput.isEmpty()) {
-			// Completing after a space or empty input
 			wordStartPos = promptStartPosition + currentInput.length();
 		} else {
-			// Completing a partial word
 			int lastSpacePos = currentInput.lastIndexOf(' ');
 			wordStartPos = promptStartPosition + (lastSpacePos >= 0 ? lastSpacePos + 1 : 0);
 		}
 
-		// Replace from word start to end with the completion, and add a space
 		replaceText(wordStartPos, getLength(), completion + " ");
 		positionCaret(getLength());
 	}
 
-	/**
-	 * Navigates command history.
-	 */
 	private void navigateHistory(int direction) {
 		if (commandHistory.isEmpty()) {
 			return;
