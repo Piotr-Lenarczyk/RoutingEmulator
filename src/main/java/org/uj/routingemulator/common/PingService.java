@@ -16,7 +16,6 @@ import java.util.logging.Logger;
  * Simple PingService: host-only L3 ping using ForwardingEngine. RTT is mocked deterministically.
  */
 public class PingService {
-
 	private static final Logger logger = Logger.getLogger(PingService.class.getName());
 	private static final long BASE_MS = 1;
 	private static final long PER_HOP_MS = 1;
@@ -103,7 +102,6 @@ public class PingService {
 	public PingStatistics ping(Host src, IPAddress dst, int count, NetworkTopology topology) {
 		logger.fine("%s: Pinging %s with %d probes...".formatted(src.getHostname(), dst, count));
 		List<PingResult> results = new ArrayList<>();
-
 		if (count <= 0) count = 4;
 
 		// Validate source host interface
@@ -127,6 +125,7 @@ public class PingService {
 		for (int seq = 1; seq <= count; seq++) {
 			IPAddress srcAddr = sourceIp != null ? sourceIp : new IPAddress(0, 0, 0, 0);
 			logger.finest("Probe %d: Sending ICMP Echo Request from %s to %s".formatted(seq, srcAddr, dst));
+
 			Packet p = new Packet(srcAddr, dst, Packet.PacketType.ICMP_ECHO_REQUEST, 64);
 			logger.finest("Forwarding packet %s to destination %s".formatted(p, dst));
 
@@ -137,8 +136,11 @@ public class PingService {
 				logger.finest("Probe %d succeeded: Reached destination in %d ms with %d hops".formatted(seq, rtt, outcome.hopCount()));
 				results.add(new PingResult(seq, true, outcome.hopCount(), rtt, null));
 			} else {
-				logger.finest("Probe %d failed: %s after %d hops".formatted(seq, outcome.reason(), outcome.hopCount()));
-				results.add(new PingResult(seq, false, outcome.hopCount(), 0, outcome.reason()));
+				logger.finest("Probe %d failed internally with: %s after %d hops".formatted(seq, outcome.reason(), outcome.hopCount()));
+
+				// Translate internal engine reason to authentic VyOS ping output
+				String displayReason = determinePingErrorMessage(outcome.reason(), p.getSource(), topology);
+				results.add(new PingResult(seq, false, outcome.hopCount(), 0, displayReason));
 			}
 		}
 		return new PingStatistics(results);
@@ -150,7 +152,6 @@ public class PingService {
 	public PingStatistics ping(Router srcRouter, IPAddress dst, int count, int ttl, NetworkTopology topology) {
 		logger.fine("%s: Router pinging %s with %d probes (ttl=%d)...".formatted(srcRouter.getName(), dst, count, ttl));
 		List<PingResult> results = new ArrayList<>();
-
 		if (count <= 0) count = 4;
 		if (ttl <= 0) ttl = 64;
 
@@ -188,15 +189,83 @@ public class PingService {
 	private void performPing(Router srcRouter, IPAddress dst, int ttl, NetworkTopology topology, IPAddress sourceIp, int seq, List<PingResult> results) {
 		IPAddress srcAddr = sourceIp != null ? sourceIp : new IPAddress(0, 0, 0, 0);
 		logger.finest("Probe %d: Router %s sending ICMP Echo Request from %s to %s with ttl=%d".formatted(seq, srcRouter.getName(), srcAddr, dst, ttl));
-		Packet p = new Packet(srcAddr, dst, Packet.PacketType.ICMP_ECHO_REQUEST, ttl);
 
+		Packet p = new Packet(srcAddr, dst, Packet.PacketType.ICMP_ECHO_REQUEST, ttl);
 		ForwardingOutcome outcome = engine.forward(p, srcRouter, topology);
 
 		if (outcome.reached()) {
 			long rtt = BASE_MS + outcome.hopCount() * PER_HOP_MS;
 			results.add(new PingResult(seq, true, outcome.hopCount(), rtt, null));
 		} else {
-			results.add(new PingResult(seq, false, outcome.hopCount(), 0, outcome.reason()));
+			logger.finest("Probe %d failed internally with: %s after %d hops".formatted(seq, outcome.reason(), outcome.hopCount()));
+
+			// Translate internal engine reason to authentic VyOS ping output
+			String displayReason = determinePingErrorMessage(outcome.reason(), p.getSource(), topology);
+			results.add(new PingResult(seq, false, outcome.hopCount(), 0, displayReason));
 		}
+	}
+
+	/**
+	 * Translates internal forwarding engine errors into authentic user-facing ICMP error messages.
+	 */
+	private String determinePingErrorMessage(String internalReason, IPAddress sourceIp, NetworkTopology topology) {
+		// If the packet reached the correct subnet, but no host has that exact IP
+		if ("Host not found on connected subnet".equals(internalReason)) {
+			return "Destination Host Unreachable";
+		}
+
+		// If the packet was lost because the destination couldn't route back
+		if ("No return route".equals(internalReason) || "TTL expired".equals(internalReason)) {
+			return "Request Timed Out";
+		}
+
+		// If the forward path failed (router dropped it)
+		if ("No route".equals(internalReason)
+				|| "Neighbor router not found".equals(internalReason)
+				|| "Next-hop not found".equals(internalReason)
+				|| "Exit interface administratively down".equals(internalReason)
+				|| "Exit interface not connected".equals(internalReason)) {
+
+			// To send "Destination Net Unreachable", the dropping router must know how to reach the source.
+			// Since our engine doesn't explicitly return WHICH router dropped the packet in the outcome,
+			// we simulate this by checking if the source IP is globally reachable in the topology.
+			// In a real network, the dropping router uses its own routing table. Here we use a heuristic:
+			// if we can't find a path back from *anywhere*, it's a timeout.
+
+			boolean canRouteBack = isSourceReachable(sourceIp, topology);
+
+			if (canRouteBack) {
+				return "Destination Net Unreachable";
+			} else {
+				return "Request Timed Out";
+			}
+		}
+
+		// Catch-all for any other weird errors
+		return "Request Timed Out";
+	}
+
+	/**
+	 * Simple heuristic to determine if the source IP is generally reachable on the network.
+	 * Used to decide between "Net Unreachable" and "Timed Out".
+	 */
+	private boolean isSourceReachable(IPAddress sourceIp, NetworkTopology topology) {
+		// Check if ANY router in the topology has a route to the source IP
+		for (Router router : topology.getRouters()) {
+			// Check connected subnets
+			for (RouterInterface ri : router.getInterfaces()) {
+				if (ri.getSubnet() != null && ri.getSubnet().contains(sourceIp)) {
+					return true;
+				}
+			}
+
+			// Check static routes
+			for (StaticRoutingEntry entry : router.getRoutingTable().getRoutingEntries()) {
+				if (!entry.isDisabled() && entry.getSubnet().contains(sourceIp)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 }
