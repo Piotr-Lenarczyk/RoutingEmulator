@@ -178,8 +178,21 @@ public class SimpleTerminalTextArea extends TextArea {
 					.filter(Candidate::complete)
 					.toList();
 
-			if (candidates.size() == 1 && realCompletions.size() == 1) {
-				// Autocomplete immediately only if there's exactly 1 candidate and it's selectable
+			// Check if there are any informational hints (like <x.x.x.x/x> or ethN)
+			// This tells us the argument is "open-ended"
+			boolean hasGenericHint = candidates.stream()
+					.anyMatch(c -> !c.complete());
+
+			// Determine what word the user is currently typing
+			String currentWord = "";
+			if (!currentInput.endsWith(" ") && !currentInput.isEmpty()) {
+				String[] words = currentInput.trim().split("\\s+");
+				currentWord = words.length > 0 ? words[words.length - 1] : "";
+			}
+
+			// Logic: Autocomplete ONLY if there is exactly 1 valid candidate AND
+			// (it's a strict keyword with no hints OR the user has actually started typing it)
+			if (realCompletions.size() == 1 && (!hasGenericHint || !currentWord.isEmpty())) {
 				handleSingleCompletion(realCompletions.getFirst().value(), currentInput);
 			} else {
 				// Otherwise print the VyOS styled menu
