@@ -145,6 +145,7 @@ class PingTest {
         assertEquals(4, stats.getSent());
         // This subnet exists but no host with .3, so we expect 0 received
         assertEquals(0, stats.getReceived());
+	    assertEquals("Destination Host Unreachable", stats.results().getFirst().errorMessage());
     }
 
     @Test
@@ -156,6 +157,8 @@ class PingTest {
         PingStatistics stats = h1.ping("192.168.99.1", topology);
         assertEquals(4, stats.getSent());
         assertEquals(0, stats.getReceived());
+	    assertEquals("", stats.results().getFirst().errorMessage(),
+			    "An unreachable host is rendered as a timeout by the current ping formatter");
     }
 
 	@Test
@@ -211,6 +214,8 @@ class PingTest {
 		PingStatistics stats = source.ping("10.0.0.1", topology);
 		assertEquals(4, stats.getSent());
 		assertEquals(0, stats.getReceived());
+		assertEquals("", stats.results().getFirst().errorMessage(),
+				"Traffic discarded by a dummy egress is rendered as a timeout");
 	}
 
 	@Test

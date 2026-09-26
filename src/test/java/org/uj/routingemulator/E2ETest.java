@@ -40,6 +40,7 @@ class E2ETest {
 		StaticRoutingEntry entry = new StaticRoutingEntry(new Subnet(new IPAddress(1, 1, 1, 1), new SubnetMask(8)), new IPAddress(2, 2, 2, 2));
 		assertThat(out).contains("Error: 1.1.1.1/8 is not a valid IPv4 prefix").contains("Invalid value").contains("Value validation failed").contains("Set failed").contains("[edit]");
 		assertFalse(router.getRoutingTable().contains(entry));
+		CLIContext.clear();
 	}
 
 	@Test
@@ -274,10 +275,14 @@ class E2ETest {
 		PingStatistics stats2 = h1.ping("30.0.0.2", topology);
 		assertEquals(4, stats2.getSent());
 		assertEquals(0, stats2.getReceived(), "Should not receive a reply due to a routing loop and TTL expiry");
+		assertEquals("", stats2.results().getFirst().errorMessage(),
+				"TTL expiry is rendered as a timeout by the current ping formatter");
 
 		PingStatistics stats3 = r1.ping("30.0.0.2", topology);
 		assertEquals(4, stats3.getSent());
 		assertEquals(0, stats3.getReceived(), "Should not receive a reply due to a routing loop and TTL expiry");
+		assertEquals("", stats3.results().getFirst().errorMessage(),
+				"TTL expiry is rendered as a timeout by the current ping formatter");
 	}
 
 	@Test

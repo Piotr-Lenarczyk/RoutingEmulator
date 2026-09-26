@@ -467,10 +467,10 @@ class RouterTest {
 
 		RouterInterface iface = router.findFromName("eth0");
 		assertNotNull(iface);
-		assertNotEquals("ADMIN_DOWN", iface.getStatus().getAdmin().toString());
+		assertEquals(AdminState.UP, iface.getStatus().getAdmin());
 
 		router.disableInterface("eth0");
-		assertEquals("ADMIN_DOWN", iface.getStatus().getAdmin().toString());
+		assertEquals(AdminState.ADMIN_DOWN, iface.getStatus().getAdmin());
 		// LinkState depends on physical connection, not admin state
 		// Since no connection is established in this test, link can be UP or DOWN
 		// We only verify admin state changed

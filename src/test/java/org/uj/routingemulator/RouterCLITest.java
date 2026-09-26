@@ -713,6 +713,7 @@ class RouterCLITest {
 		parser.executeCommand("configure", router);
 		parser.executeCommand("set interfaces ethernet eth0 address 192.168.1.1/24", router);
 		parser.executeCommand("commit", router);
+		parser.executeCommand("set interfaces ethernet eth0 address 192.168.2.1/24", router);
 		outputStream.reset();
 
 		parser.executeCommand("show configuration", router);
@@ -720,6 +721,10 @@ class RouterCLITest {
 		String output = outputStream.toString();
 		assertFalse(output.isEmpty(), "Output should not be empty");
 		assertTrue(output.contains("interfaces {"), "Should show configuration even in config mode");
+		assertTrue(output.contains("address 192.168.1.1/24"),
+				"Should show the committed address in configuration mode");
+		assertFalse(output.contains("address 192.168.2.1/24"),
+				"Should not show staged changes before they are committed");
 	}
 
 	@Test

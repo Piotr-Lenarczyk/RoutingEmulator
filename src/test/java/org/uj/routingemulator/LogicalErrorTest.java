@@ -61,10 +61,14 @@ class LogicalErrorTest {
 		PingStatistics stats2 = h1.ping("192.168.3.2", topology);
 		assertEquals(4, stats2.getSent());
 		assertEquals(0, stats2.getReceived(), "Should not be able to ping indirectly connected router interface");
+		assertEquals("", stats2.results().getFirst().errorMessage(),
+				"A missing return route is rendered as a timeout by the current ping formatter");
 		// No return route from R2 to R1
 		PingStatistics stats3 = h1.ping("192.168.2.254", topology);
 		assertEquals(4, stats3.getSent());
 		assertEquals(0, stats3.getReceived(), "Should not be able to ping indirectly connected router interface");
+		assertEquals("", stats3.results().getFirst().errorMessage(),
+				"A missing return route is rendered as a timeout by the current ping formatter");
 		// Ping will fail on R2
 		PingStatistics stats4 = h1.ping("192.168.2.1", topology);
 		assertEquals(4, stats4.getSent());
