@@ -12,40 +12,23 @@ import java.util.logging.Logger;
 
 /**
  * Represents a network interface on a router device.
- * <p>
- * Router interfaces are Layer 3 interfaces capable of forwarding IP packets.
- * Each interface can be configured with:
- * <ul>
- *   <li>IP address and subnet mask ({@link InterfaceAddress})</li>
- *   <li>MAC address</li>
- *   <li>Administrative state (enabled/disabled)</li>
- *   <li>MTU (Maximum Transmission Unit)</li>
- *   <li>VRF (Virtual Routing and Forwarding) assignment</li>
- *   <li>Description for documentation</li>
- * </ul>
- * <p>
- * Interface names follow standard conventions:
- * <ul>
- *   <li>eth0, eth1, ... - Ethernet interfaces (MTU 1500)</li>
- *   <li>eth0.1000 - Ethernet VLAN sub-interfaces (MTU 1500)</li>
- *   <li>dum0, dum1, ... - Dummy interfaces (MTU 1500)</li>
- *   <li>lo - Loopback interface (MTU 65536)</li>
- * </ul>
- * <p>
- * The interface status combines administrative state (controlled by configuration)
- * and link state (physical layer status). Both must be UP for the interface
- * to be operational.
+ * Capable of identifying its parent/child relationships and parsing its own VLAN ID.
  */
 @Setter
 @Getter
-@EqualsAndHashCode
 @ToString
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class RouterInterface implements NetworkInterface {
 
 	private static final Logger logger = Logger.getLogger(RouterInterface.class.getName());
 
+	// Identity is strictly bound to name and type. Changing IP or Status does not break Topology maps.
+	@EqualsAndHashCode.Include
 	private String interfaceName;
+
+	@EqualsAndHashCode.Include
 	private InterfaceType type;
+
 	private InterfaceAddress interfaceAddress;
 	private MacAddress macAddress;
 	private String description;
@@ -53,11 +36,6 @@ public class RouterInterface implements NetworkInterface {
 	private int mtu;
 	private InterfaceStatus status;
 
-	/**
-	 * Creates a router interface with the specified name and determines its type automatically.
-	 *
-	 * @param interfaceName the name of the interface (e.g., "eth0", "eth0.10", "lo", "dum0")
-	 */
 	public RouterInterface(String interfaceName) {
 		this.interfaceName = interfaceName;
 		this.type = InterfaceType.fromName(interfaceName);
@@ -71,7 +49,6 @@ public class RouterInterface implements NetworkInterface {
 			this.mtu = 65536;
 		}
 
-		// Interface starts with admin UP but link DOWN (no physical connection yet)
 		this.status = InterfaceStatus.fromChars('u', 'D');
 	}
 
@@ -88,7 +65,6 @@ public class RouterInterface implements NetworkInterface {
 			this.mtu = 65536;
 		}
 
-		// Interface starts with admin UP
 		this.status = InterfaceStatus.fromChars('u', linkState.getCode());
 	}
 
@@ -133,6 +109,40 @@ public class RouterInterface implements NetworkInterface {
 			this.interfaceAddress = null;
 		}
 	}
+
+	// --- RELATIONAL HELPER METHODS ---
+
+	/**
+	 * Checks if this interface is a VLAN child of the provided physical interface.
+	 */
+	public boolean isChildOf(RouterInterface potentialParent) {
+		if (this.type != InterfaceType.VIF || potentialParent.getType() != InterfaceType.ETHERNET) {
+			return false;
+		}
+		return this.interfaceName.startsWith(potentialParent.getInterfaceName() + ".");
+	}
+
+	/**
+	 * Returns the physical parent name (e.g., returns "eth0" for both "eth0" and "eth0.1000").
+	 */
+	public String getParentName() {
+		if (this.type == InterfaceType.VIF) {
+			return this.interfaceName.split("\\.")[0];
+		}
+		return this.interfaceName;
+	}
+
+	/**
+	 * Extracts the VLAN ID if this is a VIF.
+	 */
+	public String getVlanId() {
+		if (this.type == InterfaceType.VIF) {
+			return this.interfaceName.split("\\.")[1];
+		}
+		return null;
+	}
+
+	// --- CORE LOGIC ---
 
 	public void disable() {
 		if (this.status.getAdmin() == AdminState.ADMIN_DOWN) {
@@ -183,11 +193,8 @@ public class RouterInterface implements NetworkInterface {
 		}
 
 		if (owner != null) {
-			String childPrefix = this.interfaceName + ".";
 			for (RouterInterface childVif : owner.getInterfaces()) {
-				if (childVif.getType() == InterfaceType.VIF && childVif.getInterfaceName().startsWith(childPrefix)) {
-					logger.finer("Cascading link state update from parent %s to child VIF %s"
-							.formatted(this.interfaceName, childVif.getInterfaceName()));
+				if (childVif.isChildOf(this)) {
 					childVif.updateLinkState(topology);
 				}
 			}
@@ -195,7 +202,7 @@ public class RouterInterface implements NetworkInterface {
 	}
 
 	private void processVifLinkState(NetworkTopology topology) {
-		String parentName = this.interfaceName.split("\\.")[0];
+		String parentName = this.getParentName();
 		Router owner = null;
 
 		for (Router router : topology.getRouters()) {
@@ -216,7 +223,6 @@ public class RouterInterface implements NetworkInterface {
 				return;
 			}
 		}
-
 		this.status = new InterfaceStatus(this.status.getAdmin(), LinkState.DOWN);
 	}
 }

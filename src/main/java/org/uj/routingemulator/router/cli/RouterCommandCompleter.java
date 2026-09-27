@@ -22,7 +22,6 @@ public class RouterCommandCompleter implements Completer {
 	private static final String STATIC = "static";
 	private static final String ETHERNET = "ethernet";
 	private static final String ROUTE = "route";
-	private static final String ADDRESS_FORMAT = "<x.x.x.x/prefix>";
 	private static final String NEXT_HOP = "next-hop";
 	private static final String INTERFACE = "interface";
 	private static final String INTERFACES = "interfaces";
@@ -135,9 +134,15 @@ public class RouterCommandCompleter implements Completer {
 	}
 
 	private void completeSetDeleteCommand(String[] words, String currentWord, List<Candidate> candidates) {
+		boolean isDelete = words[0].equalsIgnoreCase(DELETE);
+
 		if (words.length == 2) {
 			addCandidateIfMatches(candidates, INTERFACES, "Configure interfaces", currentWord);
-			addCandidateIfMatches(candidates, PROTOCOLS, "Configure protocols", currentWord);
+
+			// Tylko podpowiedz 'protocols' przy 'delete', jesli istnieje jakakolwiek trasa statyczna
+			if (!isDelete || !router.getStagedRoutingTable().getRoutingEntries().isEmpty()) {
+				addCandidateIfMatches(candidates, PROTOCOLS, "Configure protocols", currentWord);
+			}
 		} else if (words[1].equalsIgnoreCase(INTERFACES)) {
 			completeInterfaces(words, currentWord, candidates);
 		} else if (words[1].equalsIgnoreCase(PROTOCOLS)) {
@@ -149,9 +154,13 @@ public class RouterCommandCompleter implements Completer {
 		boolean isDelete = words[0].equalsIgnoreCase(DELETE);
 
 		if (words.length == 3) {
-			addCandidateIfMatches(candidates, STATIC, "Static routing", currentWord);
+			if (!isDelete || !router.getStagedRoutingTable().getRoutingEntries().isEmpty()) {
+				addCandidateIfMatches(candidates, STATIC, "Static routing", currentWord);
+			}
 		} else if (words.length == 4 && words[2].equalsIgnoreCase(STATIC)) {
-			addCandidateIfMatches(candidates, ROUTE, "Configure static route", currentWord);
+			if (!isDelete || !router.getStagedRoutingTable().getRoutingEntries().isEmpty()) {
+				addCandidateIfMatches(candidates, ROUTE, "Configure static route", currentWord);
+			}
 		} else if (words.length == 5 && words[3].equalsIgnoreCase(ROUTE)) {
 			if (!isDelete) {
 				// Hint for IPv4 Route when setting
@@ -222,8 +231,12 @@ public class RouterCommandCompleter implements Completer {
 		boolean isDelete = words[0].equalsIgnoreCase(DELETE);
 
 		if (words.length == 3) {
-			addCandidateIfMatches(candidates, ETHERNET, "Configure Ethernet interface", currentWord);
-			addCandidateIfMatches(candidates, "dummy", "Configure Dummy interface", currentWord);
+			if (!isDelete || hasInterfaceOfType(InterfaceType.ETHERNET)) {
+				addCandidateIfMatches(candidates, ETHERNET, "Configure Ethernet interface", currentWord);
+			}
+			if (!isDelete || hasInterfaceOfType(InterfaceType.DUMMY)) {
+				addCandidateIfMatches(candidates, "dummy", "Configure Dummy interface", currentWord);
+			}
 		} else if (words.length == 4) {
 			checkInterfaceType(words, currentWord, candidates, isDelete);
 		} else if (words.length == 5) {
@@ -240,8 +253,10 @@ public class RouterCommandCompleter implements Completer {
 				}
 			}
 
-			if (words[2].equalsIgnoreCase(ETHERNET) && !isDelete) {
-				addCandidateIfMatches(candidates, "vif", "Virtual Local Area Network (VLAN) ID", currentWord);
+			if (words[2].equalsIgnoreCase(ETHERNET)) {
+				if (!isDelete || hasVifChild(targetIface)) {
+					addCandidateIfMatches(candidates, "vif", "Virtual Local Area Network (VLAN) ID", currentWord);
+				}
 			}
 		} else if (words.length == 6) {
 			suggestInterfaceArgument(words, currentWord, candidates, isDelete);
@@ -268,8 +283,19 @@ public class RouterCommandCompleter implements Completer {
 	private void suggestInterfaceArgument(String[] words, String currentWord, List<Candidate> candidates, boolean isDelete) {
 		if (words[4].equalsIgnoreCase(ADDRESS)) {
 			suggestAddressArgument(words[3], currentWord, candidates, isDelete);
-		} else if (words[4].equalsIgnoreCase("vif") && !isDelete) {
-			candidates.add(new Candidate(currentWord, "0-4094", null, "Virtual Local Area Network (VLAN) ID", null, null, false));
+		} else if (words[4].equalsIgnoreCase("vif")) {
+			if (!isDelete) {
+				candidates.add(new Candidate(currentWord, "0-4094", null, "Virtual Local Area Network (VLAN) ID", null, null, false));
+			} else {
+				RouterInterface parent = router.findFromName(words[3]);
+				if (parent != null) {
+					router.getStagedInterfaces().stream()
+							.filter(i -> i.isChildOf(parent))
+							.map(RouterInterface::getVlanId)
+							.filter(id -> id != null)
+							.forEach(id -> addCandidateIfMatches(candidates, id, null, currentWord));
+				}
+			}
 		}
 	}
 
@@ -314,5 +340,15 @@ public class RouterCommandCompleter implements Completer {
 		if (currentWord == null || currentWord.isEmpty() || value.toLowerCase().startsWith(currentWord.toLowerCase())) {
 			candidates.add(new Candidate(value, value, null, description, null, null, true));
 		}
+	}
+
+	private boolean hasInterfaceOfType(InterfaceType type) {
+		return router.getStagedInterfaces().stream().anyMatch(i -> i.getType() == type);
+	}
+
+	private boolean hasVifChild(String parentInterfaceName) {
+		RouterInterface parent = router.findFromName(parentInterfaceName);
+		if (parent == null) return false;
+		return router.getStagedInterfaces().stream().anyMatch(i -> i.isChildOf(parent));
 	}
 }
