@@ -4,7 +4,11 @@ import org.jline.reader.Candidate;
 import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
-import org.uj.routingemulator.router.*;
+import org.uj.routingemulator.router.InterfaceType;
+import org.uj.routingemulator.router.Router;
+import org.uj.routingemulator.router.RouterInterface;
+import org.uj.routingemulator.router.RouterMode;
+import org.uj.routingemulator.router.StaticRoutingEntry;
 
 import java.util.List;
 
@@ -18,10 +22,12 @@ public class RouterCommandCompleter implements Completer {
 	private static final String STATIC = "static";
 	private static final String ETHERNET = "ethernet";
 	private static final String ROUTE = "route";
+	private static final String ADDRESS_FORMAT = "<x.x.x.x/prefix>";
 	private static final String NEXT_HOP = "next-hop";
 	private static final String INTERFACE = "interface";
 	private static final String INTERFACES = "interfaces";
 	private static final String DELETE = "delete";
+	private static final String INTERFACE_UPPERCASE = "Interface ";
 	private static final String ADDRESS = "address";
 	private static final String DISABLE = "disable";
 
@@ -69,12 +75,17 @@ public class RouterCommandCompleter implements Completer {
 		}
 	}
 
-	private static void suggestInterfaceArgument(String[] words, String currentWord, List<Candidate> candidates) {
-		if (words[4].equalsIgnoreCase(ADDRESS)) {
-			candidates.add(new Candidate(currentWord, "<x.x.x.x/prefix>", null, "IPv4 address and prefix", null, null, false));
-		} else if (words[4].equalsIgnoreCase("vif")) {
-			candidates.add(new Candidate(currentWord, "0-4094", null, "Virtual Local Area Network (VLAN) ID", null, null, false));
+	private boolean isCompleteCommand(String[] words, String currentWord) {
+		if (router.getMode() == RouterMode.OPERATIONAL) {
+			if (words.length == 1) {
+				return currentWord.equalsIgnoreCase("show");
+			} else if (words.length == 2 && words[0].equalsIgnoreCase("show")) {
+				return currentWord.equalsIgnoreCase("ip");
+			}
+		} else {
+			return verifyConfigurationMode(words, currentWord);
 		}
+		return false;
 	}
 
 	private boolean verifyConfigurationMode(String[] words, String currentWord) {
@@ -134,102 +145,168 @@ public class RouterCommandCompleter implements Completer {
 		}
 	}
 
-	private boolean isCompleteCommand(String[] words, String currentWord) {
-		if (router.getMode() == RouterMode.OPERATIONAL) {
-			if (words.length == 1) {
-				return currentWord.equalsIgnoreCase("show");
-			} else if (words.length == 2 && words[0].equalsIgnoreCase("show")) {
-				return currentWord.equalsIgnoreCase("ip");
-			}
-		} else {
-			return verifyConfigurationMode(words, currentWord);
-		}
-		return false;
-	}
-
 	private void completeProtocols(String[] words, String currentWord, List<Candidate> candidates) {
+		boolean isDelete = words[0].equalsIgnoreCase(DELETE);
+
 		if (words.length == 3) {
 			addCandidateIfMatches(candidates, STATIC, "Static routing", currentWord);
 		} else if (words.length == 4 && words[2].equalsIgnoreCase(STATIC)) {
 			addCandidateIfMatches(candidates, ROUTE, "Configure static route", currentWord);
 		} else if (words.length == 5 && words[3].equalsIgnoreCase(ROUTE)) {
-			// Hint for IPv4 Route
-			candidates.add(new Candidate(currentWord, "<x.x.x.x/x>", null, "IPv4 static route", null, null, false));
+			if (!isDelete) {
+				// Hint for IPv4 Route when setting
+				candidates.add(new Candidate(currentWord, "<x.x.x.x/x>", null, "IPv4 static route", null, null, false));
+			}
 
-			// Suggest existing routes for convenience
-			for (StaticRoutingEntry entry : router.getRoutingTable().getRoutingEntries()) {
+			// Suggest existing routes for convenience (or as the ONLY options for delete)
+			for (StaticRoutingEntry entry : router.getStagedRoutingTable().getRoutingEntries()) {
 				addCandidateIfMatches(candidates, entry.getSubnet().toString(), null, currentWord);
 			}
-			for (StaticRoutingEntry entry : router.getStagedRoutingTable().getRoutingEntries()) {
-				if (router.getRoutingTable().getRoutingEntries().stream().noneMatch(e -> e.getSubnet().equals(entry.getSubnet()))) {
-					addCandidateIfMatches(candidates, entry.getSubnet().toString(), null, currentWord);
-				}
-			}
 		} else if (words.length == 6 && words[3].equalsIgnoreCase(ROUTE)) {
+			String targetSubnet = words[4];
+
+			// For delete commands, verify the subnet actually exists in the router before offering subcommands
+			if (isDelete) {
+				boolean routeExists = router.getStagedRoutingTable().getRoutingEntries().stream()
+						.anyMatch(entry -> entry.getSubnet().toString().equals(targetSubnet));
+				if (!routeExists) return;
+			}
+
 			addCandidateIfMatches(candidates, NEXT_HOP, "Specify next-hop IP address", currentWord);
 			addCandidateIfMatches(candidates, INTERFACE, "Specify outgoing interface", currentWord);
 		} else {
-			completeRouteType(words, currentWord, candidates);
+			completeRouteType(words, currentWord, candidates, isDelete);
 		}
 	}
 
-	private void completeRouteType(String[] words, String currentWord, List<Candidate> candidates) {
+	private void completeRouteType(String[] words, String currentWord, List<Candidate> candidates, boolean isDelete) {
+		String targetSubnet = words[4];
+
 		if (words.length == 7 && words[5].equalsIgnoreCase(NEXT_HOP)) {
-			candidates.add(new Candidate(currentWord, "<x.x.x.x>", null, "IPv4 gateway address", null, null, false));
+			if (!isDelete) {
+				candidates.add(new Candidate(currentWord, "<x.x.x.x>", null, "IPv4 gateway address", null, null, false));
+			} else {
+				// For delete: suggest only next-hops that actually exist for this subnet
+				router.getStagedRoutingTable().getRoutingEntries().stream()
+						.filter(e -> e.getSubnet().toString().equals(targetSubnet) && e.getNextHop() != null)
+						.forEach(e -> addCandidateIfMatches(candidates, e.getNextHop().toString(), null, currentWord));
+			}
 		} else if (words.length == 7 && words[5].equalsIgnoreCase(INTERFACE)) {
-			candidates.add(new Candidate(currentWord, "<ethN>", null, "Ethernet interface name", null, null, false));
-			for (RouterInterface iface : router.getInterfaces()) {
-				addCandidateIfMatches(candidates, iface.getInterfaceName(), null, currentWord);
+			if (!isDelete) {
+				candidates.add(new Candidate(currentWord, "<ethN>", null, "Ethernet interface name", null, null, false));
+				for (RouterInterface iface : router.getInterfaces()) {
+					addCandidateIfMatches(candidates, iface.getInterfaceName(), null, currentWord);
+				}
+			} else {
+				// For delete: suggest only interfaces that actually exist for this route
+				router.getStagedRoutingTable().getRoutingEntries().stream()
+						.filter(e -> e.getSubnet().toString().equals(targetSubnet) && e.getRouterInterface() != null)
+						.forEach(e -> addCandidateIfMatches(candidates, e.getRouterInterface().getInterfaceName(), null, currentWord));
 			}
 		} else if (words.length == 8 && (words[5].equalsIgnoreCase(NEXT_HOP) || words[5].equalsIgnoreCase(INTERFACE))) {
 			addCandidateIfMatches(candidates, "distance", "Set administrative distance", currentWord);
 			addCandidateIfMatches(candidates, DISABLE, "Disable route", currentWord);
 		} else if (words.length == 9 && words[7].equalsIgnoreCase("distance")) {
-			candidates.add(new Candidate(currentWord, "<1-255>", null, "Administrative distance", null, null, false));
+			if (!isDelete) {
+				candidates.add(new Candidate(currentWord, "<1-255>", null, "Administrative distance", null, null, false));
+			} else {
+				// For delete distance: find the exact route and suggest its current distance
+				router.getStagedRoutingTable().getRoutingEntries().stream()
+						.filter(e -> e.getSubnet().toString().equals(targetSubnet))
+						.forEach(e -> addCandidateIfMatches(candidates, String.valueOf(e.getAdministrativeDistance()), null, currentWord));
+			}
 		}
 	}
 
 	private void completeInterfaces(String[] words, String currentWord, List<Candidate> candidates) {
+		boolean isDelete = words[0].equalsIgnoreCase(DELETE);
+
 		if (words.length == 3) {
 			addCandidateIfMatches(candidates, ETHERNET, "Configure Ethernet interface", currentWord);
 			addCandidateIfMatches(candidates, "dummy", "Configure Dummy interface", currentWord);
 		} else if (words.length == 4) {
-			checkInterfaceType(words, currentWord, candidates);
+			checkInterfaceType(words, currentWord, candidates, isDelete);
 		} else if (words.length == 5) {
-			addCandidateIfMatches(candidates, ADDRESS, "Set IP address", currentWord);
-			addCandidateIfMatches(candidates, DISABLE, "Disable interface", currentWord);
+			String targetIface = words[3];
+			RouterInterface matchedInterface = router.findFromName(targetIface);
 
-			if (words[2].equalsIgnoreCase(ETHERNET)) {
+			// Only offer subcommands if the interface exists or if we are setting a new one
+			if (!isDelete || matchedInterface != null) {
+				if (!isDelete || matchedInterface.getInterfaceAddress() != null) {
+					addCandidateIfMatches(candidates, ADDRESS, "Set IP address", currentWord);
+				}
+				if (!isDelete || matchedInterface.isDisabled()) {
+					addCandidateIfMatches(candidates, DISABLE, "Disable interface", currentWord);
+				}
+			}
+
+			if (words[2].equalsIgnoreCase(ETHERNET) && !isDelete) {
 				addCandidateIfMatches(candidates, "vif", "Virtual Local Area Network (VLAN) ID", currentWord);
 			}
 		} else if (words.length == 6) {
-			suggestInterfaceArgument(words, currentWord, candidates);
+			suggestInterfaceArgument(words, currentWord, candidates, isDelete);
 		} else if (words.length == 7) {
 			if (words[4].equalsIgnoreCase("vif")) {
-				addCandidateIfMatches(candidates, ADDRESS, "Set IP address", currentWord);
-				addCandidateIfMatches(candidates, DISABLE, "Disable interface", currentWord);
+				String targetIface = words[3] + "." + words[5];
+				RouterInterface matchedInterface = router.findFromName(targetIface);
+
+				if (!isDelete || matchedInterface != null) {
+					if (!isDelete || matchedInterface.getInterfaceAddress() != null) {
+						addCandidateIfMatches(candidates, ADDRESS, "Set IP address", currentWord);
+					}
+					if (!isDelete || matchedInterface.isDisabled()) {
+						addCandidateIfMatches(candidates, DISABLE, "Disable interface", currentWord);
+					}
+				}
 			}
 		} else if (words.length == 8 && words[4].equalsIgnoreCase("vif") && words[6].equalsIgnoreCase(ADDRESS)) {
-			candidates.add(new Candidate(currentWord, "<x.x.x.x/prefix>", null, "IPv4 address and prefix", null, null, false));
+			String targetIface = words[3] + "." + words[5];
+			suggestAddressArgument(targetIface, currentWord, candidates, isDelete);
 		}
 	}
 
-	private void checkInterfaceType(String[] words, String currentWord, List<Candidate> candidates) {
+	private void suggestInterfaceArgument(String[] words, String currentWord, List<Candidate> candidates, boolean isDelete) {
+		if (words[4].equalsIgnoreCase(ADDRESS)) {
+			suggestAddressArgument(words[3], currentWord, candidates, isDelete);
+		} else if (words[4].equalsIgnoreCase("vif") && !isDelete) {
+			candidates.add(new Candidate(currentWord, "0-4094", null, "Virtual Local Area Network (VLAN) ID", null, null, false));
+		}
+	}
+
+	private void suggestAddressArgument(String interfaceName, String currentWord, List<Candidate> candidates, boolean isDelete) {
+		if (!isDelete) {
+			candidates.add(new Candidate(currentWord, "<x.x.x.x/prefix>", null, "IPv4 address and prefix", null, null, false));
+		} else {
+			// For delete, only suggest the currently configured IP address of this interface
+			RouterInterface matchedInterface = router.findFromName(interfaceName);
+			if (matchedInterface != null && matchedInterface.getInterfaceAddress() != null) {
+				addCandidateIfMatches(candidates, matchedInterface.getInterfaceAddress().toString(), null, currentWord);
+			}
+		}
+	}
+
+	private void checkInterfaceType(String[] words, String currentWord, List<Candidate> candidates, boolean isDelete) {
 		if (words[2].equalsIgnoreCase(ETHERNET)) {
-			candidates.add(new Candidate(currentWord, "ethN", null, "Ethernet interface name", null, null, false));
+			if (!isDelete) {
+				candidates.add(new Candidate(currentWord, "ethN", null, "Ethernet interface name", null, null, false));
+			}
 			for (RouterInterface iface : router.getInterfaces()) {
 				if (iface.getType() == InterfaceType.ETHERNET) {
 					addCandidateIfMatches(candidates, iface.getInterfaceName(), null, currentWord);
 				}
 			}
 		} else if (words[2].equalsIgnoreCase("dummy")) {
-			candidates.add(new Candidate(currentWord, "dumN", null, "Dummy interface name", null, null, false));
+			if (!isDelete) {
+				candidates.add(new Candidate(currentWord, "dumN", null, "Dummy interface name", null, null, false));
+			}
 			for (RouterInterface iface : router.getInterfaces()) {
 				if (iface.getType() == InterfaceType.DUMMY) {
 					addCandidateIfMatches(candidates, iface.getInterfaceName(), null, currentWord);
 				}
 			}
-			addCandidateIfMatches(candidates, "dum0", null, currentWord);
+			if (!isDelete) {
+				addCandidateIfMatches(candidates, "dum0", null, currentWord);
+			}
 		}
 	}
 
