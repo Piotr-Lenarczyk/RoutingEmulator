@@ -1,9 +1,10 @@
 package org.uj.routingemulator.router;
 
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.uj.routingemulator.common.IPAddress;
 import org.uj.routingemulator.common.Subnet;
+
+import java.util.Objects;
 
 /**
  * Represents a static routing entry in the routing table.
@@ -19,8 +20,8 @@ import org.uj.routingemulator.common.Subnet;
  * when multiple routes to the same destination exist.
  */
 @Getter
-@EqualsAndHashCode(exclude = "isDisabled")
 public class StaticRoutingEntry {
+
 	private final Subnet subnet;
 	private final RouterInterface routerInterface;
 	private final IPAddress nextHop;
@@ -30,7 +31,7 @@ public class StaticRoutingEntry {
 	/**
 	 * Creates a next-hop based static route with default administrative distance (1).
 	 *
-	 * @param subnet destination network
+	 * @param subnet  destination network
 	 * @param nextHop IP address of next hop router
 	 */
 	public StaticRoutingEntry(Subnet subnet, IPAddress nextHop) {
@@ -44,8 +45,8 @@ public class StaticRoutingEntry {
 	/**
 	 * Creates a next-hop based static route with specified administrative distance.
 	 *
-	 * @param subnet destination network
-	 * @param nextHop IP address of next hop router
+	 * @param subnet                 destination network
+	 * @param nextHop                IP address of next hop router
 	 * @param administrativeDistance metric for route selection (1-255)
 	 */
 	public StaticRoutingEntry(Subnet subnet, IPAddress nextHop, int administrativeDistance) {
@@ -60,7 +61,7 @@ public class StaticRoutingEntry {
 	/**
 	 * Creates an interface-based static route with default administrative distance (1).
 	 *
-	 * @param subnet destination network
+	 * @param subnet          destination network
 	 * @param routerInterface exit interface for this route
 	 */
 	public StaticRoutingEntry(Subnet subnet, RouterInterface routerInterface) {
@@ -74,8 +75,8 @@ public class StaticRoutingEntry {
 	/**
 	 * Creates an interface-based static route with specified administrative distance.
 	 *
-	 * @param subnet destination network
-	 * @param routerInterface exit interface for this route
+	 * @param subnet                 destination network
+	 * @param routerInterface        exit interface for this route
 	 * @param administrativeDistance metric for route selection (1-255)
 	 */
 	public StaticRoutingEntry(Subnet subnet, RouterInterface routerInterface, int administrativeDistance) {
@@ -127,6 +128,39 @@ public class StaticRoutingEntry {
 		if (administrativeDistance < 1 || administrativeDistance > 255) {
 			throw new IllegalArgumentException("Administrative distance must be between 1 and 255. Provided: " + administrativeDistance);
 		}
+	}
+
+	/**
+	 * Custom equality logic for routing entries to bypass strict object identity
+	 * limitations when evaluating configuration stages. Router interfaces are compared by name.
+	 */
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+
+		StaticRoutingEntry that = (StaticRoutingEntry) o;
+
+		if (administrativeDistance != that.administrativeDistance) return false;
+		if (!subnet.equals(that.subnet)) return false;
+
+		boolean nextHopEquals = Objects.equals(nextHop, that.nextHop);
+		if (!nextHopEquals) return false;
+
+		String thisIface = (routerInterface == null) ? null : routerInterface.getInterfaceName();
+		String thatIface = (that.routerInterface == null) ? null : that.routerInterface.getInterfaceName();
+
+		return Objects.equals(thisIface, thatIface);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = subnet.hashCode();
+		String ifaceName = routerInterface != null ? routerInterface.getInterfaceName() : null;
+		result = 31 * result + (ifaceName != null ? ifaceName.hashCode() : 0);
+		result = 31 * result + (nextHop != null ? nextHop.hashCode() : 0);
+		result = 31 * result + administrativeDistance;
+		return result;
 	}
 
 	@Override

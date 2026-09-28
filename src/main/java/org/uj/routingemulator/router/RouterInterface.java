@@ -1,6 +1,5 @@
 package org.uj.routingemulator.router;
 
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -12,23 +11,19 @@ import java.util.logging.Logger;
 
 /**
  * Represents a network interface on a router device.
- * Capable of identifying its parent/child relationships and parsing its own VLAN ID.
+ * By not defining a custom equals/hashCode, this class correctly relies on object identity (memory reference).
+ * This ensures that identically named interfaces on different routers (e.g., eth0 on R1 and eth0 on R2)
+ * are treated as completely distinct physical entities by the ForwardingEngine and Topology.
  */
 @Setter
 @Getter
 @ToString
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class RouterInterface implements NetworkInterface {
 
 	private static final Logger logger = Logger.getLogger(RouterInterface.class.getName());
 
-	// Identity is strictly bound to name and type. Changing IP or Status does not break Topology maps.
-	@EqualsAndHashCode.Include
 	private String interfaceName;
-
-	@EqualsAndHashCode.Include
 	private InterfaceType type;
-
 	private InterfaceAddress interfaceAddress;
 	private MacAddress macAddress;
 	private String description;
