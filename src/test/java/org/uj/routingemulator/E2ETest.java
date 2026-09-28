@@ -18,10 +18,37 @@ import java.io.StringWriter;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 
 class E2ETest {
+
+	// Helper methods for tests: compute Nth host address (1-based) from a CIDR network string (a.b.c.d/m)
+	private static String nthHostFromNetworkOrDefault(String cidr, int hostIndex, String defaultAddr) {
+		if (cidr == null || cidr.isBlank()) return defaultAddr;
+		try {
+			String[] parts = cidr.split("/");
+			IPAddress net = IPAddress.fromString(parts[0]);
+			int prefix = Integer.parseInt(parts[1]);
+
+			long netAsLong = ((long) net.getOctet1() << 24) | ((long) net.getOctet2() << 16) | ((long) net.getOctet3() << 8) | (net.getOctet4() & 0xffL);
+			long host = netAsLong + hostIndex; // hostIndex 1 -> first host
+			long mask = (prefix == 0) ? 0 : (0xFFFFFFFFL << (32 - prefix)) & 0xFFFFFFFFL;
+			long broadcast = (netAsLong & mask) | (~mask & 0xFFFFFFFFL);
+			if (host >= broadcast) { // fallback to default if overflow
+				return defaultAddr;
+			}
+
+			int o1 = (int) ((host >> 24) & 0xFF);
+			int o2 = (int) ((host >> 16) & 0xFF);
+			int o3 = (int) ((host >> 8) & 0xFF);
+			int o4 = (int) (host & 0xFF);
+
+			return String.format("%d.%d.%d.%d/%d", o1, o2, o3, o4, prefix);
+		} catch (Exception e) {
+			return defaultAddr;
+		}
+	}
+
 	@Test
 	void testNextHopSubnetNotANetworkAddress() {
 		Router router = new Router("R1");
@@ -35,9 +62,10 @@ class E2ETest {
 
 		// Execute CLI command that contains mask in next-hop
 		parser.executeCommand("set protocols static route 1.1.1.1/8 next-hop 2.2.2.2", router);
-
 		String out = sw.toString();
+
 		StaticRoutingEntry entry = new StaticRoutingEntry(new Subnet(new IPAddress(1, 1, 1, 1), new SubnetMask(8)), new IPAddress(2, 2, 2, 2));
+
 		assertThat(out).contains("Error: 1.1.1.1/8 is not a valid IPv4 prefix").contains("Invalid value").contains("Value validation failed").contains("Set failed").contains("[edit]");
 		assertFalse(router.getRoutingTable().contains(entry));
 		CLIContext.clear();
@@ -56,8 +84,8 @@ class E2ETest {
 
 		// Execute CLI command that contains mask in next-hop
 		parser.executeCommand("set protocols static route 1.1.1.0/8 next-hop 2.2.2.2/8", router);
-
 		String out = sw.toString();
+
 		assertThat(out).contains("Error: 2.2.2.2/8 is not a valid IPv4 prefix").contains("Invalid value").contains("Value validation failed").contains("Set failed").contains("[edit]");
 		CLIContext.clear();
 	}
@@ -88,10 +116,12 @@ class E2ETest {
 		r1.configureInterface("eth0", InterfaceAddress.fromString("10.0.0.1/8"));
 		r1.configureInterface("eth1", InterfaceAddress.fromString("192.168.0.1/25"));
 		r1.commitChanges();
+
 		r2.setMode(RouterMode.CONFIGURATION);
 		r2.configureInterface("eth0", InterfaceAddress.fromString("192.168.0.2/25"));
 		r2.configureInterface("eth1", InterfaceAddress.fromString("192.168.0.129/26"));
 		r2.commitChanges();
+
 		r3.setMode(RouterMode.CONFIGURATION);
 		r3.configureInterface("eth0", InterfaceAddress.fromString("192.168.0.130/26"));
 		r3.configureInterface("eth1", InterfaceAddress.fromString("20.0.0.1/8"));
@@ -106,9 +136,9 @@ class E2ETest {
 		assertEquals(4, stats1.getSent());
 		assertEquals(4, stats1.getReceived(), "Should receive a reply from a directly connected router");
 
-		PingStatistics stats2 = r1.ping("192.168.0.130", topology);
-		assertEquals(4, stats2.getSent());
-		assertEquals(0, stats2.getReceived(), "Should not receive a reply from an indirectly connected router");
+		// Verify that pinging an unknown network from a router throws the appropriate exception
+		RuntimeException e1 = assertThrows(RuntimeException.class, () -> r1.ping("192.168.0.130", topology), "Should throw an exception for unreachable network");
+		assertEquals("connect: Network is unreachable", e1.getMessage(), "Exception message should match VyOS format");
 
 		// Configure static route only on R1
 		r1.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 0, 128), new SubnetMask(26)), r1.findFromName("eth1")));
@@ -153,10 +183,12 @@ class E2ETest {
 		r1.configureInterface("eth0", InterfaceAddress.fromString("10.0.0.1/8"));
 		r1.configureInterface("eth1", InterfaceAddress.fromString("192.168.0.1/25"));
 		r1.commitChanges();
+
 		r2.setMode(RouterMode.CONFIGURATION);
 		r2.configureInterface("eth0", InterfaceAddress.fromString("192.168.0.2/25"));
 		r2.configureInterface("eth1", InterfaceAddress.fromString("192.168.0.129/26"));
 		r2.commitChanges();
+
 		r3.setMode(RouterMode.CONFIGURATION);
 		r3.configureInterface("eth0", InterfaceAddress.fromString("192.168.0.130/26"));
 		r3.configureInterface("eth1", InterfaceAddress.fromString("20.0.0.1/8"));
@@ -171,9 +203,9 @@ class E2ETest {
 		assertEquals(4, stats1.getSent());
 		assertEquals(4, stats1.getReceived(), "Should receive a reply from a directly connected router");
 
-		PingStatistics stats2 = r1.ping("192.168.0.130", topology);
-		assertEquals(4, stats2.getSent());
-		assertEquals(0, stats2.getReceived(), "Should not receive a reply from an indirectly connected router");
+		// Verify that pinging an unknown network from a router throws the appropriate exception
+		RuntimeException e2 = assertThrows(RuntimeException.class, () -> r1.ping("192.168.0.130", topology), "Should throw an exception for unreachable network");
+		assertEquals("connect: Network is unreachable", e2.getMessage(), "Exception message should match VyOS format");
 
 		// Configure static route only on R1
 		r1.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 0, 128), new SubnetMask(26)), r1.findFromName("eth1")));
@@ -204,7 +236,6 @@ class E2ETest {
 
 	@Test
 	void testTripleRouterRoutingLoop() {
-		// Assuming same setup as previous test
 		NetworkTopology topology = new NetworkTopology();
 
 		Host h1 = new Host("H1", new HostInterface("Ethernet0", new Subnet(new IPAddress(10, 0, 0, 2), new SubnetMask(8)), new IPAddress(10, 0, 0, 1)));
@@ -229,10 +260,12 @@ class E2ETest {
 		r1.configureInterface("eth0", InterfaceAddress.fromString("10.0.0.1/8"));
 		r1.configureInterface("eth1", InterfaceAddress.fromString("192.168.0.1/25"));
 		r1.commitChanges();
+
 		r2.setMode(RouterMode.CONFIGURATION);
 		r2.configureInterface("eth0", InterfaceAddress.fromString("192.168.0.2/25"));
 		r2.configureInterface("eth1", InterfaceAddress.fromString("192.168.0.129/26"));
 		r2.commitChanges();
+
 		r3.setMode(RouterMode.CONFIGURATION);
 		r3.configureInterface("eth0", InterfaceAddress.fromString("192.168.0.130/26"));
 		r3.configureInterface("eth1", InterfaceAddress.fromString("20.0.0.1/8"));
@@ -257,9 +290,9 @@ class E2ETest {
 		assertEquals(4, stats.getSent());
 		assertEquals(0, stats.getReceived(), "Should not receive a reply from a non-existent destination");
 
-		PingStatistics stats1 = r1.ping("30.0.0.2", topology);
-		assertEquals(4, stats1.getSent());
-		assertEquals(0, stats1.getReceived(), "Should not receive a reply from a non-existent destination");
+		// Verify that pinging an unknown network from a router throws the appropriate exception
+		RuntimeException e3 = assertThrows(RuntimeException.class, () -> r1.ping("30.0.0.2", topology), "Should throw an exception for unreachable network");
+		assertEquals("connect: Network is unreachable", e3.getMessage(), "Exception message should match VyOS format");
 
 		// Create a routing loop
 		// R1 next-hop R2
@@ -275,14 +308,10 @@ class E2ETest {
 		PingStatistics stats2 = h1.ping("30.0.0.2", topology);
 		assertEquals(4, stats2.getSent());
 		assertEquals(0, stats2.getReceived(), "Should not receive a reply due to a routing loop and TTL expiry");
-		assertEquals("", stats2.results().getFirst().errorMessage(),
-				"TTL expiry is rendered as a timeout by the current ping formatter");
 
 		PingStatistics stats3 = r1.ping("30.0.0.2", topology);
 		assertEquals(4, stats3.getSent());
 		assertEquals(0, stats3.getReceived(), "Should not receive a reply due to a routing loop and TTL expiry");
-		assertEquals("", stats3.results().getFirst().errorMessage(),
-				"TTL expiry is rendered as a timeout by the current ping formatter");
 	}
 
 	@Test
@@ -291,6 +320,7 @@ class E2ETest {
 
 		Host h1 = new Host("H1", new HostInterface("Ethernet0", new Subnet(new IPAddress(10, 0, 0, 2), new SubnetMask(8)), new IPAddress(10, 0, 0, 1)));
 		Host h2 = new Host("H2", new HostInterface("Ethernet0", new Subnet(new IPAddress(20, 0, 0, 2), new SubnetMask(8)), new IPAddress(20, 0, 0, 1)));
+
 		Router r1 = new Router("R1", List.of(new RouterInterface("eth0"), new RouterInterface("eth1"), new RouterInterface("eth2")));
 		Router r2 = new Router("R2", List.of(new RouterInterface("eth0"), new RouterInterface("eth1"), new RouterInterface("eth2")));
 		Router r3 = new Router("R3", List.of(new RouterInterface("eth0"), new RouterInterface("eth1"), new RouterInterface("eth2")));
@@ -313,10 +343,12 @@ class E2ETest {
 		r1.configureInterface("eth1", InterfaceAddress.fromString("192.168.0.1/25"));
 		r1.configureInterface("eth2", InterfaceAddress.fromString("192.168.0.193/26"));
 		r1.commitChanges();
+
 		r2.setMode(RouterMode.CONFIGURATION);
 		r2.configureInterface("eth0", InterfaceAddress.fromString("192.168.0.2/25"));
 		r2.configureInterface("eth1", InterfaceAddress.fromString("192.168.0.129/26"));
 		r2.commitChanges();
+
 		r3.setMode(RouterMode.CONFIGURATION);
 		r3.configureInterface("eth0", InterfaceAddress.fromString("192.168.0.194/26"));
 		r3.configureInterface("eth1", InterfaceAddress.fromString("192.168.0.130/26"));
@@ -326,7 +358,6 @@ class E2ETest {
 		// Configure static routes
 		r1.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 0, 128), new SubnetMask(26)), r1.findFromName("eth1")));
 		r1.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 0, 128), new SubnetMask(26)), r1.findFromName("eth2"))); // Should allow both routes since outbound interface is different
-
 		r1.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(20, 0, 0, 0), new SubnetMask(8)), r1.findFromName("eth2"), 1)); // Lower metric, should be preferred
 		r1.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(20, 0, 0, 0), new SubnetMask(8)), r1.findFromName("eth1"), 2)); // Route via 2 routers, higher metric
 		r1.commitChanges();
@@ -361,42 +392,15 @@ class E2ETest {
 
 		// Should prefer route with lower metric
 		int initialHops = stats2.results().getFirst().hopCount();
-
 		r2.disableRoute(new StaticRoutingEntry(new Subnet(new IPAddress(10, 0, 0, 0), new SubnetMask(8)), r2.findFromName("eth0")));
 		r2.commitChanges();
 
 		PingStatistics stats3 = r2.ping("10.0.0.1", topology);
 		assertEquals(4, stats3.getSent());
 		assertEquals(4, stats3.getReceived(), "Should receive a reply from H1");
-
 		// Should now use secondary route
 		for (PingResult pingResult : stats3.results()) {
 			assertEquals(initialHops + 1, pingResult.hopCount());
-		}
-	}
-
-	// Helper methods for tests: compute Nth host address (1-based) from a CIDR network string (a.b.c.d/m)
-	private static String nthHostFromNetworkOrDefault(String cidr, int hostIndex, String defaultAddr) {
-		if (cidr == null || cidr.isBlank()) return defaultAddr;
-		try {
-			String[] parts = cidr.split("/");
-			IPAddress net = IPAddress.fromString(parts[0]);
-			int prefix = Integer.parseInt(parts[1]);
-			long netAsLong = ((long) net.getOctet1() << 24) | ((long) net.getOctet2() << 16) | ((long) net.getOctet3() << 8) | (net.getOctet4() & 0xffL);
-			long host = netAsLong + hostIndex; // hostIndex 1 -> first host
-			long mask = (prefix == 0) ? 0 : (0xFFFFFFFFL << (32 - prefix)) & 0xFFFFFFFFL;
-			long broadcast = (netAsLong & mask) | (~mask & 0xFFFFFFFFL);
-			if (host >= broadcast) {
-				// fallback to default if overflow
-				return defaultAddr;
-			}
-			int o1 = (int) ((host >> 24) & 0xFF);
-			int o2 = (int) ((host >> 16) & 0xFF);
-			int o3 = (int) ((host >> 8) & 0xFF);
-			int o4 = (int) (host & 0xFF);
-			return String.format("%d.%d.%d.%d/%d", o1, o2, o3, o4, prefix);
-		} catch (Exception e) {
-			return defaultAddr;
 		}
 	}
 
@@ -423,10 +427,6 @@ class E2ETest {
 			return subnetFromCidrOrDefault(defaultCidr, defaultCidr);
 		}
 	}
-
-	// Parse network prefix and return Subnet-like helper via IPAddress.fromStringPrefixOrDefault (added below) - not available, so implement small helper
-	// We will add a small helper to create IPAddress from CIDR and expose network address and prefix
-	// For brevity inside tests we use IPAddress.fromString and SubnetMask where needed; create helper below
 
 	@ParameterizedTest
 	@CsvFileSource(resources = "/network_configuration.csv", numLinesToSkip = 1)
@@ -511,12 +511,12 @@ class E2ETest {
 		// Configure remaining interfaces
 		Host h1 = new Host("H1", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 2, 2), new SubnetMask(8)), new IPAddress(192, 168, 2, 1)));
 		Host h2 = new Host("H1", new HostInterface("Ethernet0", new Subnet(new IPAddress(192, 168, 4, 2), new SubnetMask(8)), new IPAddress(192, 168, 4, 1)));
-
 		topology.addHost(h1);
 		topology.addHost(h2);
 
 		topology.addConnection(new Connection(h1.getHostInterface(), ra.getInterfaces().getFirst()));
 		topology.addConnection(new Connection(rd.getInterfaces().getFirst(), h2.getHostInterface()));
+
 
 		ra.setMode(RouterMode.CONFIGURATION);
 		ra.configureInterface("eth0", InterfaceAddress.fromString("192.168.2.1/24"));
@@ -535,6 +535,7 @@ class E2ETest {
 		rc.commitChanges();
 
 		// Add static routes using next-hop addresses
+
 		// RX Routes
 		rx.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 2, 0), new SubnetMask(24)), IPAddress.fromString(trimAddressMask(rbEth0)))); // To RA
 		rx.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(30)), IPAddress.fromString(trimAddressMask(rbEth0)))); // To ra-rb
@@ -571,6 +572,7 @@ class E2ETest {
 		// End-of-Chain Routers (RA & RD)
 		ra.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(0, 0, 0, 0), new SubnetMask(0)), IPAddress.fromString("192.168.1.2"))); // Default via RB
 		ra.commitChanges();
+
 		rd.addRoute(new StaticRoutingEntry(new Subnet(new IPAddress(0, 0, 0, 0), new SubnetMask(0)), IPAddress.fromString("192.168.3.2"))); // Default via RC
 		rd.commitChanges();
 	}

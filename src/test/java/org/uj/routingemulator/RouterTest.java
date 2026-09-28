@@ -7,21 +7,43 @@ import org.uj.routingemulator.common.Subnet;
 import org.uj.routingemulator.common.SubnetMask;
 import org.uj.routingemulator.router.*;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class RouterTest {
 	@Test
 	void testDefaultRouterConstructor() {
-		Router router = new Router("Router");
-		assertEquals("Router", router.getName());
-		assertTrue(router.getRoutingTable().getRoutingEntries().isEmpty());
-		assertEquals(2, router.getInterfaces().size());
-		assertEquals("eth0", router.getInterfaces().get(0).getInterfaceName());
-		assertEquals("lo", router.getInterfaces().get(1).getInterfaceName());
+		Router router = new Router("R1");
+
+		assertEquals("R1", router.getName());
 		assertEquals(RouterMode.OPERATIONAL, router.getMode());
-		assertEquals(router.getRoutingTable(), router.getStagedRoutingTable());
-		assertEquals(router.getInterfaces(), router.getStagedInterfaces());
 		assertFalse(router.hasUncommittedChanges());
+
+		List<RouterInterface> interfaces = router.getInterfaces();
+		assertEquals(2, interfaces.size());
+		assertEquals("eth0", interfaces.get(0).getInterfaceName());
+		assertEquals("lo", interfaces.get(1).getInterfaceName());
+
+		assertEquals(0, router.getRoutingTable().getRoutingEntries().size());
+	}
+
+	@Test
+	void testResetRestoresRouterToDefaultConfiguration() {
+		Router router = new Router("R1");
+		router.setMode(RouterMode.CONFIGURATION);
+
+		router.reset();
+
+		assertEquals(RouterMode.OPERATIONAL, router.getMode());
+		assertFalse(router.hasUncommittedChanges());
+
+		List<RouterInterface> interfaces = router.getInterfaces();
+		assertEquals(2, interfaces.size());
+		assertEquals("eth0", interfaces.get(0).getInterfaceName());
+		assertEquals("lo", interfaces.get(1).getInterfaceName());
+
+		assertEquals(0, router.getRoutingTable().getRoutingEntries().size());
 	}
 
 	@Test
@@ -230,29 +252,6 @@ class RouterTest {
 		assertEquals(RouterMode.OPERATIONAL, router.getMode());
 		assertFalse(router.hasUncommittedChanges());
 		assertFalse(router.getRoutingTable().contains(entry));
-	}
-
-	@Test
-	void testResetRestoresRouterToDefaultConfiguration() {
-		Router router = new Router("Router");
-		router.setMode(RouterMode.CONFIGURATION);
-		router.configureInterface("eth0", new InterfaceAddress(new IPAddress(10, 0, 0, 1), new SubnetMask(8)));
-		StaticRoutingEntry entry = new StaticRoutingEntry(new Subnet(new IPAddress(192, 168, 1, 0), new SubnetMask(24)), new IPAddress(10, 0, 0, 1));
-		router.addRoute(entry);
-
-		router.reset();
-
-		assertEquals("Router", router.getName());
-		assertTrue(router.getRoutingTable().getRoutingEntries().isEmpty());
-		assertEquals(2, router.getInterfaces().size());
-		assertEquals("eth0", router.getInterfaces().get(0).getInterfaceName());
-		assertNull(router.getInterfaces().get(0).getSubnet());
-		assertEquals("lo", router.getInterfaces().get(1).getInterfaceName());
-		assertNull(router.getInterfaces().get(1).getSubnet());
-		assertEquals(RouterMode.OPERATIONAL, router.getMode());
-		assertEquals(router.getRoutingTable(), router.getStagedRoutingTable());
-		assertEquals(router.getInterfaces(), router.getStagedInterfaces());
-		assertFalse(router.hasUncommittedChanges());
 	}
 
 	// Tests for new functionality

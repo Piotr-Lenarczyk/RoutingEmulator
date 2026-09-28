@@ -2,7 +2,6 @@ package org.uj.routingemulator.common;
 
 import org.uj.routingemulator.host.Host;
 import org.uj.routingemulator.host.HostInterface;
-import org.uj.routingemulator.router.InterfaceType;
 import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.RouterInterface;
 import org.uj.routingemulator.router.StaticRoutingEntry;
@@ -30,31 +29,12 @@ public class PingService {
 		} catch (RuntimeException e) {
 			List<PingResult> failures = new ArrayList<>();
 			for (int i = 1; i <= Math.max(1, count); i++) {
-				logger.finest("Probe %d failed: Invalid destination IP: %s".formatted(i, dstIpString));
+				logger.warning("Probe %d failed: Invalid destination IP: %s".formatted(i, dstIpString));
 				failures.add(new PingResult(i, false, 0, 0, "Invalid destination IP: " + dstIpString));
 			}
 			return new PingStatistics(failures);
 		}
 		return ping(src, dst, count, topology);
-	}
-
-	private static RouterInterface findInterfaceWithSubnet(Router srcRouter, RouterInterface ri) {
-		for (RouterInterface candidate : srcRouter.getInterfaces()) {
-			if (candidate.getSubnet() != null && candidate.getType() == InterfaceType.ETHERNET) {
-				return candidate;
-			}
-		}
-		for (RouterInterface candidate : srcRouter.getInterfaces()) {
-			if (candidate.getSubnet() != null && candidate.getType() == InterfaceType.VIF) {
-				return candidate;
-			}
-		}
-		for (RouterInterface candidate : srcRouter.getInterfaces()) {
-			if (candidate.getSubnet() != null && candidate.getType() == InterfaceType.DUMMY) {
-				return candidate;
-			}
-		}
-		return ri;
 	}
 
 	private static IPAddress findSourceIp(RouterInterface ri) {
@@ -96,7 +76,7 @@ public class PingService {
 		HostInterface hi = src.getHostInterface();
 		if (hi == null) {
 			for (int i = 1; i <= count; i++) {
-				logger.finest("Probe %d failed: Source host has no interface".formatted(i));
+				logger.warning("Probe %d failed: Source host has no interface".formatted(i));
 				results.add(new PingResult(i, false, 0, 0, "Source host has no interface"));
 			}
 			return new PingStatistics(results);
@@ -121,7 +101,7 @@ public class PingService {
 				logger.finest("Probe %d succeeded: Reached destination in %d ms with %d hops".formatted(seq, rtt, outcome.hopCount()));
 				results.add(new PingResult(seq, true, outcome.hopCount(), rtt, null));
 			} else {
-				logger.finest("Probe %d failed internally with: %s after %d hops".formatted(seq, outcome.reason(), outcome.hopCount()));
+				logger.warning("Probe %d failed internally with: %s after %d hops".formatted(seq, outcome.reason(), outcome.hopCount()));
 				String displayReason = determinePingErrorMessage(outcome.reason(), srcAddr, topology);
 				results.add(new PingResult(seq, false, outcome.hopCount(), 0, displayReason));
 			}
@@ -145,9 +125,6 @@ public class PingService {
 
 		if (ri == null) {
 			ri = findExitInterfaceFromRoutingTable(srcRouter, dst, ri);
-			if (ri == null) {
-				ri = findInterfaceWithSubnet(srcRouter, ri);
-			}
 		}
 
 		// Implementation of VyOS behavior for routers:
@@ -180,7 +157,7 @@ public class PingService {
 			long rtt = BASE_MS + outcome.hopCount() * PER_HOP_MS;
 			results.add(new PingResult(seq, true, outcome.hopCount(), rtt, null));
 		} else {
-			logger.finest("Probe %d failed internally with: %s after %d hops".formatted(seq, outcome.reason(), outcome.hopCount()));
+			logger.warning("Probe %d failed internally with: %s after %d hops".formatted(seq, outcome.reason(), outcome.hopCount()));
 			String displayReason = determinePingErrorMessage(outcome.reason(), srcAddr, topology);
 			results.add(new PingResult(seq, false, outcome.hopCount(), 0, displayReason));
 		}
