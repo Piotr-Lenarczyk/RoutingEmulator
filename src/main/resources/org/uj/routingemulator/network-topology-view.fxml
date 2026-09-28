@@ -11,39 +11,32 @@
     <left>
         <VBox spacing="10" style="-fx-background-color: #f0f0f0; -fx-padding: 10;">
             <Label style="-fx-font-weight: bold; -fx-font-size: 14px;" text="Network Devices"/>
-
             <ListView fx:id="deviceListView" prefHeight="400" prefWidth="250"/>
-
             <Separator/>
-
             <Label style="-fx-font-weight: bold;" text="Add Device"/>
             <Button fx:id="addRouterButton" maxWidth="Infinity" text="Add Router"/>
             <Button fx:id="addSwitchButton" maxWidth="Infinity" text="Add Switch"/>
             <Button fx:id="addHostButton" maxWidth="Infinity" text="Add Host"/>
-
             <Separator/>
-
             <Label style="-fx-font-weight: bold;" text="Connections"/>
             <Button fx:id="addConnectionButton" maxWidth="Infinity" text="Add Connection"/>
             <Button fx:id="removeConnectionButton" maxWidth="Infinity" text="Remove Connection"/>
-
             <Separator/>
-
+            <Label style="-fx-font-weight: bold;" text="Topology Operations"/>
+            <Button fx:id="loadTopologyButton" maxWidth="Infinity" text="Load Topology"/>
+            <Button fx:id="saveTopologyButton" maxWidth="Infinity" text="Save Topology"/>
+            <Separator/>
             <Label style="-fx-font-weight: bold;" text="Device Operations"/>
             <Button fx:id="removeDeviceButton" maxWidth="Infinity"
                     style="-fx-background-color: #ff6b6b; -fx-text-fill: white;" text="Remove Device"/>
-
             <Separator/>
-
             <Label style="-fx-font-weight: bold;" text="Router Configuration"/>
             <Button fx:id="loadConfigButton" maxWidth="Infinity" text="Load Configuration"/>
             <Button fx:id="saveConfigButton" maxWidth="Infinity" text="Save Configuration"/>
-
             <Region VBox.vgrow="ALWAYS"/>
-
             <Label style="-fx-font-weight: bold; -fx-font-size: 12px;" text="Instructions:"/>
             <TextArea editable="false" prefHeight="150" style="-fx-font-size: 10px;"
-                      text="• Click a device to select it&#10;• Double-click a router to open CLI&#10;• Drag devices to move them&#10;• Use 'Add Connection' to link devices&#10;• Select devices for connection by clicking them"
+                      text="  Click a device to select it&#10;  Double-click a router to open CLI&#10;  Drag devices to move them&#10;  Use 'Add Connection' to link devices&#10;  Select devices for connection by clicking them"
                       wrapText="true"/>
         </VBox>
     </left>
