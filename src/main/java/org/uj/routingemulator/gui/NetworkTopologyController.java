@@ -69,6 +69,8 @@ public class NetworkTopologyController {
 	private Button loadTopologyButton;
 	@FXML
 	private Button saveTopologyButton;
+	@FXML
+	private MenuItem helpMenuItem;
 
 	private NetworkTopology topology;
 	private Map<Object, DeviceNode> deviceNodes; // Device (Router/Switch/Host) -> Visual Node
@@ -108,6 +110,8 @@ public class NetworkTopologyController {
 
 		loadTopologyButton.setOnAction(e -> loadTopology());
 		saveTopologyButton.setOnAction(e -> saveTopology());
+
+		helpMenuItem.setOnAction(e -> showInstructionsDialog());
 
 		canvasPane.setOnMouseClicked(e -> {
 			if (e.getButton() == MouseButton.PRIMARY && connectionStartNode == null) {
@@ -1150,9 +1154,25 @@ public class NetworkTopologyController {
 		alert.showAndWait();
 	}
 
-	/**
-	 * Tworzy obiekty wizualne i łączy graficznie dwa interfejsy.
-	 */
+	private void showInstructionsDialog() {
+		Alert alert = new Alert(Alert.AlertType.INFORMATION);
+		alert.setTitle("Instructions");
+		alert.setHeaderText("Network Topology Editor Instructions");
+		alert.setContentText(
+				"• Use 'Add Router', 'Add Switch', or 'Add Host' buttons to create new devices\n" +
+						"• Click a device to select it\n" +
+						"• Select a device and use 'Remove Device' to delete it completely\n" +
+						"• Double-click a router to open its CLI\n" +
+						"• Double-click a host to configure IP or send pings\n" +
+						"• Drag devices to move them around the canvas\n" +
+						"• Use 'Add Connection' and click two devices to link them\n" +
+						"• Select a connected device and use 'Remove Connection' to unlink it\n" +
+						"• Use 'Save/Load Topology' to manage network layouts (.topo)\n" +
+						"• Select a router and use 'Save/Load Configuration' to manage its settings"
+		);
+		alert.showAndWait();
+	}
+
 	private void drawConnectionVisual(Connection connection) {
 		Line line = new Line();
 		line.setStrokeWidth(3);
