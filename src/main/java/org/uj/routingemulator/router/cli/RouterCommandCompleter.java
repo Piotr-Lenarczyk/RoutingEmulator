@@ -4,11 +4,7 @@ import org.jline.reader.Candidate;
 import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
-import org.uj.routingemulator.router.InterfaceType;
-import org.uj.routingemulator.router.Router;
-import org.uj.routingemulator.router.RouterInterface;
-import org.uj.routingemulator.router.RouterMode;
-import org.uj.routingemulator.router.StaticRoutingEntry;
+import org.uj.routingemulator.router.*;
 
 import java.util.List;
 
@@ -57,14 +53,6 @@ public class RouterCommandCompleter implements Completer {
 			System.arraycopy(words, 0, newWords, 0, words.length);
 			newWords[words.length] = "";
 			words = newWords;
-		} else if (!currentWord.isEmpty() && isCompleteCommand(words, currentWord)) {
-			// Check if current word is a complete match for any command at this level
-			// If so, treat it as if we're completing the next level
-			currentWord = "";
-			String[] newWords = new String[words.length + 1];
-			System.arraycopy(words, 0, newWords, 0, words.length);
-			newWords[words.length] = "";
-			words = newWords;
 		}
 
 		if (router.getMode() == RouterMode.OPERATIONAL) {
@@ -72,36 +60,6 @@ public class RouterCommandCompleter implements Completer {
 		} else {
 			completeConfigurationMode(words, currentWord, candidates);
 		}
-	}
-
-	private boolean isCompleteCommand(String[] words, String currentWord) {
-		if (router.getMode() == RouterMode.OPERATIONAL) {
-			if (words.length == 1) {
-				return currentWord.equalsIgnoreCase("show");
-			} else if (words.length == 2 && words[0].equalsIgnoreCase("show")) {
-				return currentWord.equalsIgnoreCase("ip");
-			}
-		} else {
-			return verifyConfigurationMode(words, currentWord);
-		}
-		return false;
-	}
-
-	private boolean verifyConfigurationMode(String[] words, String currentWord) {
-		if (words.length == 1) {
-			return currentWord.equalsIgnoreCase("set") || currentWord.equalsIgnoreCase(DELETE);
-		} else if (words.length == 2 && (words[0].equalsIgnoreCase("set") || words[0].equalsIgnoreCase(DELETE))) {
-			return currentWord.equalsIgnoreCase(INTERFACES) || currentWord.equalsIgnoreCase(PROTOCOLS);
-		} else if (words.length == 3 && words[1].equalsIgnoreCase(INTERFACES)) {
-			return currentWord.equalsIgnoreCase(ETHERNET);
-		} else if (words.length == 3 && words[1].equalsIgnoreCase(PROTOCOLS)) {
-			return currentWord.equalsIgnoreCase(STATIC);
-		} else if (words.length == 4 && words[2].equalsIgnoreCase(STATIC)) {
-			return currentWord.equalsIgnoreCase(ROUTE);
-		} else if (words.length == 6 && words[3].equalsIgnoreCase(ROUTE)) {
-			return currentWord.equalsIgnoreCase(NEXT_HOP) || currentWord.equalsIgnoreCase(INTERFACE);
-		}
-		return false;
 	}
 
 	private void completeOperationalMode(String[] words, String currentWord, List<Candidate> candidates) {
