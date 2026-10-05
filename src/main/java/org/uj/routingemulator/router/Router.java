@@ -159,7 +159,7 @@ public class Router {
 				// Log developer message and user-facing warning and continue (do not throw)
 				logger.info("Next-hop interface %s is a local interface on the router".formatted(nh));
 				logger.warning(msg);
-				// continue to stage route (no confirmation mechanism)
+				return;
 			}
 
 			// Determine whether next-hop lies inside any configured subnet on staged interfaces

@@ -37,7 +37,7 @@ public class Main extends Application {
 	}
 
 	public static void main(String[] args) {
-		configureLogging(Level.WARNING);
+		configureLogging(Level.FINEST);
 
 
 		logger.info("Starting Network Routing Emulator...");

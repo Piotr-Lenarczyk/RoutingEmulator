@@ -7,6 +7,7 @@ import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.RouterInterface;
 import org.uj.routingemulator.router.StaticRoutingEntry;
 
+import java.util.Comparator;
 import java.util.Optional;
 import java.util.logging.Logger;
 
@@ -285,7 +286,19 @@ public class ForwardingEngine {
                                                       NetworkTopology topology, int hopsBeforeThisHop) {
         Optional<StaticRoutingEntry> routeOpt = currentRouter.getRoutingTable().getRoutingEntries().stream()
                 .filter(e -> !e.isDisabled() && belongsToSubnet(destination, e.getSubnet()))
+                // Sort by mask, then by admin distance
+                .sorted(Comparator
+                        .<StaticRoutingEntry>comparingInt(e -> e.getSubnet().subnetMask().shortMask()).reversed()
+                        .thenComparingInt(StaticRoutingEntry::getAdministrativeDistance))
                 .findFirst();
+
+        System.out.println("Matched routes: " + currentRouter.getRoutingTable().getRoutingEntries().stream()
+                .filter(e -> !e.isDisabled() && belongsToSubnet(destination, e.getSubnet()))
+                // Sort by mask, then by admin distance
+                .sorted(Comparator
+                        .<StaticRoutingEntry>comparingInt(e -> e.getSubnet().subnetMask().shortMask()).reversed()
+                        .thenComparingInt(StaticRoutingEntry::getAdministrativeDistance)).toList());
+        System.out.println("%s: Selected route: %s".formatted(currentRouter.getName(), routeOpt.orElse(null)));
 
         if (routeOpt.isEmpty()) {
             logger.fine("Forwarding failure: no route to destination %s on router %s".formatted(destination, currentRouter.getName()));
