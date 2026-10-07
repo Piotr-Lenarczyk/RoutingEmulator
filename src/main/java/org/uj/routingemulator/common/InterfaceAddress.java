@@ -48,10 +48,10 @@ public record InterfaceAddress(IPAddress ipAddress, SubnetMask subnetMask) {
 		int prefixLength = subnetMask.shortMask();
 
 		// Convert IP to long
-		long ipAsLong = ((long) ipAddress.getOctet1() << 24) |
-				((long) ipAddress.getOctet2() << 16) |
-				((long) ipAddress.getOctet3() << 8) |
-				(ipAddress.getOctet4());
+		long ipAsLong = ((long) ipAddress.octet1() << 24) |
+				((long) ipAddress.octet2() << 16) |
+				((long) ipAddress.octet3() << 8) |
+				(ipAddress.octet4());
 
 		// Create network mask (prefixLength 1s followed by 0s)
 		long networkMask = (prefixLength == 0) ? 0 : (0xFFFFFFFFL << (32 - prefixLength));
@@ -100,10 +100,10 @@ public record InterfaceAddress(IPAddress ipAddress, SubnetMask subnetMask) {
 	 * Converts the 4 octets of the IP address into a single 32-bit unsigned long.
 	 */
 	private long getIpAsLong() {
-		return ((long) ipAddress.getOctet1() << 24) |
-				((long) ipAddress.getOctet2() << 16) |
-				((long) ipAddress.getOctet3() << 8) |
-				(ipAddress.getOctet4());
+		return ((long) ipAddress.octet1() << 24) |
+				((long) ipAddress.octet2() << 16) |
+				((long) ipAddress.octet3() << 8) |
+				(ipAddress.octet4());
 	}
 
 	/**

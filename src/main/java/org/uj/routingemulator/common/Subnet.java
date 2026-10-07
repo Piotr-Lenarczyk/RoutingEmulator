@@ -46,10 +46,10 @@ public record Subnet(IPAddress networkAddress, SubnetMask subnetMask) {
 		long hostMask = (1L << hostBits) - 1;
 
 		// Convert IP address to a 32-bit integer
-		long ipAsLong = ((long) networkAddress.getOctet1() << 24) |
-				((long) networkAddress.getOctet2() << 16) |
-				((long) networkAddress.getOctet3() << 8) |
-				(networkAddress.getOctet4());
+		long ipAsLong = ((long) networkAddress.octet1() << 24) |
+				((long) networkAddress.octet2() << 16) |
+				((long) networkAddress.octet3() << 8) |
+				(networkAddress.octet4());
 
 		// Check if all host bits are 0
 		return (ipAsLong & hostMask) == 0;
@@ -63,10 +63,10 @@ public record Subnet(IPAddress networkAddress, SubnetMask subnetMask) {
 	 */
 	public boolean contains(IPAddress ip) {
 		if (ip == null) return false;
-		long ipAsLong = ((long) ip.getOctet1() << 24) | ((long) ip.getOctet2() << 16) | ((long) ip.getOctet3() << 8) | (ip.getOctet4());
+		long ipAsLong = ((long) ip.octet1() << 24) | ((long) ip.octet2() << 16) | ((long) ip.octet3() << 8) | (ip.octet4());
 		int prefix = subnetMask.shortMask();
 		long networkMask = (prefix == 0) ? 0 : (0xFFFFFFFFL << (32 - prefix));
-		long net = ((long) networkAddress.getOctet1() << 24) | ((long) networkAddress.getOctet2() << 16) | ((long) networkAddress.getOctet3() << 8) | networkAddress.getOctet4();
+		long net = ((long) networkAddress.octet1() << 24) | ((long) networkAddress.octet2() << 16) | ((long) networkAddress.octet3() << 8) | networkAddress.octet4();
 		return (ipAsLong & networkMask) == (net & networkMask);
 	}
 

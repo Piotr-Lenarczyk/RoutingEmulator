@@ -48,12 +48,12 @@ public class ForwardingEngine {
     }
 
     private static boolean belongsToSubnet(IPAddress ip, Subnet subnet) {
-        long ipAsLong = ((long) ip.getOctet1() << 24) | ((long) ip.getOctet2() << 16) | ((long) ip.getOctet3() << 8) | ip.getOctet4();
+        long ipAsLong = ((long) ip.octet1() << 24) | ((long) ip.octet2() << 16) | ((long) ip.octet3() << 8) | ip.octet4();
         SubnetMask mask = subnet.subnetMask();
         int prefix = mask.shortMask();
         long networkMask = (prefix == 0) ? 0 : (0xFFFFFFFFL << (32 - prefix));
-        long net = ((long) subnet.networkAddress().getOctet1() << 24) | ((long) subnet.networkAddress().getOctet2() << 16)
-                | ((long) subnet.networkAddress().getOctet3() << 8) | subnet.networkAddress().getOctet4();
+        long net = ((long) subnet.networkAddress().octet1() << 24) | ((long) subnet.networkAddress().octet2() << 16)
+                | ((long) subnet.networkAddress().octet3() << 8) | subnet.networkAddress().octet4();
         return (ipAsLong & networkMask) == (net & networkMask);
     }
 
