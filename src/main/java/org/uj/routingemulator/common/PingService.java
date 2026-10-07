@@ -48,9 +48,7 @@ public class PingService {
 	}
 
 	private static RouterInterface findExitInterfaceFromRoutingTable(Router srcRouter, IPAddress dst, RouterInterface ri) {
-		Optional<StaticRoutingEntry> matchedRoute = srcRouter.getRoutingTable().getRoutingEntries().stream()
-				.filter(e -> !e.isDisabled() && e.getSubnet() != null && e.getSubnet().contains(dst))
-				.findFirst();
+		Optional<StaticRoutingEntry> matchedRoute = ForwardingEngine.findBestMatchingRoute(srcRouter, dst);
 
 		if (matchedRoute.isPresent()) {
 			StaticRoutingEntry route = matchedRoute.get();
@@ -102,7 +100,7 @@ public class PingService {
 				results.add(new PingResult(seq, true, outcome.hopCount(), rtt, null));
 			} else {
 				logger.warning("Probe %d failed internally with: %s after %d hops".formatted(seq, outcome.reason(), outcome.hopCount()));
-				String displayReason = determinePingErrorMessage(outcome.reason(), srcAddr, topology);
+				String displayReason = determinePingErrorMessage(outcome.reason(), outcome.errorResponseDeliverable());
 				results.add(new PingResult(seq, false, outcome.hopCount(), 0, displayReason));
 			}
 		}
@@ -158,7 +156,7 @@ public class PingService {
 			results.add(new PingResult(seq, true, outcome.hopCount(), rtt, null));
 		} else {
 			logger.warning("Probe %d failed internally with: %s after %d hops".formatted(seq, outcome.reason(), outcome.hopCount()));
-			String displayReason = determinePingErrorMessage(outcome.reason(), srcAddr, topology);
+			String displayReason = determinePingErrorMessage(outcome.reason(), outcome.errorResponseDeliverable());
 			results.add(new PingResult(seq, false, outcome.hopCount(), 0, displayReason));
 		}
 	}
@@ -166,7 +164,11 @@ public class PingService {
 	/**
 	 * Translates internal forwarding engine errors into authentic user-facing ICMP error messages.
 	 */
-	private String determinePingErrorMessage(String internalReason, IPAddress sourceIp, NetworkTopology topology) {
+	private String determinePingErrorMessage(String internalReason, boolean errorResponseDeliverable) {
+		if (!errorResponseDeliverable) {
+			return ""; // The router cannot return the ICMP error, so the ping times out.
+		}
+
 		if ("Host not found on connected subnet".equals(internalReason)) {
 			return "Destination Host Unreachable";
 		}
@@ -178,35 +180,14 @@ public class PingService {
 		if ("No route".equals(internalReason)
 				|| "Neighbor router not found".equals(internalReason)
 				|| "Next-hop not found".equals(internalReason)
+				|| "Next-hop router not found".equals(internalReason)
 				|| "Exit interface administratively down".equals(internalReason)
 				|| "Exit interface not connected".equals(internalReason)
 				|| "Next-hop not found in topology".equals(internalReason)
 				|| "Unsupported neighbor type".equals(internalReason)) {
-
-			boolean canRouteBack = isSourceReachable(sourceIp, topology);
-			if (canRouteBack) {
-				return "Destination Net Unreachable";
-			} else {
-				return ""; // Represents timeout
-			}
+			return "Destination Net Unreachable";
 		}
 
 		return ""; // Represents timeout
-	}
-
-	private boolean isSourceReachable(IPAddress sourceIp, NetworkTopology topology) {
-		for (Router router : topology.getRouters()) {
-			for (RouterInterface ri : router.getInterfaces()) {
-				if (ri.getSubnet() != null && ri.getSubnet().contains(sourceIp)) {
-					return true;
-				}
-			}
-			for (StaticRoutingEntry entry : router.getRoutingTable().getRoutingEntries()) {
-				if (!entry.isDisabled() && entry.getSubnet().contains(sourceIp)) {
-					return true;
-				}
-			}
-		}
-		return false;
 	}
 }

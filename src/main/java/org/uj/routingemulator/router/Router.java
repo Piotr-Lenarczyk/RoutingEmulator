@@ -85,7 +85,7 @@ public class Router {
 	public Router(String name, List<RouterInterface> interfaces) {
 		this.name = name;
 		this.routingTable = new RoutingTable();
-		this.interfaces = interfaces;
+		this.interfaces = new ArrayList<>(interfaces);
 		this.mode = RouterMode.OPERATIONAL;
 		this.stagedRoutingTable = new RoutingTable();
 		this.stagedInterfaces = new ArrayList<>(interfaces);

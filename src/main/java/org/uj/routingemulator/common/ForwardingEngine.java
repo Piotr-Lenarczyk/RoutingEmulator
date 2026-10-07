@@ -35,6 +35,27 @@ public class ForwardingEngine {
     private static final String UNSUPPORTED_NEIGHBOR_TYPE = "Unsupported neighbor type";
     private static final String ROUTER_INTERFACE_REACHED = "Reached (router interface)";
     private static final String TRAFFIC_DISCARDED_EGRESS_DUMMY_INTERFACE = "Traffic via egress dummy interface discarded";
+    private static final Comparator<StaticRoutingEntry> ROUTE_PRECEDENCE = Comparator
+            .<StaticRoutingEntry>comparingInt(route -> route.getSubnet().subnetMask().shortMask()).reversed()
+            .thenComparingInt(StaticRoutingEntry::getAdministrativeDistance);
+
+    static Optional<StaticRoutingEntry> findBestMatchingRoute(Router router, IPAddress destination) {
+        return router.getRoutingTable().getRoutingEntries().stream()
+                .filter(route -> !route.isDisabled() && route.getSubnet() != null
+                        && belongsToSubnet(destination, route.getSubnet()))
+                .sorted(ROUTE_PRECEDENCE)
+                .findFirst();
+    }
+
+    private static boolean belongsToSubnet(IPAddress ip, Subnet subnet) {
+        long ipAsLong = ((long) ip.getOctet1() << 24) | ((long) ip.getOctet2() << 16) | ((long) ip.getOctet3() << 8) | ip.getOctet4();
+        SubnetMask mask = subnet.subnetMask();
+        int prefix = mask.shortMask();
+        long networkMask = (prefix == 0) ? 0 : (0xFFFFFFFFL << (32 - prefix));
+        long net = ((long) subnet.networkAddress().getOctet1() << 24) | ((long) subnet.networkAddress().getOctet2() << 16)
+                | ((long) subnet.networkAddress().getOctet3() << 8) | subnet.networkAddress().getOctet4();
+        return (ipAsLong & networkMask) == (net & networkMask);
+    }
 
     /**
      * Forwards the packet starting from the source host towards destination IP using topology and routers.
@@ -78,18 +99,8 @@ public class ForwardingEngine {
             return gateway.failure();
         }
 
-        // hops=1 accounts for host->first-router; verifyOwnAddressReturn=true because
-        // host-originated pings additionally verify the return path from the destination.
+        // hops=1 accounts for host->first-router. Verify the return path before declaring an echo successful.
         return traverse(packet, gateway.router(), 1, topology, true);
-    }
-
-    /**
-     * Public method to forward a packet originating from a router.
-     */
-    public ForwardingOutcome forward(Packet packet, Router srcRouter, NetworkTopology topology) {
-        logger.fine("Starting forwarding (router source) of packet from %s to %s".formatted(packet.getSource(), packet.getDestination()));
-        normalizeTtl(packet);
-        return traverse(packet, srcRouter, 0, topology, false);
     }
 
     private void normalizeTtl(Packet packet) {
@@ -146,6 +157,16 @@ public class ForwardingEngine {
     }
 
     /**
+     * Public method to forward a packet originating from a router.
+     */
+    public ForwardingOutcome forward(Packet packet, Router srcRouter, NetworkTopology topology) {
+        logger.fine("Starting forwarding (router source) of packet from %s to %s".formatted(packet.getSource(), packet.getDestination()));
+        normalizeTtl(packet);
+        // A router-originated ping also needs a usable return path for the echo reply.
+        return traverse(packet, srcRouter, 0, topology, true);
+    }
+
+    /**
      * Hop-by-hop forwarding loop shared by both host-sourced and router-sourced pings.
      */
     private ForwardingOutcome traverse(Packet packet, Router startRouter, int startHops,
@@ -162,18 +183,40 @@ public class ForwardingEngine {
             logger.finer("Checking interfaces of router %s for destination %s".formatted(currentRouter.getName(), packet.getDestination()));
             Optional<RouterInterface> intfToDst = findDirectSubnetInterface(currentRouter, packet.getDestination());
             if (intfToDst.isPresent()) {
-                return resolveDirectSubnet(currentRouter, intfToDst.get(), packet, topology, hops, verifyOwnAddressReturn);
+                ForwardingOutcome outcome = resolveDirectSubnet(currentRouter, intfToDst.get(), packet, topology, hops, verifyOwnAddressReturn);
+                return withErrorResponseReachability(outcome, currentRouter, packet.getSource(), topology);
             }
 
             logger.finer("No directly connected subnet matches destination. Looking for static routes on router %s".formatted(currentRouter.getName()));
             RouteStep step = resolveNextRouterViaStaticRoute(currentRouter, packet.getDestination(), topology, hops);
             if (step.outcome() != null) {
-                return step.outcome();
+                return withErrorResponseReachability(step.outcome(), currentRouter, packet.getSource(), topology);
             }
 
             currentRouter = step.nextRouter();
             hops = step.hops();
         }
+    }
+
+    private ForwardingOutcome withErrorResponseReachability(ForwardingOutcome outcome, Router errorRouter,
+                                                            IPAddress sourceIp, NetworkTopology topology) {
+        if (outcome.reached() || !isIcmpUnreachableReason(outcome.reason())) {
+            return outcome;
+        }
+
+        boolean canReturnError = canRouterReach(errorRouter, sourceIp, topology);
+        return new ForwardingOutcome(false, outcome.hopCount(), outcome.reason(), canReturnError);
+    }
+
+    private boolean isIcmpUnreachableReason(String reason) {
+        return HOST_NOT_FOUND_ON_SUBNET.equals(reason)
+                || NO_ROUTE.equals(reason)
+                || NEXT_HOP_NOT_FOUND.equals(reason)
+                || "Neighbor router not found".equals(reason)
+                || INTERFACE_ADMIN_DOWN.equals(reason)
+                || INTERFACE_NOT_CONNECTED.equals(reason)
+                || NEXT_HOP_NOT_IN_TOPOLOGY.equals(reason)
+                || UNSUPPORTED_NEIGHBOR_TYPE.equals(reason);
     }
 
     /**
@@ -282,42 +325,12 @@ public class ForwardingEngine {
         return new ForwardingOutcome(true, hops, ROUTER_INTERFACE_REACHED);
     }
 
-    private RouteStep resolveNextRouterViaStaticRoute(Router currentRouter, IPAddress destination,
-                                                      NetworkTopology topology, int hopsBeforeThisHop) {
-        Optional<StaticRoutingEntry> routeOpt = currentRouter.getRoutingTable().getRoutingEntries().stream()
-                .filter(e -> !e.isDisabled() && belongsToSubnet(destination, e.getSubnet()))
-                // Sort by mask, then by admin distance
-                .sorted(Comparator
-                        .<StaticRoutingEntry>comparingInt(e -> e.getSubnet().subnetMask().shortMask()).reversed()
-                        .thenComparingInt(StaticRoutingEntry::getAdministrativeDistance))
-                .findFirst();
-
-        System.out.println("Matched routes: " + currentRouter.getRoutingTable().getRoutingEntries().stream()
-                .filter(e -> !e.isDisabled() && belongsToSubnet(destination, e.getSubnet()))
-                // Sort by mask, then by admin distance
-                .sorted(Comparator
-                        .<StaticRoutingEntry>comparingInt(e -> e.getSubnet().subnetMask().shortMask()).reversed()
-                        .thenComparingInt(StaticRoutingEntry::getAdministrativeDistance)).toList());
-        System.out.println("%s: Selected route: %s".formatted(currentRouter.getName(), routeOpt.orElse(null)));
-
-        if (routeOpt.isEmpty()) {
-            logger.fine("Forwarding failure: no route to destination %s on router %s".formatted(destination, currentRouter.getName()));
-            return RouteStep.terminal(new ForwardingOutcome(false, hopsBeforeThisHop, NO_ROUTE));
+    private boolean canRouterReach(Router router, IPAddress destination, NetworkTopology topology) {
+        if (destination == null || router.getInterfaces().isEmpty()) {
+            return false;
         }
-
-        StaticRoutingEntry route = routeOpt.get();
-        int hops = hopsBeforeThisHop + 1;
-
-        if (route.getRouterInterface() != null) {
-            return resolveInterfaceRoute(currentRouter, route.getRouterInterface(), destination, topology, hops);
-        }
-
-        if (route.getNextHop() != null) {
-            return resolveNextHopRoute(currentRouter, route.getNextHop(), topology, hops);
-        }
-
-        logger.fine("Forwarding failure: invalid route on router %s (no next-hop or exit interface)".formatted(currentRouter.getName()));
-        return RouteStep.terminal(new ForwardingOutcome(false, hops, INVALID_ROUTE));
+        RouterInterface startIf = router.getInterfaces().getFirst();
+        return forwardFromRouter(router, startIf, destination, topology).reached();
     }
 
     private RouteStep resolveInterfaceRoute(Router currentRouter, RouterInterface exitIf, IPAddress destination,
@@ -502,29 +515,28 @@ public class ForwardingEngine {
         return new ForwardingOutcome(false, hops, HOST_NOT_FOUND_ON_SUBNET);
     }
 
-    private ReturnRouteStep resolveReturnRouteViaStaticRoute(Router currentRouter, IPAddress dstIp,
-                                                             NetworkTopology topology, int hops) {
-        Optional<StaticRoutingEntry> routeOpt = currentRouter.getRoutingTable().getRoutingEntries().stream()
-                .filter(e -> !e.isDisabled() && belongsToSubnet(dstIp, e.getSubnet()))
-                .findFirst();
+    private RouteStep resolveNextRouterViaStaticRoute(Router currentRouter, IPAddress destination,
+                                                      NetworkTopology topology, int hopsBeforeThisHop) {
+        Optional<StaticRoutingEntry> routeOpt = findBestMatchingRoute(currentRouter, destination);
 
         if (routeOpt.isEmpty()) {
-            logger.finer("Return route verification failure: no route to destination IP %s on router %s".formatted(dstIp, currentRouter.getName()));
-            return ReturnRouteStep.terminal(new ForwardingOutcome(false, hops, NO_ROUTE));
+            logger.fine("Forwarding failure: no route to destination %s on router %s".formatted(destination, currentRouter.getName()));
+            return RouteStep.terminal(new ForwardingOutcome(false, hopsBeforeThisHop, NO_ROUTE));
         }
 
         StaticRoutingEntry route = routeOpt.get();
+        int hops = hopsBeforeThisHop + 1;
 
         if (route.getRouterInterface() != null) {
-            return resolveReturnRouteInterfaceRoute(currentRouter, route.getRouterInterface(), dstIp, topology, hops);
+            return resolveInterfaceRoute(currentRouter, route.getRouterInterface(), destination, topology, hops);
         }
 
         if (route.getNextHop() != null) {
-            return resolveReturnRouteNextHop(currentRouter, route.getNextHop(), topology, hops);
+            return resolveNextHopRoute(currentRouter, route.getNextHop(), topology, hops);
         }
 
-        logger.finer("Return route verification failure: invalid route on router %s (no next-hop or exit interface)".formatted(currentRouter.getName()));
-        return ReturnRouteStep.terminal(new ForwardingOutcome(false, hops, INVALID_ROUTE));
+        logger.fine("Forwarding failure: invalid route on router %s (no next-hop or exit interface)".formatted(currentRouter.getName()));
+        return RouteStep.terminal(new ForwardingOutcome(false, hops, INVALID_ROUTE));
     }
 
     private ReturnRouteStep resolveReturnRouteInterfaceRoute(Router currentRouter, RouterInterface exitIf, IPAddress dstIp,
@@ -613,14 +625,27 @@ public class ForwardingEngine {
                 .findFirst();
     }
 
-    private boolean belongsToSubnet(IPAddress ip, Subnet subnet) {
-        long ipAsLong = ((long) ip.getOctet1() << 24) | ((long) ip.getOctet2() << 16) | ((long) ip.getOctet3() << 8) | ip.getOctet4();
-        SubnetMask mask = subnet.subnetMask();
-        int prefix = mask.shortMask();
-        long networkMask = (prefix == 0) ? 0 : (0xFFFFFFFFL << (32 - prefix));
-        long net = ((long) subnet.networkAddress().getOctet1() << 24) | ((long) subnet.networkAddress().getOctet2() << 16)
-                | ((long) subnet.networkAddress().getOctet3() << 8) | subnet.networkAddress().getOctet4();
-        return (ipAsLong & networkMask) == (net & networkMask);
+    private ReturnRouteStep resolveReturnRouteViaStaticRoute(Router currentRouter, IPAddress dstIp,
+                                                             NetworkTopology topology, int hops) {
+        Optional<StaticRoutingEntry> routeOpt = findBestMatchingRoute(currentRouter, dstIp);
+
+        if (routeOpt.isEmpty()) {
+            logger.finer("Return route verification failure: no route to destination IP %s on router %s".formatted(dstIp, currentRouter.getName()));
+            return ReturnRouteStep.terminal(new ForwardingOutcome(false, hops, NO_ROUTE));
+        }
+
+        StaticRoutingEntry route = routeOpt.get();
+
+        if (route.getRouterInterface() != null) {
+            return resolveReturnRouteInterfaceRoute(currentRouter, route.getRouterInterface(), dstIp, topology, hops);
+        }
+
+        if (route.getNextHop() != null) {
+            return resolveReturnRouteNextHop(currentRouter, route.getNextHop(), topology, hops);
+        }
+
+        logger.finer("Return route verification failure: invalid route on router %s (no next-hop or exit interface)".formatted(currentRouter.getName()));
+        return ReturnRouteStep.terminal(new ForwardingOutcome(false, hops, INVALID_ROUTE));
     }
 
     private record GatewayResolution(Router router, ForwardingOutcome failure) {

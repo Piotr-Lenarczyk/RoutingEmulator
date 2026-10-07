@@ -11,7 +11,6 @@ import org.uj.routingemulator.router.RouterInterface;
 import org.uj.routingemulator.router.RouterMode;
 import org.uj.routingemulator.router.StaticRoutingEntry;
 import org.uj.routingemulator.router.cli.CLIContext;
-import org.uj.routingemulator.router.cli.RouterCLI;
 import org.uj.routingemulator.router.cli.RouterCLIParser;
 
 import java.io.ByteArrayOutputStream;
@@ -654,14 +653,177 @@ class E2ETest {
 		rd.commitChanges();
 	}
 
+	private static String staticRouteCommand(String operation, String destination, boolean useNextHopSyntax,
+	                                         String interfaceName, String nextHop) {
+		String routeKind = useNextHopSyntax ? "next-hop" : "interface";
+		String forwardingTarget = useNextHopSyntax ? nextHop : interfaceName;
+		return operation + " protocols static route " + destination + " " + routeKind + " " + forwardingTarget;
+	}
+
+	private static String executePing(RouterCLIParser parser, Router router, String destination,
+	                                  ByteArrayOutputStream outputStream) {
+		outputStream.reset();
+		parser.executeCommand("ping -c 4 " + destination, router);
+		return outputStream.toString();
+	}
+
+	private static void assertPingSuccess(String output, String destination) {
+		assertPingProbeMessage(output, "64 bytes from " + destination + ": icmp_seq=");
+		assertTrue(output.contains("4 packets transmitted, 4 received"), output);
+	}
+
+	private static void assertPingFailure(String output, String expectedMessage) {
+		assertPingProbeMessage(output, expectedMessage);
+		assertTrue(output.contains("4 packets transmitted, 0 received"), output);
+	}
+
+	private static void assertPingProbeMessage(String output, String expectedMessage) {
+		long matchingProbeLines = output.lines().filter(line -> line.contains(expectedMessage)).count();
+		assertEquals(4L, matchingProbeLines, output);
+	}
+
 	@Test
 	void testIncrementalRouting() {
+		runIncrementalRouting(false);
+	}
+
+	@Test
+	void testIncrementalRoutingWithNextHopRoutes() {
+		runIncrementalRouting(true);
+	}
+
+	@Test
+	void testMostSpecificStaticRouteTakesPrecedenceOverDefault() {
+		NetworkTopology topology = new NetworkTopology();
+		RouterCLIParser parser = new RouterCLIParser();
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		PrintStream originalOut = System.out;
+		PrintStream capturedStdout = new PrintStream(new ByteArrayOutputStream());
+		String destination = "192.168.4.1";
+		String networkUnreachable = "Destination Net Unreachable";
+
+		Router r1 = new Router("R1", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
+		Router r2 = new Router("R2", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
+		Router r3 = new Router("R3", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
+		System.setOut(capturedStdout);
+		CLIContext.setWriter(new PrintWriter(outputStream, true));
+		CLIContext.setNetworkTopology(topology);
+
+		try {
+			topology.addRouter(r1);
+			topology.addRouter(r2);
+			topology.addRouter(r3);
+			topology.addConnection(new Connection(r1.getInterfaces().getFirst(), r2.getInterfaces().getFirst()));
+			topology.addConnection(new Connection(r1.getInterfaces().get(1), r3.getInterfaces().getFirst()));
+
+			parser.executeCommand("conf", r1);
+			parser.executeCommand("set interfaces ethernet eth0 address 192.168.1.1/24", r1);
+			parser.executeCommand("set interfaces ethernet eth1 address 192.168.2.1/24", r1);
+			parser.executeCommand("commit", r1);
+
+			parser.executeCommand("conf", r2);
+			parser.executeCommand("set interfaces ethernet eth0 address 192.168.1.2/24", r2);
+			parser.executeCommand("set interfaces dummy dum0 address 192.168.3.1/24", r2);
+			parser.executeCommand("commit", r2);
+
+			parser.executeCommand("conf", r3);
+			parser.executeCommand("set interfaces ethernet eth0 address 192.168.2.2/24", r3);
+			parser.executeCommand("set interfaces dummy dum0 address 192.168.4.1/24", r3);
+			parser.executeCommand("commit", r3);
+
+			parser.executeCommand("conf", r1);
+			parser.executeCommand("set protocols static route 192.168.4.0/24 interface eth0", r1);
+			parser.executeCommand("set protocols static route 0.0.0.0/0 interface eth1", r1);
+			parser.executeCommand("commit", r1);
+			assertEquals(2, r1.getRoutingTable().getRoutingEntries().size());
+
+			// The /24 route sends the packet to R2, which has no route to the destination.
+			// The default route would reach R3, so this failure proves the /24 was selected.
+			assertPingFailure(executePing(parser, r1, destination, outputStream), networkUnreachable);
+
+			parser.executeCommand("delete protocols static route 192.168.4.0/24 interface eth0", r1);
+			parser.executeCommand("commit", r1);
+			assertEquals(1, r1.getRoutingTable().getRoutingEntries().size());
+			assertPingSuccess(executePing(parser, r1, destination, outputStream), destination);
+		} finally {
+			CLIContext.clear();
+			System.setOut(originalOut);
+			capturedStdout.close();
+		}
+	}
+
+	@Test
+	void testMostSpecificStaticRouteTakesPrecedenceForReturnPath() {
+		NetworkTopology topology = new NetworkTopology();
+		RouterCLIParser parser = new RouterCLIParser();
+		PrintStream originalOut = System.out;
+		PrintStream capturedStdout = new PrintStream(new ByteArrayOutputStream());
+		Router r1 = new Router("R1", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
+		Router r2 = new Router("R2", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
+		Router r3 = new Router("R3", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
+		System.setOut(capturedStdout);
+		CLIContext.setWriter(new PrintWriter(new ByteArrayOutputStream(), true));
+		CLIContext.setNetworkTopology(topology);
+
+		try {
+			topology.addRouter(r1);
+			topology.addRouter(r2);
+			topology.addRouter(r3);
+			topology.addConnection(new Connection(r1.getInterfaces().getFirst(), r2.getInterfaces().getFirst()));
+			topology.addConnection(new Connection(r1.getInterfaces().get(1), r3.getInterfaces().getFirst()));
+			topology.addConnection(new Connection(r2.getInterfaces().get(1), r3.getInterfaces().get(1)));
+
+			parser.executeCommand("conf", r1);
+			parser.executeCommand("set interfaces ethernet eth0 address 192.168.1.1/24", r1);
+			parser.executeCommand("set interfaces ethernet eth1 address 192.168.2.1/24", r1);
+			parser.executeCommand("set interfaces dummy dum0 address 192.168.10.1/24", r1);
+			parser.executeCommand("set protocols static route 192.168.4.0/24 interface eth1", r1);
+			parser.executeCommand("commit", r1);
+
+			parser.executeCommand("conf", r2);
+			parser.executeCommand("set interfaces ethernet eth0 address 192.168.1.2/24", r2);
+			parser.executeCommand("set interfaces ethernet eth1 address 192.168.3.2/24", r2);
+			parser.executeCommand("commit", r2);
+
+			parser.executeCommand("conf", r3);
+			parser.executeCommand("set interfaces ethernet eth0 address 192.168.2.2/24", r3);
+			parser.executeCommand("set interfaces ethernet eth1 address 192.168.3.1/24", r3);
+			parser.executeCommand("set interfaces dummy dum0 address 192.168.4.1/24", r3);
+			parser.executeCommand("set protocols static route 0.0.0.0/0 interface eth0", r3);
+			parser.executeCommand("set protocols static route 192.168.10.0/24 interface eth1", r3);
+			parser.executeCommand("commit", r3);
+
+			List<StaticRoutingEntry> returnRoutes = r3.getRoutingTable().getRoutingEntries();
+			assertEquals(0, returnRoutes.getFirst().getSubnet().subnetMask().shortMask(),
+					"The default route is intentionally first in insertion order");
+			assertEquals(24, returnRoutes.get(1).getSubnet().subnetMask().shortMask());
+
+			ForwardingEngine engine = new ForwardingEngine();
+			IPAddress source = IPAddress.fromString("192.168.10.1");
+			IPAddress destination = IPAddress.fromString("192.168.4.1");
+			ForwardingOutcome specificReturnFails = engine.forward(
+					new Packet(source, destination, Packet.PacketType.ICMP_ECHO_REQUEST, 64), r1, topology);
+			assertFalse(specificReturnFails.reached(), "The /24 return route sends traffic to R2, which has no route back");
+			assertEquals("No return route", specificReturnFails.reason());
+
+			parser.executeCommand("delete protocols static route 192.168.10.0/24 interface eth1", r3);
+			parser.executeCommand("commit", r3);
+			ForwardingOutcome defaultReturnSucceeds = engine.forward(
+					new Packet(source, destination, Packet.PacketType.ICMP_ECHO_REQUEST, 64), r1, topology);
+			assertTrue(defaultReturnSucceeds.reached(), "After deleting the /24, the default return route leads back to R1");
+		} finally {
+			CLIContext.clear();
+			System.setOut(originalOut);
+			capturedStdout.close();
+		}
+	}
+
+	private void runIncrementalRouting(boolean useNextHopSyntax) {
 		NetworkTopology topology = new NetworkTopology();
 		RouterCLIParser parser = new RouterCLIParser();
 		final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		final PrintStream originalOut = System.out;
-		System.setOut(new PrintStream(outputStream));
-		final String r1_dum0 = "192.168.1.1";
+		final PrintStream capturedStdout = new PrintStream(new ByteArrayOutputStream());
 		final String r1_eth0 = "192.168.2.1";
 		final String r2_eth0 = "192.168.2.2";
 		final String r2_eth1 = "192.168.3.1";
@@ -669,132 +831,100 @@ class E2ETest {
 		final String r3_eth1 = "192.168.4.1";
 		final String r4_eth0 = "192.168.4.2";
 		final String r4_dum0 = "192.168.5.1";
-		final String PING_SUCCESS = "from %d: icmp_seq=";
 		final String CONNECT_FAIL = "connect: Network is unreachable";
 		final String DESTINATION_NETWORK_UNREACHABLE = "Destination Net Unreachable";
 		final String NO_RESPONSE = "no answer yet for icmp_seq=";
+		final String NETWORK_AB = "192.168.2.0/24";
 
 		Router r1 = new Router("R1", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
 		Router r2 = new Router("R2", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
 		Router r3 = new Router("R3", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
 		Router r4 = new Router("R4", List.of(new RouterInterface("eth0"), new RouterInterface("eth1")));
-
-		topology.addRouter(r1);
-		topology.addRouter(r2);
-		topology.addRouter(r3);
-		topology.addRouter(r4);
-
-		topology.addConnection(new Connection(r1.getInterfaces().getFirst(), r2.getInterfaces().getFirst()));
-		topology.addConnection(new Connection(r2.getInterfaces().get(1), r3.getInterfaces().getFirst()));
-		topology.addConnection(new Connection(r3.getInterfaces().get(1), r4.getInterfaces().getFirst()));
-
-		parser.executeCommand("conf", r1);
-		assertEquals(RouterMode.CONFIGURATION, r1.getMode());
-
-		parser.executeCommand("set interfaces dummy dum0 address 192.168.1.1/24", r1);
-		parser.executeCommand("set interfaces ethernet eth0 address 192.168.2.1/24", r1);
-		parser.executeCommand("commit", r1);
-
-		parser.executeCommand("conf", r2);
-		parser.executeCommand("set interfaces ethernet eth0 address 192.168.2.2/24", r2);
-		parser.executeCommand("set interfaces ethernet eth1 address 192.168.3.1/24", r2);
-		parser.executeCommand("commit", r2);
-
-		parser.executeCommand("conf", r3);
-		parser.executeCommand("set interfaces ethernet eth0 address 192.168.3.2/24", r3);
-		parser.executeCommand("set interfaces ethernet eth1 address 192.168.4.1/24", r3);
-		parser.executeCommand("commit", r3);
-
-		parser.executeCommand("conf", r4);
-		parser.executeCommand("set interfaces ethernet eth0 address 192.168.4.2/24", r4);
-		parser.executeCommand("set interfaces dummy dum0 address 192.168.5.1/24", r4);
-		parser.executeCommand("commit", r4);
-
-		//PingStatistics stats = r1.ping(r1_dum0, topology);
-		//assertEquals(4, stats.getSent());
-		//assertEquals(4, stats.getReceived(), "Should receive a reply from self");
-
-		PingStatistics stats1 = r1.ping(r1_eth0, topology);
-		assertEquals(4, stats1.getSent());
-		assertEquals(4, stats1.getReceived(), "Should receive a reply from self");
-
-		PingStatistics stats2 = r1.ping(r2_eth0, topology);
-		assertEquals(4, stats2.getSent());
-		assertEquals(4, stats2.getReceived(), "Should receive a reply from directly connected router");
+		System.setOut(capturedStdout);
+		CLIContext.setWriter(new PrintWriter(outputStream, true));
+		CLIContext.setNetworkTopology(topology);
 
 		try {
-			r1.ping(r2_eth1, topology);
-		} catch (RuntimeException e) {
-			assertEquals("connect: Network is unreachable", e.getMessage(), "Exception message should match VyOS format");
+			topology.addRouter(r1);
+			topology.addRouter(r2);
+			topology.addRouter(r3);
+			topology.addRouter(r4);
+
+			topology.addConnection(new Connection(r1.getInterfaces().getFirst(), r2.getInterfaces().getFirst()));
+			topology.addConnection(new Connection(r2.getInterfaces().get(1), r3.getInterfaces().getFirst()));
+			topology.addConnection(new Connection(r3.getInterfaces().get(1), r4.getInterfaces().getFirst()));
+
+			parser.executeCommand("conf", r1);
+			assertEquals(RouterMode.CONFIGURATION, r1.getMode());
+
+			parser.executeCommand("set interfaces dummy dum0 address 192.168.1.1/24", r1);
+			parser.executeCommand("set interfaces ethernet eth0 address 192.168.2.1/24", r1);
+			parser.executeCommand("commit", r1);
+
+			parser.executeCommand("conf", r2);
+			parser.executeCommand("set interfaces ethernet eth0 address 192.168.2.2/24", r2);
+			parser.executeCommand("set interfaces ethernet eth1 address 192.168.3.1/24", r2);
+			parser.executeCommand("commit", r2);
+
+			parser.executeCommand("conf", r3);
+			parser.executeCommand("set interfaces ethernet eth0 address 192.168.3.2/24", r3);
+			parser.executeCommand("set interfaces ethernet eth1 address 192.168.4.1/24", r3);
+			parser.executeCommand("commit", r3);
+
+			parser.executeCommand("conf", r4);
+			parser.executeCommand("set interfaces ethernet eth0 address 192.168.4.2/24", r4);
+			parser.executeCommand("set interfaces dummy dum0 address 192.168.5.1/24", r4);
+			parser.executeCommand("commit", r4);
+
+			// Verify directly connected interfaces before adding static routes.
+			assertPingSuccess(executePing(parser, r1, r1_eth0, outputStream), r1_eth0);
+			assertPingSuccess(executePing(parser, r1, r2_eth0, outputStream), r2_eth0);
+			assertPingSuccess(executePing(parser, r2, r1_eth0, outputStream), r1_eth0);
+			assertPingSuccess(executePing(parser, r2, r3_eth0, outputStream), r3_eth0);
+			assertPingSuccess(executePing(parser, r3, r2_eth1, outputStream), r2_eth1);
+			assertPingSuccess(executePing(parser, r3, r4_eth0, outputStream), r4_eth0);
+			assertPingSuccess(executePing(parser, r4, r3_eth1, outputStream), r3_eth1);
+
+			// R1 has no route to D yet.
+			assertEquals(CONNECT_FAIL, executePing(parser, r1, r4_dum0, outputStream).trim());
+
+			// R1 can forward to R2, but R2 cannot route to D. R2 can report this to R1.
+			parser.executeCommand(staticRouteCommand("set", "192.168.5.0/24", useNextHopSyntax, "eth0", r2_eth0), r1);
+			parser.executeCommand("commit", r1);
+			assertEquals(1, r1.getRoutingTable().getRoutingEntries().size(), "R1's static route should be committed before pinging");
+			assertPingFailure(executePing(parser, r1, r4_dum0, outputStream), DESTINATION_NETWORK_UNREACHABLE);
+
+			// R2 can now forward toward R3, but R3 has no route to D or back to AB.
+			parser.executeCommand(staticRouteCommand("set", "192.168.5.0/24", useNextHopSyntax, "eth1", r3_eth0), r2);
+			parser.executeCommand("commit", r2);
+			assertPingFailure(executePing(parser, r1, r4_dum0, outputStream), NO_RESPONSE);
+
+			// R3 can now forward to D; R4 has no return route to AB yet.
+			parser.executeCommand(staticRouteCommand("set", "192.168.5.0/24", useNextHopSyntax, "eth1", r4_eth0), r3);
+			parser.executeCommand("commit", r3);
+			assertPingFailure(executePing(parser, r1, r4_dum0, outputStream), NO_RESPONSE);
+
+			// R4 has a route to AB, but R3 still cannot return packets toward R2.
+			parser.executeCommand(staticRouteCommand("set", NETWORK_AB, useNextHopSyntax, "eth0", r3_eth1), r4);
+			parser.executeCommand("commit", r4);
+			assertPingFailure(executePing(parser, r1, r4_dum0, outputStream), NO_RESPONSE);
+
+			// R3 returns toward R2; R2 is directly connected to AB, so the ping succeeds.
+			parser.executeCommand(staticRouteCommand("set", NETWORK_AB, useNextHopSyntax, "eth0", r2_eth1), r3);
+			parser.executeCommand("commit", r3);
+			assertPingSuccess(executePing(parser, r1, r4_dum0, outputStream), r4_dum0);
+
+			// Point R3's route to AB back at R4. R3 and R4 now form a return-path loop.
+			parser.executeCommand(staticRouteCommand("delete", NETWORK_AB, useNextHopSyntax, "eth0", r2_eth1), r3);
+			parser.executeCommand(staticRouteCommand("set", NETWORK_AB, useNextHopSyntax, "eth1", r4_eth0), r3);
+			parser.executeCommand("commit", r3);
+			assertPingFailure(executePing(parser, r1, r4_dum0, outputStream), NO_RESPONSE);
+
+		} finally {
+			CLIContext.clear();
+			System.setOut(originalOut);
+			capturedStdout.close();
 		}
-
-		try {
-			r1.ping(r3_eth0, topology);
-		} catch (RuntimeException e) {
-			assertEquals("connect: Network is unreachable", e.getMessage(), "Exception message should match VyOS format");
-		}
-
-		try {
-			r1.ping(r3_eth1, topology);
-		} catch (RuntimeException e) {
-			assertEquals("connect: Network is unreachable", e.getMessage(), "Exception message should match VyOS format");
-		}
-
-		try {
-			r1.ping(r4_eth0, topology);
-		} catch (RuntimeException e) {
-			assertEquals("connect: Network is unreachable", e.getMessage(), "Exception message should match VyOS format");
-		}
-
-		try {
-			r1.ping(r4_dum0, topology);
-		} catch (RuntimeException e) {
-			assertEquals("connect: Network is unreachable", e.getMessage(), "Exception message should match VyOS format");
-		}
-
-		parser.executeCommand("set protocols static route 192.168.5.0/24 interface eth0", r1);
-		parser.executeCommand("commit", r1);
-
-		PingStatistics stats3 = r1.ping(r4_dum0, topology);
-		// TODO: Should print "Destination Net Unreachable"
-
-		parser.executeCommand("set protocols static route 192.168.5.0/24 interface eth1", r2);
-		parser.executeCommand("commit", r2);
-		PingStatistics stats4 = r1.ping(r4_dum0, topology);
-		// R2 now know the route do r4_dum0 but R3 does not know it. R3 also does not know how to get back to R1
-		// TODO: Should print 'no answer yet'
-
-		parser.executeCommand("set protocols static route 192.168.5.0/24 interface eth1", r3);
-		parser.executeCommand("commit", r3);
-		PingStatistics stats5 = r1.ping(r4_dum0, topology);
-		// R3 knows the route to r4_dum0. 192.168.5.1 is a local IP for R4 but R4 does not know how to go back to R1
-		// TODO: Should print 'no answer yet'
-
-		parser.executeCommand("set protocols static route 192.168.1.0/24 interface eth0", r4);
-		parser.executeCommand("commit", r4);
-		PingStatistics stats6 = r1.ping(r4_dum0, topology);
-		// R4 does not know how to get back to R1
-		// TODO: Should print 'no answer yet'
-
-		parser.executeCommand("set protocols static route 192.168.1.0/24 interface eth0", r3);
-		parser.executeCommand("commit", r3);
-		PingStatistics stats7 = r1.ping(r4_dum0, topology);
-		// R4 knows how to get back to R1 but R3 does not
-		// TODO: Should print 'no answer yet'
-
-		parser.executeCommand("set protocols static route 192.168.1.0/24 interface eth0", r2);
-		parser.executeCommand("commit", r2);
-		PingStatistics stats8 = r1.ping(r4_dum0, topology);
-		// R2 knows how to get back to R1
-		// TODO: Should print successful ping result
-
-		parser.executeCommand("delete protocols static route 192.168.1.0/24 interface eth0", r3);
-		parser.executeCommand("set protocols static route 192.168.1.0/24 interface eth1", r3);
-		PingStatistics stats9 = r1.ping(r4_dum0, topology);
-		// R3-R4 form a routing loop
-		// TODO: Should print 'no answer yet'
-
-		System.setOut(originalOut);
 	}
 
 }
