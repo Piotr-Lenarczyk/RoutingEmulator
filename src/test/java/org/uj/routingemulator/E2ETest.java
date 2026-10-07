@@ -32,7 +32,7 @@ class E2ETest {
 			IPAddress net = IPAddress.fromString(parts[0]);
 			int prefix = Integer.parseInt(parts[1]);
 
-			long netAsLong = ((long) net.getOctet1() << 24) | ((long) net.getOctet2() << 16) | ((long) net.getOctet3() << 8) | (net.getOctet4() & 0xffL);
+			long netAsLong = ((long) net.octet1() << 24) | ((long) net.octet2() << 16) | ((long) net.octet3() << 8) | (net.octet4() & 0xffL);
 			long host = netAsLong + hostIndex; // hostIndex 1 -> first host
 			long mask = (prefix == 0) ? 0 : (0xFFFFFFFFL << (32 - prefix)) & 0xFFFFFFFFL;
 			long broadcast = (netAsLong & mask) | (~mask & 0xFFFFFFFFL);
@@ -68,7 +68,7 @@ class E2ETest {
 
 		StaticRoutingEntry entry = new StaticRoutingEntry(new Subnet(new IPAddress(1, 1, 1, 1), new SubnetMask(8)), new IPAddress(2, 2, 2, 2));
 
-		assertThat(out).contains("Error: 1.1.1.1/8 is not a valid IPv4 prefix").contains("Invalid value").contains("Value validation failed").contains("Set failed").contains("[edit]");
+		assertThat(out).contains("Invalid value").contains("Value validation failed").contains("Set failed").contains("[edit]");
 		assertFalse(router.getRoutingTable().contains(entry));
 		CLIContext.clear();
 	}
@@ -88,8 +88,53 @@ class E2ETest {
 		parser.executeCommand("set protocols static route 1.1.1.0/8 next-hop 2.2.2.2/8", router);
 		String out = sw.toString();
 
-		assertThat(out).contains("Error: 2.2.2.2/8 is not a valid IPv4 prefix").contains("Invalid value").contains("Value validation failed").contains("Set failed").contains("[edit]");
+		assertThat(out).contains("Invalid value").contains("Value validation failed").contains("Set failed").contains("[edit]");
 		CLIContext.clear();
+	}
+
+	@Test
+	void testCliStoresLocalNextHopRouteButDoesNotInstallIt() {
+		Router router = new Router("g2routerA", List.of(
+				new RouterInterface("eth2"),
+				new RouterInterface("eth3"),
+				new RouterInterface("dum0")
+		));
+		RouterCLIParser parser = new RouterCLIParser();
+		StringWriter output = new StringWriter();
+		CLIContext.setWriter(new PrintWriter(output, true));
+
+		try {
+			parser.executeCommand("conf", router);
+			parser.executeCommand("set interfaces dummy dum0 address 3.3.3.3/24", router);
+			parser.executeCommand("set interfaces ethernet eth2 address 1.2.3.3/24", router);
+			parser.executeCommand("set interfaces ethernet eth3 address 1.3.4.3/24", router);
+
+			output.getBuffer().setLength(0);
+			parser.executeCommand("set protocols static route 2.0.0.0/8 next-hop 3.3.3.3", router);
+			String setOutput = output.toString();
+			assertThat(setOutput).contains("[edit]").doesNotContain("Set failed", "Invalid command");
+
+			parser.executeCommand("commit", router);
+			parser.executeCommand("exit", router);
+
+			output.getBuffer().setLength(0);
+			parser.executeCommand("show configuration", router);
+			String configuration = output.toString();
+			assertThat(configuration)
+					.contains("route 2.0.0.0/8")
+					.contains("next-hop 3.3.3.3");
+
+			output.getBuffer().setLength(0);
+			parser.executeCommand("show ip route", router);
+			String routeTableOutput = output.toString();
+			assertThat(routeTableOutput).doesNotContain("2.0.0.0/8", "via 3.3.3.3");
+			assertTrue(router.getRoutingTable().getRoutingEntries().stream()
+							.noneMatch(route -> route.getSubnet().equals(
+									new Subnet(new IPAddress(2, 0, 0, 0), new SubnetMask(8)))),
+					"A route using the router's own interface address as next hop must not be installed");
+		} finally {
+			CLIContext.clear();
+		}
 	}
 
 	@Test

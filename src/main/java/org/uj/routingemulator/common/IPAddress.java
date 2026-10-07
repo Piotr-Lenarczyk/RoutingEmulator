@@ -1,7 +1,5 @@
 package org.uj.routingemulator.common;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import org.uj.routingemulator.router.exceptions.InvalidAddressException;
 
 /**
@@ -20,14 +18,7 @@ import org.uj.routingemulator.router.exceptions.InvalidAddressException;
  *   <li>127.0.0.1 - localhost</li>
  * </ul>
  */
-@Getter
-@EqualsAndHashCode
-public class IPAddress {
-	private final int octet1;
-	private final int octet2;
-	private final int octet3;
-	private final int octet4;
-
+public record IPAddress(int octet1, int octet2, int octet3, int octet4) {
 	/**
 	 * Creates an IPv4 address with the specified octets.
 	 * Each octet must be in the range 0-255.
@@ -38,15 +29,11 @@ public class IPAddress {
 	 * @param octet4 fourth octet (0-255)
 	 * @throws RuntimeException if any octet is outside the valid range
 	 */
-	public IPAddress(int octet1, int octet2, int octet3, int octet4) {
+	public IPAddress {
 		validateOctet(octet1);
 		validateOctet(octet2);
 		validateOctet(octet3);
 		validateOctet(octet4);
-		this.octet1 = octet1;
-		this.octet2 = octet2;
-		this.octet3 = octet3;
-		this.octet4 = octet4;
 	}
 
 	/**
@@ -66,7 +53,7 @@ public class IPAddress {
 	 *
 	 * @param ipString String representation of the IP address in dotted-decimal notation
 	 * @return IPAddress object
-	 * @throws RuntimeException if the format is invalid or octets are out of range
+	 * @throws RuntimeException      if the format is invalid or octets are out of range
 	 * @throws NumberFormatException if any octet cannot be parsed as an integer
 	 */
 	public static IPAddress fromString(String ipString) {
@@ -86,7 +73,7 @@ public class IPAddress {
 			// For other NumberFormatExceptions, rethrow so callers can see
 			// the original cause.
 			if (ipString.matches(".*/\\d{1,2}$")) {
-				String msg = String.format("%n\tError: %s is not a valid IPv4 prefix%n%n%n\tInvalid value%n\tValue validation failed%n\tSet failed%n%n[edit]", ipString);
+				String msg = String.format("\n\tError: %s is not a valid IPv4\n\n\n\tInvalid value\n\tValue validation failed\n\tSet failed\n\n[edit]", ipString);
 				throw new InvalidAddressException(msg);
 			}
 			throw e; // preserve original behavior for other malformed inputs

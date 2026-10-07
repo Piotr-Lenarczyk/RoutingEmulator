@@ -1,6 +1,7 @@
 package org.uj.routingemulator.router.cli;
 
 import org.uj.routingemulator.router.Router;
+import org.uj.routingemulator.router.StaticRoutingEntry;
 import org.uj.routingemulator.router.config.ConfigurationFactory;
 import org.uj.routingemulator.router.config.ConfigurationGenerator;
 
@@ -27,6 +28,9 @@ public class ShowConfigurationCommand implements RouterCommand {
 		// Create a temporary router with committed state to generate configuration
 		Router committedRouter = new Router(router.getName(), router.getInterfaces());
 		committedRouter.getRoutingTable().getRoutingEntries().addAll(router.getRoutingTable().getRoutingEntries());
+		for (StaticRoutingEntry entry : router.getConfigurationOnlyRoutes()) {
+			committedRouter.getConfigurationOnlyRoutes().add(new StaticRoutingEntry(entry));
+		}
 
 		String output = generator.generateConfiguration(committedRouter);
 		if (output.isEmpty()) {

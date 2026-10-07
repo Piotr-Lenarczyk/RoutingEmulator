@@ -116,7 +116,7 @@ public class HierarchicalConfigurationParser implements ConfigurationParser {
 
 		if (disabled) {
 			// Disable the route we just added
-			for (StaticRoutingEntry entry : router.getStagedRoutingTable().getRoutingEntries()) {
+			for (StaticRoutingEntry entry : router.getStagedConfiguredRoutes()) {
 				if (entry.getSubnet().equals(subnet)) {
 					disableRoute(router, entry);
 					return;

@@ -55,7 +55,7 @@ public class CommandConfigurationGenerator implements ConfigurationGenerator {
 			}
 		}
 
-		for (StaticRoutingEntry entry: router.getRoutingTable().getRoutingEntries()) {
+		for (StaticRoutingEntry entry : router.getConfiguredRoutes()) {
 			StringBuilder route = new StringBuilder();
 			route.append("set protocols static route ")
 					.append(entry.getSubnet().toString());

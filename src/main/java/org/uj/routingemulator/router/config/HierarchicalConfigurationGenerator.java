@@ -112,11 +112,12 @@ public class HierarchicalConfigurationGenerator implements ConfigurationGenerato
 			config.append("}\n");
 		}
 
-		// Generate protocols block
-		if (!router.getRoutingTable().getRoutingEntries().isEmpty()) {
+		// Generate protocols block, including configured routes not installed for forwarding.
+		List<StaticRoutingEntry> configuredRoutes = router.getConfiguredRoutes();
+		if (!configuredRoutes.isEmpty()) {
 			config.append("protocols {\n");
 			config.append("    static {\n");
-			for (StaticRoutingEntry entry : router.getRoutingTable().getRoutingEntries()) {
+			for (StaticRoutingEntry entry : configuredRoutes) {
 				buildRoute(entry, config);
 			}
 			config.append("    }\n");

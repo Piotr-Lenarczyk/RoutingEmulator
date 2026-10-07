@@ -11,7 +11,7 @@ public record NextHopRouteParameters(Subnet dest, IPAddress nh) {
 		try {
 			dest = Subnet.fromString(destinationSubnet);
 		} catch (RuntimeException e) {
-			String msg = String.format("%n\tError: %s is not a valid IPv4 prefix%n%n%n\tInvalid value%n\tValue validation failed%n\tSet failed%n%n[edit]", destinationSubnet);
+			String msg = "\n\t\n\tInvalid value\n\tValue validation failed\n\tSet failed\n\n[edit]";
 			throw new InvalidSubnetException(msg);
 		}
 
@@ -20,7 +20,7 @@ public record NextHopRouteParameters(Subnet dest, IPAddress nh) {
 			nh = IPAddress.fromString(nextHop);
 		} catch (Exception e) {
 			if (nextHop != null && nextHop.contains("/")) {
-				String msg = String.format("%n\tError: %s is not a valid IPv4 prefix%n%n%n\tInvalid value%n\tValue validation failed%n\tSet failed%n%n[edit]", nextHop);
+				String msg = "\n\t\n\tInvalid value\n\tValue validation failed\n\tSet failed\n\n[edit]";
 				throw new InvalidNextHopException(msg);
 			}
 			throw (RuntimeException) e;

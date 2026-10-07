@@ -38,6 +38,8 @@ public class Router {
 	private RouterMode mode;
 	private RoutingTable stagedRoutingTable;
 	private List<RouterInterface> stagedInterfaces;
+	private List<StaticRoutingEntry> configurationOnlyRoutes = new ArrayList<>();
+	private List<StaticRoutingEntry> stagedConfigurationOnlyRoutes = new ArrayList<>();
 	@Getter(AccessLevel.NONE)
 	@Setter(AccessLevel.NONE)
 	private boolean hasUncommittedChanges = false;
@@ -116,6 +118,14 @@ public class Router {
 		}
 	}
 
+	private static List<StaticRoutingEntry> copyRoutes(List<StaticRoutingEntry> routes) {
+		List<StaticRoutingEntry> copies = new ArrayList<>();
+		for (StaticRoutingEntry route : routes) {
+			copies.add(new StaticRoutingEntry(route));
+		}
+		return copies;
+	}
+
 	/**
 	 * Adds a new static route to the routing table.
 	 *
@@ -132,12 +142,12 @@ public class Router {
 		// Validate that the subnet represents a proper network address (host bits == 0)
 		Subnet routeSubnet = entry.getSubnet();
 		if (routeSubnet == null || !routeSubnet.isValidNetworkAddress()) {
-			String msg = String.format("%n\tError: %s is not a valid IPv4 prefix%n%n%n\tInvalid value%n\tValue validation failed%n\tSet failed%n%n[edit]", routeSubnet == null ? "null" : routeSubnet.toString());
+			String msg = "\n\t\n\tInvalid value\n\tValue validation failed\n\tSet failed\n\n[edit]";
 			logger.warning("Invalid subnet (not a network address) provided for route: %s".formatted(routeSubnet));
 			throw new InvalidSubnetException(msg);
 		}
 
-		if (stagedRoutingTable.contains(entry)) {
+		if (stagedRoutingTable.contains(entry) || stagedConfigurationOnlyRoutes.contains(entry)) {
 			logger.warning("Attempted to add duplicate route: %s".formatted(entry));
 			throw new DuplicateConfigurationException("Route already exists");
 		}
@@ -159,6 +169,8 @@ public class Router {
 				// Log developer message and user-facing warning and continue (do not throw)
 				logger.info("Next-hop interface %s is a local interface on the router".formatted(nh));
 				logger.warning(msg);
+				stagedConfigurationOnlyRoutes.add(new StaticRoutingEntry(entry));
+				hasUncommittedChanges = true;
 				return;
 			}
 
@@ -202,46 +214,14 @@ public class Router {
 			logger.warning("Attempted to remove route while in %s mode".formatted(mode));
 			throw new InvalidModeException("Invalid command: delete [protocols]");
 		}
-		if (!stagedRoutingTable.getRoutingEntries().contains(entry)) {
+		boolean removedFromRoutingTable = stagedRoutingTable.getRoutingEntries().remove(entry);
+		boolean removedFromConfigurationOnly = stagedConfigurationOnlyRoutes.remove(entry);
+		if (!removedFromRoutingTable && !removedFromConfigurationOnly) {
 			logger.warning("Attempted to remove non-existent route: %s".formatted(entry));
 			throw new ConfigurationNotFoundException("Nothing to delete");
 		}
-		this.stagedRoutingTable.getRoutingEntries().remove(entry);
 		hasUncommittedChanges = true;
 		logger.info("%s: Route %s removed from staged configuration".formatted(this.name, entry));
-	}
-
-	/**
-	 * Disables an existing static route in the staged configuration.
-	 * If the route does not exist -> throws "Route not found".
-	 * If the route is already disabled -> throws "Route already exists" (duplicate configuration).
-	 *
-	 * @param entry routing entry to disable (matches by subnet/nextHop/interface/distance)
-	 * @throws InvalidModeException            if not in CONFIGURATION mode
-	 * @throws ConfigurationNotFoundException  if route doesn't exist
-	 * @throws DuplicateConfigurationException if route is already disabled
-	 */
-	public void disableRoute(StaticRoutingEntry entry) {
-		if (mode != RouterMode.CONFIGURATION) {
-			logger.warning("Attempted to disable route while in %s mode".formatted(mode));
-			throw new InvalidModeException("Invalid command: set [protocols]");
-		}
-		// Find existing entry by equality (equals ignores isDisabled)
-		List<StaticRoutingEntry> entries = stagedRoutingTable.getRoutingEntries();
-		int idx = entries.indexOf(entry);
-		if (idx == -1) {
-			logger.warning("Attempted to disable non-existent route: %s".formatted(entry));
-			throw new ConfigurationNotFoundException("Route not found");
-		}
-		StaticRoutingEntry existing = entries.get(idx);
-		if (existing.isDisabled()) {
-			// disabling an already-disabled route is a duplicate configuration
-			logger.warning("Attempted to disable an already disabled route: %s".formatted(entry));
-			throw new DuplicateConfigurationException("Route already exists");
-		}
-		existing.disable();
-		hasUncommittedChanges = true;
-		logger.info("%s: Route %s disabled in staged configuration".formatted(this.name, entry));
 	}
 
 	private Integer findNextHopFromStagedInterfaces(IPAddress nh, Integer inferredMask) {
@@ -249,10 +229,10 @@ public class Router {
 			logger.finest("Checking interface %s with subnet %s".formatted(ri.getInterfaceName(), ri.getSubnet()));
 			if (ri.getSubnet() != null && ri.getSubnet().subnetMask() != null) {
 				Subnet s = ri.getSubnet();
-				long ipAsLong = ((long) nh.getOctet1() << 24) | ((long) nh.getOctet2() << 16) | ((long) nh.getOctet3() << 8) | nh.getOctet4();
+				long ipAsLong = ((long) nh.octet1() << 24) | ((long) nh.octet2() << 16) | ((long) nh.octet3() << 8) | nh.octet4();
 				int prefix = s.subnetMask().shortMask();
 				long networkMask = (prefix == 0) ? 0 : (0xFFFFFFFFL << (32 - prefix));
-				long net = ((long) s.networkAddress().getOctet1() << 24) | ((long) s.networkAddress().getOctet2() << 16) | ((long) s.networkAddress().getOctet3() << 8) | s.networkAddress().getOctet4();
+				long net = ((long) s.networkAddress().octet1() << 24) | ((long) s.networkAddress().octet2() << 16) | ((long) s.networkAddress().octet3() << 8) | s.networkAddress().octet4();
 				if ((ipAsLong & networkMask) == (net & networkMask)) {
 					inferredMask = prefix;
 					break;
@@ -389,6 +369,45 @@ public class Router {
 	}
 
 	/**
+	 * Disables an existing static route in the staged configuration.
+	 * If the route does not exist -> throws "Route not found".
+	 * If the route is already disabled -> throws "Route already exists" (duplicate configuration).
+	 *
+	 * @param entry routing entry to disable (matches by subnet/nextHop/interface/distance)
+	 * @throws InvalidModeException            if not in CONFIGURATION mode
+	 * @throws ConfigurationNotFoundException  if route doesn't exist
+	 * @throws DuplicateConfigurationException if route is already disabled
+	 */
+	public void disableRoute(StaticRoutingEntry entry) {
+		if (mode != RouterMode.CONFIGURATION) {
+			logger.warning("Attempted to disable route while in %s mode".formatted(mode));
+			throw new InvalidModeException("Invalid command: set [protocols]");
+		}
+		// Find existing entry by equality (equals ignores isDisabled)
+		List<StaticRoutingEntry> entries = stagedRoutingTable.getRoutingEntries();
+		int idx = entries.indexOf(entry);
+		StaticRoutingEntry existing;
+		if (idx == -1) {
+			idx = stagedConfigurationOnlyRoutes.indexOf(entry);
+			if (idx == -1) {
+				logger.warning("Attempted to disable non-existent route: %s".formatted(entry));
+				throw new ConfigurationNotFoundException("Route not found");
+			}
+			existing = stagedConfigurationOnlyRoutes.get(idx);
+		} else {
+			existing = entries.get(idx);
+		}
+		if (existing.isDisabled()) {
+			// disabling an already-disabled route is a duplicate configuration
+			logger.warning("Attempted to disable an already disabled route: %s".formatted(entry));
+			throw new DuplicateConfigurationException("Route already exists");
+		}
+		existing.disable();
+		hasUncommittedChanges = true;
+		logger.info("%s: Route %s disabled in staged configuration".formatted(this.name, entry));
+	}
+
+	/**
 	 * Commits configuration changes. Takes place immediately but is not persisted meaning if the device restarts/shuts down, changes will not be saved.
 	 *
 	 * @throws InvalidModeException       if not in CONFIGURATION mode
@@ -429,6 +448,7 @@ public class Router {
 
 		// Update routing table while mapping staged interface references to the committed interface objects
 		this.routingTable = copyRoutingTableWithUpdatedInterfaces(stagedRoutingTable, interfaces);
+		this.configurationOnlyRoutes = copyRoutes(stagedConfigurationOnlyRoutes);
 		hasUncommittedChanges = false;
 		logger.info("%s: Commit complete".formatted(this.name));
 	}
@@ -444,6 +464,7 @@ public class Router {
 		}
 		this.stagedInterfaces = deepCopyInterfaces(interfaces);
 		this.stagedRoutingTable = copyRoutingTableWithUpdatedInterfaces(routingTable, stagedInterfaces);
+		this.stagedConfigurationOnlyRoutes = copyRoutes(configurationOnlyRoutes);
 		hasUncommittedChanges = false;
 	}
 
@@ -470,8 +491,21 @@ public class Router {
 
 		// Clear routing table
 		this.stagedRoutingTable = new RoutingTable();
+		this.stagedConfigurationOnlyRoutes = new ArrayList<>();
 
 		hasUncommittedChanges = true;
+	}
+
+	/**
+	 * Changes router mode. In case of leaving configuration mode, forces discarding uncommitted changes.
+	 *
+	 * @param mode Target router mode
+	 */
+	public void setModeForced(RouterMode mode) {
+		if (this.mode == RouterMode.CONFIGURATION && hasUncommittedChanges) {
+			discardChanges();
+		}
+		this.mode = mode;
 	}
 
 	/**
@@ -490,35 +524,9 @@ public class Router {
 		if (mode == RouterMode.CONFIGURATION && this.mode == RouterMode.OPERATIONAL) {
 			this.stagedInterfaces = deepCopyInterfaces(this.interfaces);
 			this.stagedRoutingTable = copyRoutingTableWithUpdatedInterfaces(this.routingTable, this.stagedInterfaces);
+			this.stagedConfigurationOnlyRoutes = copyRoutes(configurationOnlyRoutes);
 		}
 		this.mode = mode;
-	}
-
-	/**
-	 * Changes router mode. In case of leaving configuration mode, forces discarding uncommitted changes.
-	 *
-	 * @param mode Target router mode
-	 */
-	public void setModeForced(RouterMode mode) {
-		if (this.mode == RouterMode.CONFIGURATION && hasUncommittedChanges) {
-			discardChanges();
-		}
-		this.mode = mode;
-	}
-
-	/**
-	 * Resets the router to default configuration as defined in the first constructor.
-	 * This includes resetting routing table, interfaces (eth0 and lo), mode, and discarding any uncommitted changes.
-	 */
-	public void reset() {
-		this.routingTable = new RoutingTable();
-		this.interfaces = new ArrayList<>();
-		this.interfaces.add(new RouterInterface("eth0"));
-		this.interfaces.add(new RouterInterface("lo"));
-		this.mode = RouterMode.OPERATIONAL;
-		this.stagedRoutingTable = new RoutingTable(this.routingTable);
-		this.stagedInterfaces = deepCopyInterfaces(this.interfaces);
-		this.hasUncommittedChanges = false;
 	}
 
 	/**
@@ -536,6 +544,23 @@ public class Router {
 				.findFirst()
 				.orElse(null);
     }
+
+	/**
+	 * Resets the router to default configuration as defined in the first constructor.
+	 * This includes resetting routing table, interfaces (eth0 and lo), mode, and discarding any uncommitted changes.
+	 */
+	public void reset() {
+		this.routingTable = new RoutingTable();
+		this.configurationOnlyRoutes = new ArrayList<>();
+		this.interfaces = new ArrayList<>();
+		this.interfaces.add(new RouterInterface("eth0"));
+		this.interfaces.add(new RouterInterface("lo"));
+		this.mode = RouterMode.OPERATIONAL;
+		this.stagedRoutingTable = new RoutingTable(this.routingTable);
+		this.stagedConfigurationOnlyRoutes = new ArrayList<>();
+		this.stagedInterfaces = deepCopyInterfaces(this.interfaces);
+		this.hasUncommittedChanges = false;
+	}
 
 	/**
 	 * Copies a routing table while updating RouterInterface references.
@@ -587,6 +612,25 @@ public class Router {
 			newTable.addRoute(newEntry);
 		}
 		return newTable;
+	}
+
+	/**
+	 * Returns committed static routes, including local-next-hop routes that are
+	 * retained in configuration but are not installed for forwarding.
+	 */
+	public List<StaticRoutingEntry> getConfiguredRoutes() {
+		List<StaticRoutingEntry> routes = new ArrayList<>(routingTable.getRoutingEntries());
+		routes.addAll(configurationOnlyRoutes);
+		return routes;
+	}
+
+	/**
+	 * Returns staged static routes, including configuration-only local-next-hop routes.
+	 */
+	public List<StaticRoutingEntry> getStagedConfiguredRoutes() {
+		List<StaticRoutingEntry> routes = new ArrayList<>(stagedRoutingTable.getRoutingEntries());
+		routes.addAll(stagedConfigurationOnlyRoutes);
+		return routes;
 	}
 
 	/**

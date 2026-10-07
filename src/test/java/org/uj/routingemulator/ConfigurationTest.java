@@ -72,7 +72,8 @@ class ConfigurationTest {
 		parser.loadConfiguration(router, config);
 
 		assertNotNull(router.findFromName("eth0").getInterfaceAddress());
-		assertEquals(1, router.getRoutingTable().getRoutingEntries().size());
+		assertEquals(0, router.getRoutingTable().getRoutingEntries().size(),
+				"A route with a local next hop remains configured but is not installed");
 	}
 
 	@Test
@@ -104,7 +105,8 @@ class ConfigurationTest {
 		assertEquals(2, newRouter.getInterfaces().size());
 		assertNotNull(newRouter.findFromName("eth0").getInterfaceAddress());
 		assertNotNull(newRouter.findFromName("eth1").getInterfaceAddress());
-		assertEquals(2, newRouter.getRoutingTable().getRoutingEntries().size());
+		assertEquals(1, newRouter.getRoutingTable().getRoutingEntries().size(),
+				"Only the non-local static route should be installed");
 	}
 
 	@Test
@@ -157,7 +159,8 @@ class ConfigurationTest {
 		assertEquals(savedConfig, restoredConfig, "Configuration should be restored to original");
 		assertEquals("192.168.1.254", router.findFromName("eth0").getInterfaceAddress().ipAddress().toString());
 		assertEquals("192.168.2.1", router.findFromName("eth1").getInterfaceAddress().ipAddress().toString());
-		assertEquals(1, router.getRoutingTable().getRoutingEntries().size());
+		assertEquals(0, router.getRoutingTable().getRoutingEntries().size(),
+				"The restored local-next-hop route should remain configuration-only");
 	}
 
 	@Test
