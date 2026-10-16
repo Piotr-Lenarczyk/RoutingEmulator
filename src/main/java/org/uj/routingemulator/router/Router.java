@@ -662,6 +662,39 @@ public class Router {
 		logger.info("%s: Address deleted from interface %s in staged configuration".formatted(this.name, routerInterfaceName));
 	}
 
+	private static void appendRouteDisplayEntry(RouteDisplayEntry entry, StringBuilder output) {
+		String prefix = entry.isConnected ? "C>*" : "S>*";
+		output.append(prefix).append(" ");
+		output.append(entry.subnet.networkAddress()).append("/");
+		output.append(entry.subnet.subnetMask().shortMask());
+		handleEntryFormatting(entry, output);
+		output.append("\n");
+	}
+
+	private static void appendMultipathContinuation(RouteDisplayEntry entry, StringBuilder output) {
+		String destination = entry.subnet.networkAddress() + "/" + entry.subnet.subnetMask().shortMask();
+		int distanceColumnWidth = (" [" + entry.distance + "]").length();
+		output.append("  * ")
+				.append(" ".repeat(destination.length() + distanceColumnWidth + 1));
+
+		if (entry.nextHop != null) {
+			output.append("via ").append(entry.nextHop);
+			if (entry.interfaceName != null) {
+				output.append(", ").append(entry.interfaceName);
+			}
+		} else if (entry.interfaceName != null) {
+			output.append("via ").append(entry.interfaceName);
+		}
+		output.append("\n");
+	}
+
+	private static boolean areEqualCostStaticPaths(RouteDisplayEntry first, RouteDisplayEntry second) {
+		return !first.isConnected
+				&& !second.isConnected
+				&& first.subnet.equals(second.subnet)
+				&& first.distance == second.distance;
+	}
+
 	/**
 	 * Displays the IP routing table in VyOS format.
 	 * Shows both static routes and connected routes (directly connected networks).
@@ -689,20 +722,22 @@ public class Router {
 		// Collect all routes (static + connected)
 		List<RouteDisplayEntry> displayEntries = getRouteDisplayEntries();
 
-		// Display routes
-		for (RouteDisplayEntry entry : displayEntries) {
-			if (entry.isDisabled) {
-				// Disabled routes are not shown in routing table
-				continue;
+		List<RouteDisplayEntry> visibleEntries = displayEntries.stream()
+				.filter(entry -> !entry.isDisabled)
+				.toList();
+
+		// Display equal-cost static paths under a single destination prefix.
+		for (int index = 0; index < visibleEntries.size(); ) {
+			RouteDisplayEntry entry = visibleEntries.get(index);
+			appendRouteDisplayEntry(entry, output);
+
+			int nextIndex = index + 1;
+			while (nextIndex < visibleEntries.size()
+					&& areEqualCostStaticPaths(entry, visibleEntries.get(nextIndex))) {
+				appendMultipathContinuation(visibleEntries.get(nextIndex), output);
+				nextIndex++;
 			}
-
-			String prefix = entry.isConnected ? "C>*" : "S>*";
-			output.append(prefix).append(" ");
-			output.append(entry.subnet.networkAddress()).append("/");
-			output.append(entry.subnet.subnetMask().shortMask());
-
-			handleEntryFormatting(entry, output);
-			output.append("\n");
+			index = nextIndex;
 		}
 
 		return output.toString();
@@ -752,10 +787,14 @@ public class Router {
 			int addrCompare = a.subnet.networkAddress().toString()
 					.compareTo(b.subnet.networkAddress().toString());
 			if (addrCompare != 0) return addrCompare;
-			return Integer.compare(
+			int maskCompare = Integer.compare(
 					b.subnet.subnetMask().shortMask(),
 					a.subnet.subnetMask().shortMask()
 			);
+			if (maskCompare != 0) return maskCompare;
+			int interfaceRouteOrder = Boolean.compare(b.isConnected, a.isConnected);
+			if (interfaceRouteOrder != 0) return interfaceRouteOrder;
+			return Integer.compare(a.distance, b.distance);
 		});
 		return displayEntries;
 	}
