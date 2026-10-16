@@ -26,7 +26,7 @@ public class ShowIpRouteCommand implements RouterCommand {
 			return;
 		}
 
-		String output = router.showIpRoute();
+		String output = router.showIpRoute(CLIContext.getNetworkTopology());
 		out.println(output);
 		out.flush();
 	}

@@ -486,6 +486,7 @@ class RouterTest {
 		));
 		router.commitChanges();
 		router.setMode(RouterMode.OPERATIONAL);
+		router.findFromName("eth0").setStatus(InterfaceStatus.fromChars('u', 'u'));
 
 		String output = router.showIpRoute();
 
@@ -554,6 +555,7 @@ class RouterTest {
 		));
 		router.commitChanges();
 		router.setMode(RouterMode.OPERATIONAL);
+		router.findFromName("eth0").setStatus(InterfaceStatus.fromChars('u', 'u'));
 
 		String output = router.showIpRoute();
 

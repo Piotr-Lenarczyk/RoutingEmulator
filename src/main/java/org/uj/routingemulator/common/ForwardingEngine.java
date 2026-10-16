@@ -39,10 +39,12 @@ public class ForwardingEngine {
             .<StaticRoutingEntry>comparingInt(route -> route.getSubnet().subnetMask().shortMask()).reversed()
             .thenComparingInt(StaticRoutingEntry::getAdministrativeDistance);
 
-    static Optional<StaticRoutingEntry> findBestMatchingRoute(Router router, IPAddress destination) {
+    static Optional<StaticRoutingEntry> findBestMatchingRoute(Router router, IPAddress destination,
+                                                              NetworkTopology topology) {
         return router.getRoutingTable().getRoutingEntries().stream()
                 .filter(route -> !route.isDisabled() && route.getSubnet() != null
                         && belongsToSubnet(destination, route.getSubnet()))
+                .filter(route -> RouteEligibility.isRouteActive(router, route, topology))
                 .sorted(ROUTE_PRECEDENCE)
                 .findFirst();
     }
@@ -181,7 +183,7 @@ public class ForwardingEngine {
             }
 
             logger.finer("Checking interfaces of router %s for destination %s".formatted(currentRouter.getName(), packet.getDestination()));
-            Optional<RouterInterface> intfToDst = findDirectSubnetInterface(currentRouter, packet.getDestination());
+            Optional<RouterInterface> intfToDst = findDirectSubnetInterface(currentRouter, packet.getDestination(), topology);
             if (intfToDst.isPresent()) {
                 ForwardingOutcome outcome = resolveDirectSubnet(currentRouter, intfToDst.get(), packet, topology, hops, verifyOwnAddressReturn);
                 return withErrorResponseReachability(outcome, currentRouter, packet.getSource(), topology);
@@ -382,7 +384,7 @@ public class ForwardingEngine {
 
     private RouteStep resolveNextHopRoute(Router currentRouter, IPAddress nextHop, NetworkTopology topology, int hops) {
 
-        Optional<RouterInterface> egressIfOpt = findDirectSubnetInterface(currentRouter, nextHop);
+        Optional<RouterInterface> egressIfOpt = findDirectSubnetInterface(currentRouter, nextHop, topology);
         if (egressIfOpt.isPresent() && egressIfOpt.get().getType() == InterfaceType.DUMMY) {
             logger.fine("Forwarding failure: Next-hop reachable via dummy interface on router %s".formatted(currentRouter.getName()));
             return RouteStep.terminal(new ForwardingOutcome(false, hops, TRAFFIC_DISCARDED_EGRESS_DUMMY_INTERFACE));
@@ -453,7 +455,7 @@ public class ForwardingEngine {
 
         while (hops < maxHops) {
             hops++;
-            Optional<RouterInterface> intfToDst = findDirectSubnetInterface(currentRouter, dstIp);
+            Optional<RouterInterface> intfToDst = findDirectSubnetInterface(currentRouter, dstIp, topology);
 
             if (intfToDst.isPresent()) {
                 return resolveReturnRouteDirectSubnet(currentRouter, intfToDst.get(), dstIp, topology, hops);
@@ -517,7 +519,7 @@ public class ForwardingEngine {
 
     private RouteStep resolveNextRouterViaStaticRoute(Router currentRouter, IPAddress destination,
                                                       NetworkTopology topology, int hopsBeforeThisHop) {
-        Optional<StaticRoutingEntry> routeOpt = findBestMatchingRoute(currentRouter, destination);
+        Optional<StaticRoutingEntry> routeOpt = findBestMatchingRoute(currentRouter, destination, topology);
 
         if (routeOpt.isEmpty()) {
             logger.fine("Forwarding failure: no route to destination %s on router %s".formatted(destination, currentRouter.getName()));
@@ -598,7 +600,7 @@ public class ForwardingEngine {
 
     private ReturnRouteStep resolveReturnRouteNextHop(Router currentRouter, IPAddress nextHop, NetworkTopology topology, int hops) {
 
-        Optional<RouterInterface> egressIfOpt = findDirectSubnetInterface(currentRouter, nextHop);
+        Optional<RouterInterface> egressIfOpt = findDirectSubnetInterface(currentRouter, nextHop, topology);
         if (egressIfOpt.isPresent() && egressIfOpt.get().getType() == InterfaceType.DUMMY) {
             logger.finer("Return route verification failure: Next-hop reachable via dummy interface on router %s".formatted(currentRouter.getName()));
             return ReturnRouteStep.terminal(new ForwardingOutcome(false, hops, TRAFFIC_DISCARDED_EGRESS_DUMMY_INTERFACE));
@@ -619,15 +621,17 @@ public class ForwardingEngine {
         return ReturnRouteStep.advance(neighborRouter);
     }
 
-    private Optional<RouterInterface> findDirectSubnetInterface(Router router, IPAddress destination) {
+    private Optional<RouterInterface> findDirectSubnetInterface(Router router, IPAddress destination,
+                                                                NetworkTopology topology) {
         return router.getInterfaces().stream()
                 .filter(iface -> iface.getSubnet() != null && belongsToSubnet(destination, iface.getSubnet()))
+                .filter(iface -> RouteEligibility.isInterfaceActive(router, iface, topology))
                 .findFirst();
     }
 
     private ReturnRouteStep resolveReturnRouteViaStaticRoute(Router currentRouter, IPAddress dstIp,
                                                              NetworkTopology topology, int hops) {
-        Optional<StaticRoutingEntry> routeOpt = findBestMatchingRoute(currentRouter, dstIp);
+        Optional<StaticRoutingEntry> routeOpt = findBestMatchingRoute(currentRouter, dstIp, topology);
 
         if (routeOpt.isEmpty()) {
             logger.finer("Return route verification failure: no route to destination IP %s on router %s".formatted(dstIp, currentRouter.getName()));

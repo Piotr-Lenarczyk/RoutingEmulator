@@ -47,8 +47,9 @@ public class PingService {
 		return sourceIp;
 	}
 
-	private static RouterInterface findExitInterfaceFromRoutingTable(Router srcRouter, IPAddress dst, RouterInterface ri) {
-		Optional<StaticRoutingEntry> matchedRoute = ForwardingEngine.findBestMatchingRoute(srcRouter, dst);
+	private static RouterInterface findExitInterfaceFromRoutingTable(Router srcRouter, IPAddress dst, RouterInterface ri,
+	                                                                 NetworkTopology topology) {
+		Optional<StaticRoutingEntry> matchedRoute = ForwardingEngine.findBestMatchingRoute(srcRouter, dst, topology);
 
 		if (matchedRoute.isPresent()) {
 			StaticRoutingEntry route = matchedRoute.get();
@@ -56,7 +57,8 @@ public class PingService {
 				ri = route.getRouterInterface();
 			} else if (route.getNextHop() != null) {
 				for (RouterInterface candidate : srcRouter.getInterfaces()) {
-					if (candidate.getSubnet() != null && candidate.getSubnet().contains(route.getNextHop())) {
+					if (candidate.getSubnet() != null && candidate.getSubnet().contains(route.getNextHop())
+							&& RouteEligibility.isInterfaceActive(srcRouter, candidate, topology)) {
 						ri = candidate;
 						break;
 					}
@@ -115,14 +117,15 @@ public class PingService {
 
 		RouterInterface ri = null;
 		for (RouterInterface candidate : srcRouter.getInterfaces()) {
-			if (candidate.getSubnet() != null && candidate.getSubnet().contains(dst)) {
+			if (candidate.getSubnet() != null && candidate.getSubnet().contains(dst)
+					&& RouteEligibility.isInterfaceActive(srcRouter, candidate, topology)) {
 				ri = candidate;
 				break;
 			}
 		}
 
 		if (ri == null) {
-			ri = findExitInterfaceFromRoutingTable(srcRouter, dst, ri);
+			ri = findExitInterfaceFromRoutingTable(srcRouter, dst, ri, topology);
 		}
 
 		// Implementation of VyOS behavior for routers:

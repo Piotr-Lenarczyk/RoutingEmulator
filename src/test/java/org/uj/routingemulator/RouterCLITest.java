@@ -560,6 +560,7 @@ class RouterCLITest {
 		parser.executeCommand("set protocols static route 10.0.0.0/8 next-hop 192.168.1.254 disable", router);
 		parser.executeCommand("commit", router);
 		parser.executeCommand("exit", router);
+		router.findFromName("eth0").setStatus(InterfaceStatus.fromChars('u', 'u'));
 		outputStream.reset();
 
 		parser.executeCommand("show ip route", router);
@@ -578,6 +579,7 @@ class RouterCLITest {
 		parser.executeCommand("set protocols static route 10.0.0.0/8 interface eth0", router);
 		parser.executeCommand("commit", router);
 		parser.executeCommand("exit", router);
+		router.findFromName("eth0").setStatus(InterfaceStatus.fromChars('u', 'u'));
 		outputStream.reset();
 
 		parser.executeCommand("show ip route", router);

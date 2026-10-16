@@ -704,6 +704,17 @@ public class Router {
 	 * @throws InvalidModeException if not in OPERATIONAL mode
 	 */
 	public String showIpRoute() {
+		return showIpRoute(null);
+	}
+
+	/**
+	 * Displays the operational routing table using current topology connectivity when available.
+	 *
+	 * @param topology current network topology, or {@code null} when called without topology context
+	 * @return Formatted routing table output
+	 * @throws InvalidModeException if not in OPERATIONAL mode
+	 */
+	public String showIpRoute(NetworkTopology topology) {
 		if (mode != RouterMode.OPERATIONAL) {
 			logger.warning("Attempted to show IP route while in %s mode".formatted(mode));
 			throw new InvalidModeException("Invalid command: show [ip]");
@@ -720,7 +731,7 @@ public class Router {
 		output.append("       t - trapped, o - offload failure\n\n");
 
 		// Collect all routes (static + connected)
-		List<RouteDisplayEntry> displayEntries = getRouteDisplayEntries();
+		List<RouteDisplayEntry> displayEntries = getRouteDisplayEntries(topology);
 
 		List<RouteDisplayEntry> visibleEntries = displayEntries.stream()
 				.filter(entry -> !entry.isDisabled)
@@ -743,16 +754,14 @@ public class Router {
 		return output.toString();
 	}
 
-	private List<RouteDisplayEntry> getRouteDisplayEntries() {
+	private List<RouteDisplayEntry> getRouteDisplayEntries(NetworkTopology topology) {
 		List<RouteDisplayEntry> displayEntries = new ArrayList<>();
 
 		// Add connected routes (directly connected networks from configured interfaces)
 		for (RouterInterface iface : interfaces) {
-			// Show connected route if interface has IP and is administratively UP
-			// (Link state doesn't matter for route table - route exists even if link is down)
+			// Only operationally active connected routes are installed in the route view.
 			if (iface.getSubnet() != null &&
-					iface.getStatus() != null &&
-					iface.getStatus().getAdmin() == AdminState.UP) {
+					RouteEligibility.isInterfaceActive(this, iface, topology)) {
 
 				// getSubnet() now returns the actual network subnet from the interface address
 				Subnet connectedNetwork = iface.getSubnet();
@@ -771,6 +780,9 @@ public class Router {
 
 		// Add static routes
 		for (StaticRoutingEntry entry : routingTable.getRoutingEntries()) {
+			if (!RouteEligibility.isRouteActive(this, entry, topology)) {
+				continue;
+			}
 			displayEntries.add(new RouteDisplayEntry(
 					"S",
 					entry.getSubnet(),

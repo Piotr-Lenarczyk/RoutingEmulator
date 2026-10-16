@@ -5,6 +5,7 @@ import org.uj.routingemulator.common.IPAddress;
 import org.uj.routingemulator.common.InterfaceAddress;
 import org.uj.routingemulator.common.Subnet;
 import org.uj.routingemulator.common.SubnetMask;
+import org.uj.routingemulator.router.InterfaceStatus;
 import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.RouterMode;
 import org.uj.routingemulator.router.StaticRoutingEntry;
@@ -25,6 +26,7 @@ class RouteDisplayTest {
 		router.addRoute(new StaticRoutingEntry(destination, new IPAddress(192, 0, 2, 3), 10));
 		router.commitChanges();
 		router.setMode(RouterMode.OPERATIONAL);
+		router.findFromName("eth0").setStatus(InterfaceStatus.fromChars('u', 'u'));
 
 		String output = router.showIpRoute();
 
