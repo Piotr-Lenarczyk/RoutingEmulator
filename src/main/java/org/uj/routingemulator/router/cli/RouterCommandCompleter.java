@@ -97,8 +97,8 @@ public class RouterCommandCompleter implements Completer {
 		if (words.length == 2) {
 			addCandidateIfMatches(candidates, INTERFACES, "Configure interfaces", currentWord);
 
-			// Tylko podpowiedz 'protocols' przy 'delete', jesli istnieje jakakolwiek trasa statyczna
-			if (!isDelete || !router.getStagedRoutingTable().getRoutingEntries().isEmpty()) {
+			// Offer protocols for deletion only when a configured static route exists.
+			if (!isDelete || !router.getStagedConfiguredRoutes().isEmpty()) {
 				addCandidateIfMatches(candidates, PROTOCOLS, "Configure protocols", currentWord);
 			}
 		} else if (words[1].equalsIgnoreCase(INTERFACES)) {
@@ -112,7 +112,7 @@ public class RouterCommandCompleter implements Completer {
 		boolean isDelete = words[0].equalsIgnoreCase(DELETE);
 
 		if (words.length == 3) {
-			if (!isDelete || !router.getStagedRoutingTable().getRoutingEntries().isEmpty()) {
+			if (!isDelete || !router.getStagedConfiguredRoutes().isEmpty()) {
 				addCandidateIfMatches(candidates, STATIC, "Static routing", currentWord);
 			}
 		} else if (words.length == 4 && words[2].equalsIgnoreCase(STATIC)) {
@@ -126,7 +126,7 @@ public class RouterCommandCompleter implements Completer {
 			}
 
 			// Suggest existing routes for convenience (or as the ONLY options for delete)
-			for (StaticRoutingEntry entry : router.getStagedRoutingTable().getRoutingEntries()) {
+			for (StaticRoutingEntry entry : router.getStagedConfiguredRoutes()) {
 				addCandidateIfMatches(candidates, entry.getSubnet().toString(), null, currentWord);
 			}
 		} else if (words.length == 6 && words[3].equalsIgnoreCase(ROUTE)) {
@@ -134,7 +134,7 @@ public class RouterCommandCompleter implements Completer {
 
 			// For delete commands, verify the subnet actually exists in the router before offering subcommands
 			if (isDelete) {
-				boolean routeExists = router.getStagedRoutingTable().getRoutingEntries().stream()
+				boolean routeExists = router.getStagedConfiguredRoutes().stream()
 						.anyMatch(entry -> entry.getSubnet().toString().equals(targetSubnet));
 				if (!routeExists) return;
 			}
@@ -154,7 +154,7 @@ public class RouterCommandCompleter implements Completer {
 				candidates.add(new Candidate(currentWord, "<x.x.x.x>", null, "IPv4 gateway address", null, null, false));
 			} else {
 				// For delete: suggest only next-hops that actually exist for this subnet
-				router.getStagedRoutingTable().getRoutingEntries().stream()
+				router.getStagedConfiguredRoutes().stream()
 						.filter(e -> e.getSubnet().toString().equals(targetSubnet) && e.getNextHop() != null)
 						.forEach(e -> addCandidateIfMatches(candidates, e.getNextHop().toString(), null, currentWord));
 			}
@@ -166,23 +166,59 @@ public class RouterCommandCompleter implements Completer {
 				}
 			} else {
 				// For delete: suggest only interfaces that actually exist for this route
-				router.getStagedRoutingTable().getRoutingEntries().stream()
+				router.getStagedConfiguredRoutes().stream()
 						.filter(e -> e.getSubnet().toString().equals(targetSubnet) && e.getRouterInterface() != null)
 						.forEach(e -> addCandidateIfMatches(candidates, e.getRouterInterface().getInterfaceName(), null, currentWord));
 			}
 		} else if (words.length == 8 && (words[5].equalsIgnoreCase(NEXT_HOP) || words[5].equalsIgnoreCase(INTERFACE))) {
-			addCandidateIfMatches(candidates, "distance", "Set administrative distance", currentWord);
-			addCandidateIfMatches(candidates, DISABLE, "Disable route", currentWord);
+			if (!isDelete) {
+				addCandidateIfMatches(candidates, "distance", "Set administrative distance", currentWord);
+				addCandidateIfMatches(candidates, DISABLE, "Disable route", currentWord);
+			} else {
+				List<StaticRoutingEntry> matchingRoutes = matchingRoutePaths(words);
+				if (!matchingRoutes.isEmpty()) {
+					addCandidateIfMatches(candidates, "distance", "Set administrative distance", currentWord);
+				}
+				if (matchingRoutes.stream().anyMatch(StaticRoutingEntry::isDisabled)) {
+					addCandidateIfMatches(candidates, DISABLE, "Re-enable route", currentWord);
+				}
+			}
 		} else if (words.length == 9 && words[7].equalsIgnoreCase("distance")) {
 			if (!isDelete) {
 				candidates.add(new Candidate(currentWord, "<1-255>", null, "Administrative distance", null, null, false));
 			} else {
-				// For delete distance: find the exact route and suggest its current distance
-				router.getStagedRoutingTable().getRoutingEntries().stream()
-						.filter(e -> e.getSubnet().toString().equals(targetSubnet))
+				matchingRoutePaths(words).stream()
 						.forEach(e -> addCandidateIfMatches(candidates, String.valueOf(e.getAdministrativeDistance()), null, currentWord));
 			}
+		} else if (words.length == 10 && words[7].equalsIgnoreCase("distance")) {
+			if (!isDelete) {
+				addCandidateIfMatches(candidates, DISABLE, "Disable route", currentWord);
+			} else {
+				try {
+					int distance = Integer.parseInt(words[8]);
+					boolean disabledRouteExists = matchingRoutePaths(words).stream()
+							.anyMatch(entry -> entry.getAdministrativeDistance() == distance && entry.isDisabled());
+					if (disabledRouteExists) {
+						addCandidateIfMatches(candidates, DISABLE, "Re-enable route", currentWord);
+					}
+				} catch (NumberFormatException ignored) {
+					// Do not offer a route node until the distance value is valid.
+				}
+			}
 		}
+	}
+
+	private List<StaticRoutingEntry> matchingRoutePaths(String[] words) {
+		String destination = words[4];
+		String pathType = words[5];
+		String pathValue = words[6];
+		return router.getStagedConfiguredRoutes().stream()
+				.filter(entry -> entry.getSubnet().toString().equals(destination))
+				.filter(entry -> pathType.equalsIgnoreCase(NEXT_HOP)
+						? entry.getNextHop() != null && entry.getNextHop().toString().equals(pathValue)
+						: entry.getRouterInterface() != null
+						&& entry.getRouterInterface().getInterfaceName().equals(pathValue))
+				.toList();
 	}
 
 	private void completeInterfaces(String[] words, String currentWord, List<Candidate> candidates) {

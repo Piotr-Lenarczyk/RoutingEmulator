@@ -648,6 +648,80 @@ class RouterCLITest {
 	}
 
 	@Test
+	void testDeleteDisableReenablesNextHopRoute() {
+		parser.executeCommand("configure", router);
+		parser.executeCommand("set protocols static route 192.168.1.0/24 next-hop 10.0.0.1", router);
+		parser.executeCommand("set protocols static route 192.168.1.0/24 next-hop 10.0.0.1 disable", router);
+		outputStream.reset();
+
+		parser.executeCommand("delete protocols static route 192.168.1.0/24 next-hop 10.0.0.1 disable", router);
+
+		assertTrue(outputStream.toString().contains("[edit]"));
+		assertEquals(1, router.getStagedConfiguredRoutes().size());
+		assertFalse(router.getStagedConfiguredRoutes().getFirst().isDisabled());
+		assertEquals(1, router.getStagedConfiguredRoutes().getFirst().getAdministrativeDistance());
+	}
+
+	@Test
+	void testDeleteDisableReenablesNextHopRouteWithDistance() {
+		parser.executeCommand("configure", router);
+		parser.executeCommand("set protocols static route 192.168.1.0/24 next-hop 10.0.0.1 distance 50", router);
+		parser.executeCommand("set protocols static route 192.168.1.0/24 next-hop 10.0.0.1 distance 50 disable", router);
+		outputStream.reset();
+
+		parser.executeCommand("delete protocols static route 192.168.1.0/24 next-hop 10.0.0.1 distance 50 disable", router);
+
+		assertTrue(outputStream.toString().contains("[edit]"));
+		assertEquals(1, router.getStagedConfiguredRoutes().size());
+		assertFalse(router.getStagedConfiguredRoutes().getFirst().isDisabled());
+		assertEquals(50, router.getStagedConfiguredRoutes().getFirst().getAdministrativeDistance());
+	}
+
+	@Test
+	void testDeleteDisableReenablesInterfaceRoute() {
+		parser.executeCommand("configure", router);
+		parser.executeCommand("set protocols static route 192.168.1.0/24 interface eth0", router);
+		parser.executeCommand("set protocols static route 192.168.1.0/24 interface eth0 disable", router);
+		outputStream.reset();
+
+		parser.executeCommand("delete protocols static route 192.168.1.0/24 interface eth0 disable", router);
+
+		assertTrue(outputStream.toString().contains("[edit]"));
+		assertEquals(1, router.getStagedConfiguredRoutes().size());
+		assertFalse(router.getStagedConfiguredRoutes().getFirst().isDisabled());
+		assertEquals(1, router.getStagedConfiguredRoutes().getFirst().getAdministrativeDistance());
+	}
+
+	@Test
+	void testDeleteDisableReenablesInterfaceRouteWithDistance() {
+		parser.executeCommand("configure", router);
+		parser.executeCommand("set protocols static route 192.168.1.0/24 interface eth0 distance 75", router);
+		parser.executeCommand("set protocols static route 192.168.1.0/24 interface eth0 distance 75 disable", router);
+		outputStream.reset();
+
+		parser.executeCommand("delete protocols static route 192.168.1.0/24 interface eth0 distance 75 disable", router);
+
+		assertTrue(outputStream.toString().contains("[edit]"));
+		assertEquals(1, router.getStagedConfiguredRoutes().size());
+		assertFalse(router.getStagedConfiguredRoutes().getFirst().isDisabled());
+		assertEquals(75, router.getStagedConfiguredRoutes().getFirst().getAdministrativeDistance());
+	}
+
+	@Test
+	void testDeleteDisableForEnabledRouteShowsMissingNodeError() {
+		parser.executeCommand("configure", router);
+		parser.executeCommand("set protocols static route 192.168.1.0/24 next-hop 10.0.0.1", router);
+		outputStream.reset();
+
+		parser.executeCommand("delete protocols static route 192.168.1.0/24 next-hop 10.0.0.1 disable", router);
+
+		String output = normalizeOutput(outputStream.toString());
+		assertTrue(output.contains("Nothing to delete"));
+		assertEquals(1, router.getStagedConfiguredRoutes().size());
+		assertFalse(router.getStagedConfiguredRoutes().getFirst().isDisabled());
+	}
+
+	@Test
 	void testDisableNonExistentRouteShowsError() {
 		parser.executeCommand("configure", router);
 		outputStream.reset();

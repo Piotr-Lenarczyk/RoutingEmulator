@@ -97,6 +97,11 @@ public class RouterCLIParser {
 		commands.add(new ForceExitCommand());
 
 		// Register route commands
+		commands.add(new DeleteDisableRouteNextHopDistanceCommand());
+		commands.add(new DeleteDisableRouteInterfaceDistanceCommand());
+		commands.add(new DeleteDisableRouteNextHopCommand());
+		commands.add(new DeleteDisableRouteInterfaceCommand());
+
 		commands.add(new DeleteRouteNextHopDistanceCommand());
 		commands.add(new DeleteRouteInterfaceDistanceCommand());
 		commands.add(new DeleteRouteNextHopCommand());

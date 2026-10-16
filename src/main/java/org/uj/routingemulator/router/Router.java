@@ -484,6 +484,39 @@ public class Router {
 	}
 
 	/**
+	 * Re-enables an existing disabled static route in the staged configuration.
+	 * A route without a disable node is treated as a missing configuration node.
+	 *
+	 * @param entry routing entry identifying the path to re-enable
+	 * @throws InvalidModeException           if not in CONFIGURATION mode
+	 * @throws ConfigurationNotFoundException if the route or its disable node does not exist
+	 */
+	public void enableRoute(StaticRoutingEntry entry) {
+		if (mode != RouterMode.CONFIGURATION) {
+			logger.warning("Attempted to enable route while in %s mode".formatted(mode));
+			throw new InvalidModeException("Invalid command: delete [protocols]");
+		}
+		List<StaticRoutingEntry> entries = stagedRoutingTable.getRoutingEntries();
+		int idx = entries.indexOf(entry);
+		StaticRoutingEntry existing;
+		if (idx == -1) {
+			idx = stagedConfigurationOnlyRoutes.indexOf(entry);
+			if (idx == -1) {
+				throw new ConfigurationNotFoundException("Nothing to delete");
+			}
+			existing = stagedConfigurationOnlyRoutes.get(idx);
+		} else {
+			existing = entries.get(idx);
+		}
+		if (!existing.isDisabled()) {
+			throw new ConfigurationNotFoundException("Nothing to delete");
+		}
+		existing.enable();
+		hasUncommittedChanges = true;
+		logger.info("%s: Route %s enabled in staged configuration".formatted(this.name, entry));
+	}
+
+	/**
 	 * Commits configuration changes. Takes place immediately but is not persisted meaning if the device restarts/shuts down, changes will not be saved.
 	 *
 	 * @throws InvalidModeException       if not in CONFIGURATION mode

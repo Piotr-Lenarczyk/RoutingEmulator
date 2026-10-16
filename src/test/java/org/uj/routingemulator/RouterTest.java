@@ -294,6 +294,36 @@ class RouterTest {
 	}
 
 	@Test
+	void testEnableDisabledRouteInConfigurationMode() {
+		Router router = new Router("Router");
+		router.setMode(RouterMode.CONFIGURATION);
+		router.configureInterface("eth0", new InterfaceAddress(new IPAddress(192, 168, 1, 1), new SubnetMask(24)));
+		StaticRoutingEntry entry = new StaticRoutingEntry(new Subnet(new IPAddress(198, 51, 100, 0), new SubnetMask(24)), new IPAddress(192, 168, 1, 2), 50);
+		router.addRoute(entry);
+		router.disableRoute(entry);
+
+		router.enableRoute(entry);
+
+		StaticRoutingEntry stagedEntry = router.getStagedRoutingTable().getRoutingEntries().getFirst();
+		assertFalse(stagedEntry.isDisabled());
+		assertEquals(50, stagedEntry.getAdministrativeDistance());
+		assertTrue(router.hasUncommittedChanges());
+	}
+
+	@Test
+	void testEnableRouteWithoutDisableNodeThrowsException() {
+		Router router = new Router("Router");
+		router.setMode(RouterMode.CONFIGURATION);
+		router.configureInterface("eth0", new InterfaceAddress(new IPAddress(192, 168, 1, 1), new SubnetMask(24)));
+		StaticRoutingEntry entry = new StaticRoutingEntry(new Subnet(new IPAddress(198, 51, 100, 0), new SubnetMask(24)), new IPAddress(192, 168, 1, 2));
+		router.addRoute(entry);
+
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> router.enableRoute(entry));
+
+		assertEquals("Nothing to delete", exception.getMessage());
+	}
+
+	@Test
 	void testDisableInterfaceInConfigurationMode() {
 		Router router = new Router("Router");
 		router.setMode(RouterMode.CONFIGURATION);
