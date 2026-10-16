@@ -950,6 +950,64 @@ class RouterCLITest {
 	}
 
 	@Test
+	void deletingWholeVifCommitsRemovalAndRetainsStaticRouteConfiguration() {
+		parser.executeCommand("configure", router);
+		parser.executeCommand("set interfaces ethernet eth0 vif 10 address 192.168.1.1/24", router);
+		parser.executeCommand("set protocols static route 192.168.2.0/24 next-hop 192.168.1.2", router);
+		parser.executeCommand("set protocols static route 198.51.100.0/24 interface eth0.10", router);
+		parser.executeCommand("commit", router);
+		router.getInterfaces().stream()
+				.filter(iface -> iface.getInterfaceName().equals("eth0"))
+				.findFirst()
+				.orElseThrow()
+				.setStatus(InterfaceStatus.fromChars('u', 'u'));
+		router.getInterfaces().stream()
+				.filter(iface -> iface.getInterfaceName().equals("eth0.10"))
+				.findFirst()
+				.orElseThrow()
+				.setStatus(InterfaceStatus.fromChars('u', 'u'));
+		router.setMode(RouterMode.OPERATIONAL);
+		assertTrue(router.showIpRoute().contains("S>* 192.168.2.0/24"));
+		assertTrue(router.showIpRoute().contains("S>* 198.51.100.0/24"));
+
+		router.setMode(RouterMode.CONFIGURATION);
+		parser.executeCommand("delete interfaces ethernet eth0 vif 10", router);
+		assertTrue(router.getStagedConfiguredRoutes().stream()
+				.anyMatch(route -> route.getSubnet().toString().equals("192.168.2.0/24")));
+		parser.executeCommand("commit", router);
+		router.setMode(RouterMode.OPERATIONAL);
+
+		assertTrue(router.getInterfaces().stream()
+				.noneMatch(iface -> iface.getInterfaceName().equals("eth0.10")));
+		assertTrue(router.getConfiguredRoutes().stream()
+				.anyMatch(route -> route.getSubnet().toString().equals("192.168.2.0/24")));
+		assertTrue(router.getConfiguredRoutes().stream()
+				.anyMatch(route -> route.getSubnet().toString().equals("198.51.100.0/24")
+						&& route.getRouterInterface() != null
+						&& route.getRouterInterface().getInterfaceName().equals("eth0.10")));
+		assertFalse(router.showIpRoute().contains("192.168.2.0/24"));
+		assertFalse(router.showIpRoute().contains("198.51.100.0/24"));
+
+		outputStream.reset();
+		parser.executeCommand("show configuration", router);
+		String configuration = normalizeOutput(outputStream.toString());
+		assertTrue(configuration.contains("next-hop 192.168.1.2"));
+		assertTrue(configuration.contains("interface eth0.10"));
+		assertFalse(configuration.contains("vif 10 {"));
+	}
+
+	@Test
+	void deletingMissingVifReportsNothingToDelete() {
+		parser.executeCommand("configure", router);
+		outputStream.reset();
+
+		parser.executeCommand("delete interfaces ethernet eth0 vif 10", router);
+
+		assertTrue(normalizeOutput(outputStream.toString()).contains("Nothing to delete"));
+		assertFalse(router.hasUncommittedChanges());
+	}
+
+	@Test
 	void testSimpleDummyVifInterfaceFromFile() {
 		assertDoesNotThrow(() -> loadConfigurationFromFile("src/test/resources/ra.cfg", parser, router));
 

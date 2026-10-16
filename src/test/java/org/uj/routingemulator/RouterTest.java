@@ -6,6 +6,7 @@ import org.uj.routingemulator.common.InterfaceAddress;
 import org.uj.routingemulator.common.Subnet;
 import org.uj.routingemulator.common.SubnetMask;
 import org.uj.routingemulator.router.*;
+import org.uj.routingemulator.router.cli.RouterCLIParser;
 
 import java.util.List;
 
@@ -619,5 +620,34 @@ class RouterTest {
 		// Original routing table should still contain the entry
 		assertTrue(router.getRoutingTable().contains(entry));
 		assertFalse(router.getStagedRoutingTable().contains(entry));
+	}
+
+	@Test
+	void deletingVifIsStagedAndDiscardRestoresIt() {
+		Router router = new Router("Router");
+		RouterCLIParser parser = new RouterCLIParser();
+		parser.executeCommand("configure", router);
+		parser.executeCommand("set interfaces ethernet eth0 vif 10 address 192.168.10.1/24", router);
+		parser.executeCommand("commit", router);
+
+		RouterInterface committedEthernet = router.getInterfaces().stream()
+				.filter(iface -> iface.getInterfaceName().equals("eth0"))
+				.findFirst()
+				.orElseThrow();
+		parser.executeCommand("delete interfaces ethernet eth0 vif 10", router);
+
+		assertTrue(router.getStagedInterfaces().stream()
+				.noneMatch(iface -> iface.getInterfaceName().equals("eth0.10")));
+		assertTrue(router.getInterfaces().stream()
+				.anyMatch(iface -> iface.getInterfaceName().equals("eth0.10")));
+
+		parser.executeCommand("exit discard", router);
+
+		assertTrue(router.getInterfaces().stream()
+				.anyMatch(iface -> iface.getInterfaceName().equals("eth0.10")));
+		assertSame(committedEthernet, router.getInterfaces().stream()
+				.filter(iface -> iface.getInterfaceName().equals("eth0"))
+				.findFirst()
+				.orElseThrow());
 	}
 }

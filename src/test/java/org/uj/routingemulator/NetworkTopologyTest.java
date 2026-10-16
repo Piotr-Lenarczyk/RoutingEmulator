@@ -9,6 +9,7 @@ import org.uj.routingemulator.router.AdminState;
 import org.uj.routingemulator.router.LinkState;
 import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.RouterInterface;
+import org.uj.routingemulator.router.cli.RouterCLIParser;
 import org.uj.routingemulator.switching.Switch;
 import org.uj.routingemulator.switching.SwitchPort;
 
@@ -166,6 +167,27 @@ class NetworkTopologyTest {
 		router.enableInterface("eth0");
 		assertEquals(AdminState.UP, stagedEthernet.getStatus().getAdmin());
 		assertEquals(AdminState.UP, stagedVif.getStatus().getAdmin());
+	}
+
+	@Test
+	void deletingVifLeavesItsParentEthernetConnectionAndLinkStateUnchanged() {
+		topology.addRouter(router1);
+		topology.addHost(host1);
+		RouterInterface ethernet = router1.getInterfaces().getFirst();
+		Connection ethernetConnection = new Connection(ethernet, host1.getHostInterface());
+		topology.addConnection(ethernetConnection);
+
+		RouterCLIParser parser = new RouterCLIParser();
+		parser.executeCommand("configure", router1);
+		parser.executeCommand("set interfaces ethernet eth0 vif 10 address 192.168.10.1/24", router1);
+		parser.executeCommand("commit", router1);
+		parser.executeCommand("delete interfaces ethernet eth0 vif 10", router1);
+		parser.executeCommand("commit", router1);
+
+		assertFalse(router1.getInterfaces().stream()
+				.anyMatch(iface -> iface.getInterfaceName().equals("eth0.10")));
+		assertSame(ethernetConnection, topology.getConnectionForInterface(ethernet));
+		assertEquals(LinkState.UP, ethernet.getStatus().getLink());
 	}
 
 	@Test

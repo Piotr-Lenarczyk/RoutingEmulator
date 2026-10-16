@@ -554,6 +554,10 @@ public class Router {
 				this.interfaces.add(new RouterInterface(stagedIf));
 			}
 		}
+		// Prune interfaces removed from staged configuration after preserving the identity
+		// of every interface that remains configured (including objects held by topology).
+		this.interfaces.removeIf(committedIf -> stagedInterfaces.stream()
+				.noneMatch(stagedIf -> stagedIf.getInterfaceName().equals(committedIf.getInterfaceName())));
 
 		// Update routing table while mapping staged interface references to the committed interface objects
 		this.routingTable = copyRoutingTableWithUpdatedInterfaces(stagedRoutingTable, interfaces);
@@ -695,6 +699,12 @@ public class Router {
 						.filter(intf -> intf.getInterfaceName().equals(interfaceName))
 						.findFirst()
 						.orElse(null);
+				// Keep a detached name-bearing interface for configured routes whose interface
+				// was removed. It is not operational because it is absent from the router's
+				// configured interfaces, but it preserves the route path in configuration.
+				if (newInterface == null) {
+					newInterface = new RouterInterface(interfaceName);
+				}
 				// Create new entry with updated interface reference
 				if (entry.getAdministrativeDistance() == 1) {
 					logger.finest("Creating new interface-based route with default administrative distance");
@@ -769,6 +779,31 @@ public class Router {
 		routerInterface.setInterfaceAddress(null);
 		hasUncommittedChanges = true;
 		logger.info("%s: Address deleted from interface %s in staged configuration".formatted(this.name, routerInterfaceName));
+	}
+
+	/**
+	 * Removes a VIF from the staged configuration. Routes that refer to it remain
+	 * configured; their operational eligibility is determined after commit.
+	 *
+	 * @param routerInterfaceName full VIF name, for example {@code eth0.10}
+	 * @throws InvalidModeException           if not in CONFIGURATION mode
+	 * @throws ConfigurationNotFoundException if the VIF does not exist
+	 */
+	public void deleteVif(String routerInterfaceName) {
+		if (mode != RouterMode.CONFIGURATION) {
+			logger.warning("Attempted to delete VIF while in %s mode".formatted(mode));
+			throw new InvalidModeException("Invalid command: delete [interfaces]");
+		}
+
+		RouterInterface vif = stagedInterfaces.stream()
+				.filter(iface -> iface.getInterfaceName().equals(routerInterfaceName)
+						&& iface.getType() == InterfaceType.VIF)
+				.findFirst()
+				.orElseThrow(() -> new ConfigurationNotFoundException("Nothing to delete"));
+
+		stagedInterfaces.remove(vif);
+		hasUncommittedChanges = true;
+		logger.info("%s: VIF %s deleted from staged configuration".formatted(this.name, routerInterfaceName));
 	}
 
 	private static void appendRouteDisplayEntry(RouteDisplayEntry entry, StringBuilder output) {

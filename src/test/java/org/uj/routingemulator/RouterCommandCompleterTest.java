@@ -52,6 +52,18 @@ class RouterCommandCompleterTest {
 		assertFalse(candidates.stream().anyMatch(candidate -> candidate.value().equals("disable")));
 	}
 
+	@Test
+	void deleteInterfaceCompletionOffersConfiguredVifId() {
+		Router router = new Router("Router");
+		router.setMode(RouterMode.CONFIGURATION);
+		router.configureInterface("eth0.10", new InterfaceAddress(
+				new IPAddress(192, 0, 2, 1), new SubnetMask(24)));
+
+		List<Candidate> candidates = complete(router, "delete interfaces ethernet eth0 vif ");
+
+		assertTrue(candidates.stream().anyMatch(candidate -> candidate.value().equals("10")));
+	}
+
 	private List<Candidate> complete(Router router, String line) {
 		String[] words = line.trim().split("\\s+");
 		ParsedLine parsedLine = new ParsedLine() {

@@ -10,26 +10,29 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Command to remove IP address configuration from an ethernet interface,
- * or to administratively enable it by deleting the 'disable' node.
+ * Command to remove an Ethernet VIF, an IP address configuration, or the
+ * administrative disable node.
  */
 public class DeleteInterfaceEthernetCommand implements RouterCommand {
 
-	// Regex matches either 'address <ip>' OR 'disable' at the end of the command
 	private static final Pattern PATTERN = Pattern.compile(
-			"delete\\s+interfaces\\s+ethernet\\s+(\\S+)(?:\\s+vif\\s+(\\d+))?\\s+(?:address\\s+(\\S+)|(disable))"
+			"delete\\s+interfaces\\s+ethernet\\s+(\\S+)(?:\\s+vif\\s+(\\d+))?(?:\\s+(?:address\\s+(\\S+)|(disable)))?"
 	);
 
+	private String ethernetName;
+	private String vifId;
 	private String routerInterfaceName;
 	private String address;
 	private boolean isDisable;
+	private boolean isVifDelete;
 
 	@Override
 	public void execute(Router router) {
 		PrintWriter out = CLIContext.getWriter();
 		try {
-			// Branch logic based on what the user wants to delete
-			if (isDisable) {
+			if (isVifDelete) {
+				router.deleteVif(routerInterfaceName);
+			} else if (isDisable) {
 				router.enableInterface(routerInterfaceName);
 			} else {
 				router.deleteInterfaceAddress(routerInterfaceName);
@@ -37,9 +40,14 @@ public class DeleteInterfaceEthernetCommand implements RouterCommand {
 			out.println("[edit]");
 			out.flush();
 		} catch (RuntimeException e) {
-			String errorPath = isDisable
-					? "delete interfaces ethernet " + routerInterfaceName + " disable"
-					: CLIErrorHandler.formatDeleteInterfaceEthernet(routerInterfaceName, address);
+			String errorPath;
+			if (isVifDelete) {
+				errorPath = "delete interfaces ethernet " + ethernetName + " vif " + vifId;
+			} else if (isDisable) {
+				errorPath = "delete interfaces ethernet " + routerInterfaceName + " disable";
+			} else {
+				errorPath = CLIErrorHandler.formatDeleteInterfaceEthernet(routerInterfaceName, address);
+			}
 
 			throw CLIErrorHandler.handleInterfaceException(e, errorPath);
 		}
@@ -49,27 +57,25 @@ public class DeleteInterfaceEthernetCommand implements RouterCommand {
 	public boolean matches(String command) {
 		Matcher matcher = PATTERN.matcher(command.trim());
 		if (matcher.matches()) {
-			String base = matcher.group(1);
-			String vif = matcher.group(2);
-			routerInterfaceName = vif != null ? base + "." + vif : base;
+			ethernetName = matcher.group(1);
+			vifId = matcher.group(2);
+			routerInterfaceName = vifId != null ? ethernetName + "." + vifId : ethernetName;
 
-			// Group 3 is the IP address (null if 'disable' was typed)
 			address = matcher.group(3);
-
-			// Group 4 is the 'disable' keyword (null if 'address' was typed)
 			isDisable = matcher.group(4) != null;
-			return true;
+			isVifDelete = vifId != null && address == null && !isDisable;
+			return address != null || isDisable || isVifDelete;
 		}
 		return false;
 	}
 
 	@Override
 	public String getCommandPattern() {
-		return "delete interfaces ethernet <interface> [vif <id>] <address <ip> | disable>";
+		return "delete interfaces ethernet <interface> [vif <id> [address <ip> | disable] | address <ip> | disable]";
 	}
 
 	@Override
 	public String getDescription() {
-		return "Remove Ethernet interface configuration line";
+		return "Remove Ethernet VIF or interface configuration line";
 	}
 }
