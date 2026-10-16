@@ -270,15 +270,16 @@ class RouterCLITest {
 	}
 
 	@Test
-	void testDeleteRouteNextHopWithDistance() {
+	void testDeleteRouteNextHopDistanceResetsToDefaultWithoutDeletingPath() {
 		parser.executeCommand("configure", router);
 		parser.executeCommand("set protocols static route 192.168.1.0/24 next-hop 10.0.0.1 distance 50", router);
 		outputStream.reset();
 
-		parser.executeCommand("delete protocols static route 192.168.1.0/24 next-hop 10.0.0.1 distance 50", router);
+		parser.executeCommand("delete protocols static route 192.168.1.0/24 next-hop 10.0.0.1 distance", router);
 
 		assertTrue(outputStream.toString().contains("[edit]"));
-		assertEquals(0, router.getStagedRoutingTable().getRoutingEntries().size());
+		assertEquals(1, router.getStagedRoutingTable().getRoutingEntries().size());
+		assertEquals(1, router.getStagedRoutingTable().getRoutingEntries().getFirst().getAdministrativeDistance());
 	}
 
 	@Test
@@ -610,15 +611,16 @@ class RouterCLITest {
 	}
 
 	@Test
-	void testDeleteRouteInterfaceWithDistance() {
+	void testDeleteRouteInterfaceDistanceResetsToDefaultWithoutDeletingPath() {
 		parser.executeCommand("configure", router);
 		parser.executeCommand("set protocols static route 192.168.1.0/24 interface eth0 distance 100", router);
 		outputStream.reset();
 
-		parser.executeCommand("delete protocols static route 192.168.1.0/24 interface eth0 distance 100", router);
+		parser.executeCommand("delete protocols static route 192.168.1.0/24 interface eth0 distance", router);
 
 		assertTrue(outputStream.toString().contains("[edit]"));
-		assertEquals(0, router.getStagedRoutingTable().getRoutingEntries().size());
+		assertEquals(1, router.getStagedRoutingTable().getRoutingEntries().size());
+		assertEquals(1, router.getStagedRoutingTable().getRoutingEntries().getFirst().getAdministrativeDistance());
 	}
 
 	@Test

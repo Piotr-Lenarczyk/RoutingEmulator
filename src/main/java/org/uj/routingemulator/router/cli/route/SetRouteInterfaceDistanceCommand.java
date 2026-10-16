@@ -32,7 +32,7 @@ public class SetRouteInterfaceDistanceCommand implements RouterCommand {
 	public void execute(Router router) {
 		PrintWriter out = CLIContext.getWriter();
 		try {
-			router.addRoute(
+			router.setRouteDistance(
 					new StaticRoutingEntry(
 							Subnet.fromString(destinationSubnet),
 							router.findFromName(interfaceName),

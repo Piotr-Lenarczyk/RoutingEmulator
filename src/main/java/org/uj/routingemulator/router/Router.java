@@ -10,6 +10,7 @@ import org.uj.routingemulator.router.exceptions.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Logger;
 
 /**
@@ -200,6 +201,81 @@ public class Router {
 		hasUncommittedChanges = true;
 
 		logger.info("%s: Creating static route %s".formatted(this.name, entry));
+	}
+
+	private static boolean replaceRouteDistance(List<StaticRoutingEntry> routes, StaticRoutingEntry replacement) {
+		for (int index = 0; index < routes.size(); index++) {
+			StaticRoutingEntry existing = routes.get(index);
+			if (!sameRoutePath(existing, replacement)) {
+				continue;
+			}
+
+			StaticRoutingEntry updated = new StaticRoutingEntry(replacement);
+			if (existing.isDisabled()) {
+				updated.disable();
+			}
+			routes.set(index, updated);
+			return true;
+		}
+		return false;
+	}
+
+	private static boolean sameRoutePath(StaticRoutingEntry first, StaticRoutingEntry second) {
+		String firstInterfaceName = first.getRouterInterface() == null ? null : first.getRouterInterface().getInterfaceName();
+		String secondInterfaceName = second.getRouterInterface() == null ? null : second.getRouterInterface().getInterfaceName();
+		return Objects.equals(first.getSubnet(), second.getSubnet())
+				&& Objects.equals(first.getNextHop(), second.getNextHop())
+				&& Objects.equals(firstInterfaceName, secondInterfaceName);
+	}
+
+	/**
+	 * Sets or updates the administrative distance for a static route path.
+	 * A route path is identified by destination, next-hop, and exit interface;
+	 * distance is an attribute of that path rather than part of its identity.
+	 *
+	 * @param entry route path and desired administrative distance
+	 */
+	public void setRouteDistance(StaticRoutingEntry entry) {
+		if (mode != RouterMode.CONFIGURATION) {
+			logger.warning("Attempted to set route distance while in %s mode".formatted(mode));
+			throw new InvalidModeException("Invalid command: set [protocols]");
+		}
+
+		if (replaceRouteDistance(stagedRoutingTable.getRoutingEntries(), entry)
+				|| replaceRouteDistance(stagedConfigurationOnlyRoutes, entry)) {
+			hasUncommittedChanges = true;
+			logger.info("%s: Updated static route distance to %d for %s"
+					.formatted(this.name, entry.getAdministrativeDistance(), entry));
+			return;
+		}
+
+		addRoute(entry);
+	}
+
+	/**
+	 * Resets an existing static route path's administrative distance to the default value of 1.
+	 *
+	 * @param route route path whose distance is being reset
+	 * @throws InvalidModeException           if not in CONFIGURATION mode
+	 * @throws ConfigurationNotFoundException if the route path does not exist
+	 */
+	public void resetRouteDistance(StaticRoutingEntry route) {
+		if (mode != RouterMode.CONFIGURATION) {
+			logger.warning("Attempted to reset route distance while in %s mode".formatted(mode));
+			throw new InvalidModeException("Invalid command: delete [protocols]");
+		}
+
+		StaticRoutingEntry defaultDistanceRoute = route.getNextHop() != null
+				? new StaticRoutingEntry(route.getSubnet(), route.getNextHop(), 1)
+				: new StaticRoutingEntry(route.getSubnet(), route.getRouterInterface(), 1);
+		if (!replaceRouteDistance(stagedRoutingTable.getRoutingEntries(), defaultDistanceRoute)
+				&& !replaceRouteDistance(stagedConfigurationOnlyRoutes, defaultDistanceRoute)) {
+			logger.warning("Attempted to reset distance for non-existent route: %s".formatted(route));
+			throw new ConfigurationNotFoundException("Nothing to delete");
+		}
+
+		hasUncommittedChanges = true;
+		logger.info("%s: Reset static route distance to default for %s".formatted(this.name, route));
 	}
 
 	/**

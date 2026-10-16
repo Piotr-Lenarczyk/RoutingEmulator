@@ -34,7 +34,7 @@ public class SetRouteNextHopDistanceCommand implements RouterCommand {
 		PrintWriter out = CLIContext.getWriter();
 		try {
 			NextHopRouteParameters nextHopRouteParameters = NextHopRouteParameters.parseRouteParameters(destinationSubnet, nextHop);
-			router.addRoute(new StaticRoutingEntry(nextHopRouteParameters.dest(), nextHopRouteParameters.nh(), distance));
+			router.setRouteDistance(new StaticRoutingEntry(nextHopRouteParameters.dest(), nextHopRouteParameters.nh(), distance));
 			out.println("[edit]");
 			out.flush();
 		} catch (RuntimeException e) {
