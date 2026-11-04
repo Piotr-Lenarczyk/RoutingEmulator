@@ -39,8 +39,8 @@ public class SimpleTerminalTextArea extends TextArea {
 		super();
 		setWrapText(true);
 		setEditable(true);
-		setStyle("-fx-control-inner-background: #1e1e1e; " +
-				"-fx-text-fill: #d4d4d4; " +
+		setStyle("-fx-control-inner-background: #f5f5f5; " +
+				"-fx-text-fill: #1e1e1e; " +
 				"-fx-font-family: 'Courier New'; " +
 				"-fx-font-size: 12px;");
 

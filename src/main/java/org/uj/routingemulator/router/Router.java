@@ -924,7 +924,7 @@ public class Router {
 
 		// Add static routes
 		for (StaticRoutingEntry entry : routingTable.getRoutingEntries()) {
-			if (!RouteEligibility.isRouteActive(this, entry, topology)) {
+			if (!RouteEligibility.isRouteInstalled(this, entry, topology)) {
 				continue;
 			}
 			displayEntries.add(new RouteDisplayEntry(

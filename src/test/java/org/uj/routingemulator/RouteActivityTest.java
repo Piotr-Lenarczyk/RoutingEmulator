@@ -116,6 +116,27 @@ class RouteActivityTest {
 	}
 
 	@Test
+	void showIpRouteIncludesNextHopResolvedByConnectedSubnetWithoutKnownNeighbor() {
+		Router router = routerWithInterfaces("R1", "eth0");
+		configureInterface(router, "eth0", "192.0.2.1/24");
+		router.addRoute(new StaticRoutingEntry(Subnet.fromString("198.51.100.0/24"),
+				IPAddress.fromString("192.0.2.2"), 20));
+		commit(router);
+
+		Host segmentDevice = host("segment-device", "192.0.2.10/24", "192.0.2.1");
+		NetworkTopology topology = new NetworkTopology();
+		topology.addRouter(router);
+		topology.addHost(segmentDevice);
+		topology.addConnection(new Connection(router.findFromName("eth0"), segmentDevice.getHostInterface()));
+
+		String output = showRoutes(router, topology);
+
+		assertTrue(output.contains("C>* 192.0.2.0/24"));
+		assertTrue(output.contains("S>* 198.51.100.0/24 [20] via 192.0.2.2"),
+				"A connected subnet resolves the next-hop for the RIB even when no topology node owns that IP");
+	}
+
+	@Test
 	void pingSkipsUnreachableNextHopWhenAnEqualCostPathIsReachable() {
 		Router first = routerWithInterfaces("R1", "eth0", "eth1");
 		configureInterface(first, "eth0", "192.0.2.1/24");

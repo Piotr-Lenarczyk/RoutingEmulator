@@ -19,6 +19,21 @@ public final class RouteEligibility {
 		return route.getNextHop() != null && isNextHopActive(router, route.getNextHop(), topology);
 	}
 
+	/**
+	 * Checks whether a route can be installed in the routing table. A next-hop
+	 * route is resolvable when an active connected subnet covers its next-hop;
+	 * the topology does not need to contain a node with that exact IP address.
+	 */
+	public static boolean isRouteInstalled(Router router, StaticRoutingEntry route, NetworkTopology topology) {
+		if (router == null || route == null || route.isDisabled()) {
+			return false;
+		}
+		if (route.getRouterInterface() != null) {
+			return isInterfaceActive(router, route.getRouterInterface(), topology);
+		}
+		return route.getNextHop() != null && isNextHopResolved(router, route.getNextHop(), topology);
+	}
+
 	public static boolean isInterfaceActive(Router router, RouterInterface iface, NetworkTopology topology) {
 		RouterInterface configuredInterface = findConfiguredInterface(router, iface);
 		if (!isAdministrativelyUp(configuredInterface)) {
@@ -39,13 +54,17 @@ public final class RouteEligibility {
 	}
 
 	private static boolean isNextHopActive(Router router, IPAddress nextHop, NetworkTopology topology) {
+		if (!isNextHopResolved(router, nextHop, topology)) {
+			return false;
+		}
+		if (topology == null) {
+			return true;
+		}
+
 		for (RouterInterface localInterface : router.getInterfaces()) {
 			if (localInterface.getSubnet() == null || !localInterface.getSubnet().contains(nextHop)
 					|| !isInterfaceActive(router, localInterface, topology)) {
 				continue;
-			}
-			if (topology == null) {
-				return true;
 			}
 
 			RouterInterface physicalInterface = getPhysicalInterface(router, localInterface);
@@ -62,6 +81,13 @@ public final class RouteEligibility {
 			}
 		}
 		return false;
+	}
+
+	private static boolean isNextHopResolved(Router router, IPAddress nextHop, NetworkTopology topology) {
+		return router != null && router.getInterfaces().stream()
+				.anyMatch(localInterface -> localInterface.getSubnet() != null
+						&& localInterface.getSubnet().contains(nextHop)
+						&& isInterfaceActive(router, localInterface, topology));
 	}
 
 	private static RouterInterface findConfiguredInterface(Router router, RouterInterface iface) {
