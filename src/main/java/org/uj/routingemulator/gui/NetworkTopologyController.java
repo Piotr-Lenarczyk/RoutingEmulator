@@ -777,7 +777,11 @@ public class NetworkTopologyController {
 		List<NetworkInterface> allInterfaces = new ArrayList<>();
 
 		if (device instanceof Router router) {
-			allInterfaces.addAll(router.getInterfaces());
+			router.getInterfaces().stream()
+					.filter(iface -> iface.getType() != InterfaceType.VIF
+							&& iface.getType() != InterfaceType.DUMMY
+							&& iface.getType() != InterfaceType.LOOPBACK)
+					.forEach(allInterfaces::add);
 		} else if (device instanceof Switch sw) {
 			allInterfaces.addAll(sw.getPorts());
 		} else if (device instanceof Host host) {
