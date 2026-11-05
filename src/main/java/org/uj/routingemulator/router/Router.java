@@ -521,6 +521,7 @@ public class Router {
 	 *
 	 * @throws InvalidModeException       if not in CONFIGURATION mode
 	 * @throws NoChangesToCommitException if there are no changes to commit
+	 * @throws InvalidSubnetException     if configured VIF subnets overlap
 	 */
 	public void commitChanges() {
 		if (mode != RouterMode.CONFIGURATION) {
@@ -531,6 +532,7 @@ public class Router {
 			logger.warning("Attempted to commit with no changes in staged configuration");
 			throw new NoChangesToCommitException("No configuration changes to commit");
 		}
+		validateVifSubnetOverlaps();
 
 		// Instead of replacing interface objects (which would break existing Connection references),
 		// update existing RouterInterface instances in-place to preserve identity held by NetworkTopology.
@@ -564,6 +566,29 @@ public class Router {
 		this.configurationOnlyRoutes = copyRoutes(stagedConfigurationOnlyRoutes);
 		hasUncommittedChanges = false;
 		logger.info("%s: Commit complete".formatted(this.name));
+	}
+
+	private void validateVifSubnetOverlaps() {
+		List<RouterInterface> configuredVifs = stagedInterfaces.stream()
+				.filter(iface -> iface.getType() == InterfaceType.VIF && iface.getInterfaceAddress() != null)
+				.toList();
+
+		for (int i = 0; i < configuredVifs.size(); i++) {
+			RouterInterface first = configuredVifs.get(i);
+			Subnet firstSubnet = first.getSubnet();
+			for (int j = i + 1; j < configuredVifs.size(); j++) {
+				RouterInterface second = configuredVifs.get(j);
+				Subnet secondSubnet = second.getSubnet();
+				if (firstSubnet.contains(secondSubnet.networkAddress())
+						|| secondSubnet.contains(firstSubnet.networkAddress())) {
+					String[] secondNameParts = second.getInterfaceName().split("\\.", 2);
+					String configPath = "[[interfaces ethernet %s vif %s]]"
+							.formatted(secondNameParts[0], secondNameParts[1]);
+					throw new InvalidSubnetException("%s error: IP address %s overlaps with %s address %s%nCommit failed"
+							.formatted(configPath, second.getInterfaceAddress(), first.getInterfaceName(), first.getInterfaceAddress()));
+				}
+			}
+		}
 	}
 
 	/**

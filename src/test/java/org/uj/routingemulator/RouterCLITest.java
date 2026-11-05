@@ -891,6 +891,62 @@ class RouterCLITest {
 	}
 
 	@Test
+	void commitRejectsOverlappingSubnetsOnVifs() {
+		parser.executeCommand("configure", router);
+		parser.executeCommand("set interfaces ethernet eth0 vif 10 address 10.0.0.1/24", router);
+		parser.executeCommand("commit", router);
+		outputStream.reset();
+
+		parser.executeCommand("set interfaces ethernet eth0 address 192.168.10.1/24", router);
+		parser.executeCommand("set interfaces ethernet eth0 vif 20 address 10.0.0.5/24", router);
+		parser.executeCommand("commit", router);
+
+		String output = normalizeOutput(outputStream.toString());
+		assertTrue(output.contains("[[interfaces ethernet eth0 vif 20]] error: IP address 10.0.0.5/24 overlaps with eth0.10 address 10.0.0.1/24"));
+		assertTrue(output.contains("Commit failed"));
+		assertTrue(router.hasUncommittedChanges(), "Failed commit should leave the staged configuration intact");
+		assertTrue(router.getStagedInterfaces().stream()
+				.anyMatch(iface -> iface.getInterfaceName().equals("eth0.20")));
+		assertFalse(router.getInterfaces().stream()
+						.anyMatch(iface -> iface.getInterfaceName().equals("eth0.20")),
+				"Failed commit must not add the overlapping VIF to committed interfaces");
+		assertNull(router.getInterfaces().stream()
+						.filter(iface -> iface.getInterfaceName().equals("eth0"))
+						.findFirst()
+						.orElseThrow()
+						.getInterfaceAddress(),
+				"Failed commit must not apply unrelated staged interface changes");
+	}
+
+	@Test
+	void commitRejectsPartiallyOverlappingVifSubnets() {
+		parser.executeCommand("configure", router);
+		parser.executeCommand("set interfaces ethernet eth0 vif 10 address 10.0.0.1/24", router);
+		parser.executeCommand("set interfaces ethernet eth0 vif 20 address 10.0.0.129/25", router);
+
+		parser.executeCommand("commit", router);
+
+		String output = normalizeOutput(outputStream.toString());
+		assertTrue(output.contains("IP address 10.0.0.129/25 overlaps with eth0.10 address 10.0.0.1/24"));
+		assertTrue(output.contains("Commit failed"));
+		assertTrue(router.hasUncommittedChanges());
+	}
+
+	@Test
+	void commitDoesNotRejectSubnetOverlapBetweenVifAndEthernet() {
+		parser.executeCommand("configure", router);
+		parser.executeCommand("set interfaces ethernet eth0 address 10.0.0.1/24", router);
+		parser.executeCommand("set interfaces ethernet eth0 vif 10 address 10.0.0.5/24", router);
+
+		parser.executeCommand("commit", router);
+
+		assertTrue(normalizeOutput(outputStream.toString()).contains("[edit]"));
+		assertFalse(router.hasUncommittedChanges());
+		assertTrue(router.getInterfaces().stream()
+				.anyMatch(iface -> iface.getInterfaceName().equals("eth0.10")));
+	}
+
+	@Test
 	void testParserCreatesDummyAndVifInterfaces() {
 		parser.executeCommand("configure", router);
 

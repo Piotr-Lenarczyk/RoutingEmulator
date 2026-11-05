@@ -2,16 +2,21 @@ package org.uj.routingemulator;
 
 import org.junit.jupiter.api.Test;
 import org.uj.routingemulator.common.*;
+import org.uj.routingemulator.common.exceptions.InvalidSubnetException;
 import org.uj.routingemulator.host.Host;
 import org.uj.routingemulator.host.HostInterface;
 import org.uj.routingemulator.router.Router;
 import org.uj.routingemulator.router.RouterInterface;
 import org.uj.routingemulator.router.RouterMode;
 import org.uj.routingemulator.router.StaticRoutingEntry;
+import org.uj.routingemulator.router.cli.CLIContext;
 import org.uj.routingemulator.router.cli.RouterCLIParser;
 import org.uj.routingemulator.switching.Switch;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class PingTest {
 
@@ -240,6 +245,49 @@ class PingTest {
 		PingStatistics stats = source.ping("192.168.2.1", topology);
 		assertEquals(4, stats.getSent());
 		assertEquals(4, stats.getReceived());
+	}
+
+	@Test
+	void routerPingToUncommittedOverlappingVifAddressFailsWhenNoHostOwnsIt() {
+		NetworkTopology topology = new NetworkTopology();
+		Host neighbor = new Host("neighbor", new HostInterface(
+				"eth0",
+				new Subnet(new IPAddress(192, 168, 1, 2), new SubnetMask(24)),
+				new IPAddress(192, 168, 1, 1)
+		));
+		Router router = new Router("R1");
+		router.setMode(RouterMode.CONFIGURATION);
+		router.configureInterface("eth0", InterfaceAddress.fromString("192.168.1.1/24"));
+		router.configureInterface("eth0.10", InterfaceAddress.fromString("10.0.0.1/24"));
+		router.commitChanges();
+
+		router.configureInterface("eth0.20", InterfaceAddress.fromString("10.0.0.5/24"));
+		assertThrows(InvalidSubnetException.class, router::commitChanges);
+		assertFalse(router.getInterfaces().stream()
+				.anyMatch(iface -> iface.getInterfaceAddress() != null
+						&& iface.getInterfaceAddress().ipAddress().equals(new IPAddress(10, 0, 0, 5))));
+
+		topology.addHost(neighbor);
+		topology.addRouter(router);
+		RouterInterface committedEthernet = router.getInterfaces().stream()
+				.filter(iface -> iface.getInterfaceName().equals("eth0"))
+				.findFirst()
+				.orElseThrow();
+		topology.addConnection(new Connection(neighbor.getHostInterface(), committedEthernet));
+
+		ByteArrayOutputStream pingOutput = new ByteArrayOutputStream();
+		CLIContext.setNetworkTopology(topology);
+		CLIContext.setWriter(new PrintWriter(pingOutput, true));
+		try {
+			new RouterCLIParser().executeCommand("ping -c 4 10.0.0.5", router);
+		} finally {
+			CLIContext.clear();
+		}
+
+		String output = pingOutput.toString();
+		assertTrue(output.contains("4 packets transmitted, 0 received"), output);
+		assertTrue(output.contains("Destination Host Unreachable"), output);
+		assertFalse(output.contains("4 packets transmitted, 4 received"), output);
 	}
 
 	@Test
