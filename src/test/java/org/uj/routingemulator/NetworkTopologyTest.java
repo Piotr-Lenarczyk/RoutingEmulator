@@ -170,6 +170,42 @@ class NetworkTopologyTest {
 	}
 
 	@Test
+	void vifAndDummyLinkStatesMatchParentAndInterfaceSemanticsAfterCommit() {
+		topology.addRouter(router1);
+		topology.addHost(host1);
+
+		RouterCLIParser parser = new RouterCLIParser();
+		parser.executeCommand("configure", router1);
+		parser.executeCommand("set interfaces ethernet eth0 vif 10 address 192.168.1.1/24", router1);
+		parser.executeCommand("set interfaces dummy dum0 address 192.168.2.1/24", router1);
+		parser.executeCommand("commit", router1);
+
+		RouterInterface ethernet = router1.getInterfaces().stream()
+				.filter(iface -> iface.getInterfaceName().equals("eth0"))
+				.findFirst().orElseThrow();
+		RouterInterface vif = router1.getInterfaces().stream()
+				.filter(iface -> iface.getInterfaceName().equals("eth0.10"))
+				.findFirst().orElseThrow();
+		RouterInterface dummy = router1.getInterfaces().stream()
+				.filter(iface -> iface.getInterfaceName().equals("dum0"))
+				.findFirst().orElseThrow();
+		assertEquals(LinkState.DOWN, ethernet.getStatus().getLink());
+		assertEquals(LinkState.DOWN, vif.getStatus().getLink());
+		assertEquals(LinkState.UP, dummy.getStatus().getLink());
+
+		Connection connection = new Connection(ethernet, host1.getHostInterface());
+		topology.addConnection(connection);
+		assertEquals(LinkState.UP, ethernet.getStatus().getLink());
+		assertEquals(LinkState.UP, vif.getStatus().getLink());
+		assertEquals(LinkState.UP, dummy.getStatus().getLink());
+
+		topology.removeConnection(connection);
+		assertEquals(LinkState.DOWN, ethernet.getStatus().getLink());
+		assertEquals(LinkState.DOWN, vif.getStatus().getLink());
+		assertEquals(LinkState.UP, dummy.getStatus().getLink());
+	}
+
+	@Test
 	void deletingVifLeavesItsParentEthernetConnectionAndLinkStateUnchanged() {
 		topology.addRouter(router1);
 		topology.addHost(host1);

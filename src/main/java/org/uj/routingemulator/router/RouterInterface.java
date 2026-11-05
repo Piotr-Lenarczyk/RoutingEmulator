@@ -208,7 +208,10 @@ public class RouterInterface implements NetworkInterface {
 		}
 
 		if (owner != null) {
-			RouterInterface parent = owner.findFromName(parentName);
+			RouterInterface parent = owner.getInterfaces().stream()
+					.filter(iface -> iface.getInterfaceName().equals(parentName))
+					.findFirst()
+					.orElse(null);
 			if (parent != null) {
 				if (parent.getStatus().getAdmin() == AdminState.ADMIN_DOWN || parent.getStatus().getLink() == LinkState.DOWN) {
 					this.status = new InterfaceStatus(this.status.getAdmin(), LinkState.DOWN);

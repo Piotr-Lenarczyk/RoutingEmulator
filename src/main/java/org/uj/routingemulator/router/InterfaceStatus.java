@@ -55,6 +55,7 @@ public class InterfaceStatus {
 
 	@Override
 	public String toString() {
-		return admin.getCode() + "/" + link.getCode();
+		char displayedLinkCode = admin == AdminState.ADMIN_DOWN ? LinkState.DOWN.getCode() : link.getCode();
+		return admin.getCode() + "/" + displayedLinkCode;
 	}
 }

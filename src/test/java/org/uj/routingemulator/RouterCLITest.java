@@ -856,6 +856,7 @@ class RouterCLITest {
 
 	@Test
 	void testShowInterfacesWithDisabledInterface() {
+		router.findFromName("eth0").setStatus(new InterfaceStatus(AdminState.UP, LinkState.UP));
 		parser.executeCommand("configure", router);
 		parser.executeCommand("set interfaces ethernet eth0 disable", router);
 		parser.executeCommand("commit", router);
@@ -865,9 +866,10 @@ class RouterCLITest {
 		parser.executeCommand("show interfaces", router);
 
 		String output = outputStream.toString();
-		// Should show interface status as A/D (Admin Down / Link Down) or A/u (Admin Down / Link Up)
 		assertTrue(output.contains("eth0"), "Should list eth0");
-		assertTrue(output.contains("A/D") || output.contains("A/u"), "Should show admin down status");
+		assertTrue(output.contains("A/D"), "Administratively disabled interfaces should display A/D");
+		assertEquals(LinkState.UP, router.findFromName("eth0").getStatus().getLink(),
+				"Displaying A/D should not change the stored physical link state");
 	}
 
 	@Test
